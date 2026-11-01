@@ -16,7 +16,7 @@
 
 ### 0.1 四层架构基线（原始架构图）
 
-![OFDR 平台四层架构](../ofdr_platform.png)
+![OFDR 平台四层架构](../references/ofdr_platform.png)
 
 四层为：**数据采集 → 数据处理 → OFDR 标准扫描数据获取（标准化） → 测试控制与结果计算**。一期只落地其中三条：
 
@@ -32,12 +32,12 @@
 | 资料 | 内容 | 在本设计中的用途 |
 | --- | --- | --- |
 | `OFDRDataReceiver _demo` | 旧 WinForms 实现 + `config.txt` + 历史 run | 行为基线：公式、协议、默认值、CSV 列序；对应 §2.3 映射与 §10 迁移用例 |
-| `qt2144-rs` | 旧采集卡 SDK 与数据格式说明 | 仅作帧格式/通道交织参考；采集板形态未定，不作为二期既定适配器（SRS TBD-15） |
-| `ofdr-0.1.1-release` | 处理库（P/S/A → 轴/功率谱）与头文件 | 二期 `OfdrProcessor` 适配器设计参考（§3、§5、§9） |
-| `detect_1.0` | 结果库（峰值/IL/RL 参考实现）与头文件 | 二期交叉验证实现参考（§5、§10） |
-| `ofdr_platform.png` | 四层架构图 | §0.1、§2 的架构依据 |
-| `初步调研` | 产品背景与光链路说明 | 仅背景，不构成本平台软件需求；指标口径以 SRS 为准 |
-| `ref/keysight` | N7700 IL Engine 用户指南 | 测法与术语参照，**非 OFDR 算法来源**；其“保存原始数据以便重算”对应 SRS FR-DATA-01 |
+| `references/qt2144-rs` | 旧采集卡 SDK 与数据格式说明 | 仅作帧格式/通道交织参考；采集板形态未定，不作为二期既定适配器（SRS TBD-15） |
+| `references/ofdr-0.1.1-release` | 处理库（P/S/A → 轴/功率谱）与头文件 | 二期 `OfdrProcessor` 适配器设计参考（§3、§5、§9） |
+| `references/detect_1.0` | 结果库（峰值/IL/RL 参考实现）与头文件 | 二期交叉验证实现参考（§5、§10） |
+| `references/ofdr_platform.png` | 四层架构图 | §0.1、§2 的架构依据 |
+| 初步调研（未随仓库提供） | 产品背景与光链路说明 | 仅背景，不构成本平台软件需求；指标口径以 SRS 为准 |
+| `references/keysight` | N7700 IL Engine 用户指南 | 测法与术语参照，**非 OFDR 算法来源**；其“保存原始数据以便重算”对应 SRS FR-DATA-01 |
 | Luna OBR 4600/6200 距离域界面（观察/截图） | 距离域曲线、事件列表、双光标读数布局 | 仅 UI 形态参考，不涉及算法；对应 SRS FR-VIS-01~06 |
 
 > 引用口径：一期源码中检索 `DllImport`、`qt_acq`、`ofdr.dll`、`detect.dll` 均无匹配，上述厂商资料不参与一期运行。Keysight 文档为扫波长 IL 测法，无距离域与峰值检测，不得表述为“按 Keysight 算法实现”；其 Reference 基线对应本设计的 SRI/SRO/SRB/SRC 基准快照。参考资料的需求侧用途与来源标签见 SRS §1.4、§1.5。
@@ -517,7 +517,7 @@ PC 侧发行包必须包含：
 
 > 本节记录构建、验证与需求覆盖情况；评审结论见 `REVIEW_OFDR_Platform_v0.1.0.md`。
 
-工作目录：`product/ofdr/ofdr_platform`；解决方案 `src/OFDR.Platform.sln`；7 个程序集（Contracts / Metrics / Engine / Infrastructure / Replay / App / Verify）。
+工作目录：`ofdr_platform/src`；解决方案 `OFDR.Platform.sln`；7 个程序集（Contracts / Metrics / Engine / Infrastructure / Replay / App / Verify）。
 
 ### 13.1 构建
 

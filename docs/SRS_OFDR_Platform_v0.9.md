@@ -6,7 +6,7 @@
 | 状态 | 可评审，含 TBD（待确认项） |
 | 范围 | OFDR 平台软件；硬件作为外部接口 |
 | 实施状态 | 一期 v0.1.0：整机 TCP 为唯一采集路径；指标表 + 距离域页（只读曲线/事件表/双光标）已落地；FPGA 采集板（网络，形态待定）、厂商处理库、真实串口开关未实施。逐条覆盖见 SDD §13.4 |
-| 编制依据 | `product/ofdr/ofdr_platform.png`、`qt2144-rs`、`ofdr-0.1.1-release`、`detect_1.0`、`OFDRDataReceiver _demo`、`product/初步调研`、`ref/keysight` |
+| 编制依据 | `references/ofdr_platform.png`、`references/qt2144-rs`、`references/ofdr-0.1.1-release`、`references/detect_1.0`、`OFDRDataReceiver _demo`、早期调研文档、`references/keysight` |
 | 配套文档 | `SDD_OFDR_Platform_v0.9.md`（设计）、`REVIEW_OFDR_Platform_v0.1.0.md`（评审） |
 
 > **文档定位**：本文件是**需求规格说明书（SRS）**，回答“做什么、为什么、如何验收”。只写需求、外部接口与数据要求，**不写实现选型**（语言/框架/依赖/程序集/类名/线程模型）；实现方案见配套 SDD，验证证据见 SDD §13 与评审摘要。文首“实施状态”仅用于界定本期范围。
@@ -54,13 +54,13 @@
 
 ### 1.4 参考文件
 
-- 架构与流程：`product/ofdr/ofdr_platform.png`
-- 采集：`product/ofdr/qt2144-rs/readme_ext.md`、`qt_acq.h`、`qt_acq.py`、`config/`（旧采集卡 SDK，仅作帧格式/通道交织参考；最终采集板形态与协议见 TBD-15）
-- 处理：`product/ofdr/ofdr-0.1.1-release/README_ext.md`、`ofdr.h`
-- 结果：`product/ofdr/detect_1.0/README_ext.md`、`detect.h`
-- 现状实现：`product/ofdr/OFDRDataReceiver _demo/.../DataReceiver.cs`、`MainForm.cs`、`config.txt`
-- 行业参考：`ref/keysight/Keysight_N7700-91002_User-Guide-IL-Engine.pdf`
-- 产品背景：`product/初步调研/光通讯检测仪器集成产品总体方案.md`、`product/product_1/...`
+- 架构与流程：`references/ofdr_platform.png`
+- 采集：`references/qt2144-rs/readme_ext.md`、`qt_acq.h`、`qt_acq.py`、`config/`（旧采集卡 SDK，仅作帧格式/通道交织参考；最终采集板形态与协议见 TBD-15）
+- 处理：`references/ofdr-0.1.1-release/README_ext.md`、`ofdr.h`
+- 结果：`references/detect_1.0/README_ext.md`、`detect.h`
+- 现状实现：`OFDRDataReceiver _demo/OFDRDataReceiver _demo/DataReceiver.cs`、`MainForm.cs`、`config.txt`
+- 行业参考：`references/keysight/Keysight_N7700-91002_User-Guide-IL-Engine.pdf`
+- 产品背景：早期工作区调研文档（`product/初步调研/...`，未随仓库提供）
 
 ### 1.5 需求来源规则
 

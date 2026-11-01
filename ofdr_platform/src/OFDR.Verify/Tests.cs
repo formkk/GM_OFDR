@@ -352,12 +352,13 @@ internal static class Tests
 
     public static void LegacyMetricsBaseline()
     {
-        var demoDir = FindDemoDirectory();
-        if (demoDir == null || !Directory.Exists(demoDir))
-            throw new SkipException("未找到 demo 目录");
+        var fixtures = Path.Combine(FindProductDirectory() ?? "", "tests", "fixtures");
+        if (!Directory.Exists(fixtures))
+            throw new DirectoryNotFoundException($"缺少测试夹具目录：{fixtures}");
 
-        var files = Directory.EnumerateFiles(demoDir, "ofdr_metrics_*.csv", SearchOption.AllDirectories).ToList();
-        if (files.Count == 0) throw new SkipException("未找到历史 ofdr_metrics_*.csv（无结果级基准数据）");
+        var files = Directory.EnumerateFiles(fixtures, "ofdr_metrics_*.csv").ToList();
+        if (files.Count == 0)
+            throw new FileNotFoundException($"缺少结果级基准数据（ofdr_metrics_*.csv）：{fixtures}");
 
         var file = files.OrderByDescending(f => new FileInfo(f).Length).First();
         var rows = MetricsCsvReader.Read(file, maxRows: 50);
