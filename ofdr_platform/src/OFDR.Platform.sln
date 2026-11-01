@@ -1,0 +1,58 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OFDR.Contracts", "OFDR.Contracts\OFDR.Contracts.csproj", "{BAE39F21-6CAA-4A6E-B3F0-ECD5DCA9B430}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OFDR.Metrics", "OFDR.Metrics\OFDR.Metrics.csproj", "{32A95570-29A5-4433-9901-4C1D7DB05532}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OFDR.Engine", "OFDR.Engine\OFDR.Engine.csproj", "{BF2475F6-312E-4891-BFCF-5CE93C369DD4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OFDR.Infrastructure", "OFDR.Infrastructure\OFDR.Infrastructure.csproj", "{F2DCD25E-82EF-47EE-95D9-8E4CBB789D36}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OFDR.Replay", "OFDR.Replay\OFDR.Replay.csproj", "{9C732B73-5E22-4228-92A4-9FDE607EADE9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OFDR.Verify", "OFDR.Verify\OFDR.Verify.csproj", "{9C5CD821-DCBA-48D7-9F7E-878E903041A3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OFDR.App", "OFDR.App\OFDR.App.csproj", "{61BF8E4B-56B9-4FB3-929B-1BB1800BC9A6}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{BAE39F21-6CAA-4A6E-B3F0-ECD5DCA9B430}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BAE39F21-6CAA-4A6E-B3F0-ECD5DCA9B430}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BAE39F21-6CAA-4A6E-B3F0-ECD5DCA9B430}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BAE39F21-6CAA-4A6E-B3F0-ECD5DCA9B430}.Release|Any CPU.Build.0 = Release|Any CPU
+		{32A95570-29A5-4433-9901-4C1D7DB05532}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{32A95570-29A5-4433-9901-4C1D7DB05532}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{32A95570-29A5-4433-9901-4C1D7DB05532}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{32A95570-29A5-4433-9901-4C1D7DB05532}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BF2475F6-312E-4891-BFCF-5CE93C369DD4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BF2475F6-312E-4891-BFCF-5CE93C369DD4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BF2475F6-312E-4891-BFCF-5CE93C369DD4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BF2475F6-312E-4891-BFCF-5CE93C369DD4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F2DCD25E-82EF-47EE-95D9-8E4CBB789D36}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F2DCD25E-82EF-47EE-95D9-8E4CBB789D36}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F2DCD25E-82EF-47EE-95D9-8E4CBB789D36}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F2DCD25E-82EF-47EE-95D9-8E4CBB789D36}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9C732B73-5E22-4228-92A4-9FDE607EADE9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9C732B73-5E22-4228-92A4-9FDE607EADE9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9C732B73-5E22-4228-92A4-9FDE607EADE9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9C732B73-5E22-4228-92A4-9FDE607EADE9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9C5CD821-DCBA-48D7-9F7E-878E903041A3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9C5CD821-DCBA-48D7-9F7E-878E903041A3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9C5CD821-DCBA-48D7-9F7E-878E903041A3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9C5CD821-DCBA-48D7-9F7E-878E903041A3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{61BF8E4B-56B9-4FB3-929B-1BB1800BC9A6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{61BF8E4B-56B9-4FB3-929B-1BB1800BC9A6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{61BF8E4B-56B9-4FB3-929B-1BB1800BC9A6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{61BF8E4B-56B9-4FB3-929B-1BB1800BC9A6}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal

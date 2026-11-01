@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <RootNamespace>OFDR.App</RootNamespace>
+    <AssemblyName>OFDR.App</AssemblyName>
+    <PlatformTarget>x64</PlatformTarget>
+    <ApplicationHighDpiMode>PerMonitorV2</ApplicationHighDpiMode>
+    <ApplicationIcon>Assets\guangmai.ico</ApplicationIcon>
+  </PropertyGroup>
+  <ItemGroup>
+    <Content Include="Assets\guangmai.ico">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\OFDR.Contracts\OFDR.Contracts.csproj" />
+    <ProjectReference Include="..\OFDR.Metrics\OFDR.Metrics.csproj" />
+    <ProjectReference Include="..\OFDR.Engine\OFDR.Engine.csproj" />
+    <ProjectReference Include="..\OFDR.Infrastructure\OFDR.Infrastructure.csproj" />
+    <ProjectReference Include="..\OFDR.Replay\OFDR.Replay.csproj" />
+  </ItemGroup>
+</Project>

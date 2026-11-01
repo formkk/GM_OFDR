@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<assembly manifestVersion="1.0" xmlns="urn:schemas-microsoft-com:asm.v1">
+  <assemblyIdentity version="1.0.0.0" name="OFDRDataReceiver.app" />
+
+  <!-- 高 DPI 感知改由 csproj 的 <ApplicationHighDpiMode>PerMonitorV2</ApplicationHighDpiMode>
+       统一配置（WFAC010：不建议在 manifest 中重复声明 dpiAwareness/dpiAware）。
+       此处仅保留 longPathAware，支持超过 260 字符的文件路径。 -->
+  <application xmlns="urn:schemas-microsoft-com:asm.v3">
+    <windowsSettings>
+      <longPathAware xmlns="http://schemas.microsoft.com/SMI/2016/WindowsSettings">true</longPathAware>
+    </windowsSettings>
+  </application>
+</assembly>

@@ -1,0 +1,98 @@
+# OFDR 峰值检测参数配置（key=value，# 开头为注释）
+# 修改后重新运行程序即可生效（无需重新编译）。
+# 文件需放在程序运行目录（exe 同目录）；缺失时使用代码内默认值。
+
+# 阈值（简化峰值检测）：数值超过此值（dBm）的连续段即视为一个峰
+PeakThresholdDb = -85.0
+
+# 峰合并间隔（行）：相邻两个过阈段之间的未过阈行数 ≤ 此值，则合并为同一个峰；> 此值视为两个独立峰
+PeakMergeGap = 50
+
+# ---- 窗口宽度配置（界面输入框已移除，统一在此配置）----
+# 通道超时（ms）
+ChannelTimeoutMs = 10000
+# 积分窗口宽度（cm）：用于局部平均半窗 AvgHalfWindow，行 = cm / 0.04（10cm → 半窗 250 行）
+IntegralWindowCm = 10
+IntegralWindowCmMin = 0.1
+IntegralWindowCmMax = 100.0
+# 波峰检查窗口（cm）：用于旁瓣过滤 PeakLocalWindow，行 = cm / 0.02（物理行距 0.0002 m/行 = 0.02 cm/行；1cm → 50 行）
+WindowWidthCm = 1.0
+WindowWidthCmMin = 0.1
+WindowWidthCmMax = 5.0
+
+# ---- 文件保存权限（保存路径非空 且 此处开启 才保存对应文件）----
+SaveRaw = true        # 是否保存 ofdr_raw_{stamp}.dat（原始数据）
+SaveLines = true      # 是否保存 ofdr_lines_{stamp}.txt（逐帧数值行，行号=波峰 Index）
+SaveMetrics = true    # 是否保存 ofdr_metrics_{stamp}.csv（指标结果）
+SaveBadPeaks = true   # 是否保存 ofdr_badpeaks_{stamp}.txt（未检出恰好 8 个峰的整帧数值行，单独记录便于排查）
+
+# 收到 OSI 握手后发送的 DELAY 延迟值（ms）；指令格式为 DELAY_<DelayMs>，其后照常发送 START
+DelayMs = 420
+# START 发送后固定等待（ms）：留出设备进入稳定流模式的时间，让最初过渡帧在首个通道就绪前被闸门丢弃
+StartSettleMs = 7000
+
+# ---- 基准/参考值：SRI / SRO / SRB / SRC 各 8 路（通道 1~8），初值均为 0 ----
+# 代码内以数组下标 1~8 访问（下标 0 未使用），例如 DataReceiver.Sri[3] 对应 SRI-3
+# 标量基准 SRO（不带通道后缀）→ 代码内 DataReceiver.SroBase
+SRO = 1
+
+SRI-1 = 8
+SRI-2 = 7
+SRI-3 = 6
+SRI-4 = 5
+SRI-5 = 4
+SRI-6 = 3
+SRI-7 = 2
+SRI-8 = 1
+
+SRO-1 = 1
+SRO-2 = 2
+SRO-3 = 3
+SRO-4 = 4
+SRO-5 = 5
+SRO-6 = 6
+SRO-7 = 7
+SRO-8 = 8
+
+SRB-1 = 8
+SRB-2 = 7
+SRB-3 = 6
+SRB-4 = 5
+SRB-5 = 4
+SRB-6 = 3
+SRB-7 = 2
+SRB-8 = 1
+
+SRC-1 = 1
+SRC-2 = 2
+SRC-3 = 3
+SRC-4 = 4
+SRC-5 = 5
+SRC-6 = 6
+SRC-7 = 7
+SRC-8 = 8
+
+# 以下为原"局部极大+半高宽+旁瓣抑制"算法的参数（当前未使用，保留以备切回）
+NoiseFloorDbm = -125.0
+PeakMarginDb = 20.0
+
+# 最小峰间距（行）与紧邻峰幅差阈值（dB）
+PeakMinDistance = 10
+PeakRelDropDb = 3.0
+
+# 质心半窗（行，±N）
+PeakCentroidHalfWindow = 5
+
+# 局部旁瓣过滤：窗口（行）与幅差阈值（dB）
+# 注：PeakLocalWindow 运行时由 config 的 WindowWidthCm(cm) 换算得到（行 = WindowWidthCm / 0.02），此处值仅作缺失时的兜底
+PeakLocalWindow = 100
+PeakLocalDropDb = 8.0
+
+# 峰宽下限 / 上限（行，3dB 半高宽）
+MinPeakWidth = 1
+MaxPeakWidth = 100
+
+# ---- 界面状态（程序自动保存，勿手动修改）----
+# 上一次使用的两个串口：光开关地址 / 光开关矩阵地址（留空表示未保存）
+OpticalPort = COM17
+MatrixPort = COM19

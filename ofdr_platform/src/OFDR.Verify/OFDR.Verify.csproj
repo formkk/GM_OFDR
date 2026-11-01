@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <RootNamespace>OFDR.Verify</RootNamespace>
+    <AssemblyName>OFDR.Verify</AssemblyName>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\OFDR.Contracts\OFDR.Contracts.csproj" />
+    <ProjectReference Include="..\OFDR.Metrics\OFDR.Metrics.csproj" />
+    <ProjectReference Include="..\OFDR.Engine\OFDR.Engine.csproj" />
+    <ProjectReference Include="..\OFDR.Infrastructure\OFDR.Infrastructure.csproj" />
+    <ProjectReference Include="..\OFDR.Replay\OFDR.Replay.csproj" />
+  </ItemGroup>
+</Project>

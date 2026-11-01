@@ -1,0 +1,16 @@
+# .NET build output
+bin/
+obj/
+*.user
+.vs/
+
+# Rider/ReSharper
+.idea/
+
+# OS / editor
+Thumbs.db
+Desktop.ini
+
+# Build artifacts copied to output
+*.exe
+*.dll

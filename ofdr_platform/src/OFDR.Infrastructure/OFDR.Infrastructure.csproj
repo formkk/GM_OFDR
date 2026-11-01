@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <RootNamespace>OFDR.Infrastructure</RootNamespace>
+    <AssemblyName>OFDR.Infrastructure</AssemblyName>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\OFDR.Contracts\OFDR.Contracts.csproj" />
+    <ProjectReference Include="..\OFDR.Metrics\OFDR.Metrics.csproj" />
+  </ItemGroup>
+</Project>
