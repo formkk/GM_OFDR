@@ -2,7 +2,7 @@
 
 | 项 | 内容 |
 | --- | --- |
-| 版本 | V0.9（架构基线草案）+ 一期实施回填 + 距离域显示回填（2026-10-31） |
+| 版本 | V0.9（架构基线草案）+ 一期实施回填 + 距离域显示回填（2026-10-31）+ 审核修订（2026-11-01） |
 | 状态 | 可评审；标记 `TBD` 处待资料/决策 |
 | 对应需求 | `SRS_OFDR_Platform_v0.9.md` |
 | 实施状态 | 一期 v0.1.0（`src/OFDR.Platform.sln`）：Contracts / Metrics / Engine / Infrastructure / Replay / App / Verify 七个程序集；整机 TCP + 离线合成闭环已实现并验证；距离域只读曲线、事件表与双光标已落地 |
@@ -38,9 +38,16 @@
 | `references/ofdr_platform.png` | 四层架构图 | §0.1、§2 的架构依据 |
 | 初步调研（未随仓库提供） | 产品背景与光链路说明 | 仅背景，不构成本平台软件需求；指标口径以 SRS 为准 |
 | `references/keysight` | N7700 IL Engine 用户指南 | 测法与术语参照，**非 OFDR 算法来源**；其“保存原始数据以便重算”对应 SRS FR-DATA-01 |
-| Luna OBR 4600/6200 距离域界面（观察/截图） | 距离域曲线、事件列表、双光标读数布局 | 仅 UI 形态参考，不涉及算法；对应 SRS FR-VIS-01~06 |
+| `references/luna`（Luna OBR 4600/6200 官方 PDF + 对照总结） | 距离域曲线、事件列表、双光标读数布局 | 仅 UI 形态参考，不涉及算法，**非需求来源**；对应 SRS FR-VIS-01~06。明细与逐项对照见下方 |
 
-> 引用口径：一期源码中检索 `DllImport`、`qt_acq`、`ofdr.dll`、`detect.dll` 均无匹配，上述厂商资料不参与一期运行。Keysight 文档为扫波长 IL 测法，无距离域与峰值检测，不得表述为“按 Keysight 算法实现”；其 Reference 基线对应本设计的 SRI/SRO/SRB/SRC 基准快照。参考资料的需求侧用途与来源标签见 SRS §1.4、§1.5。
+Luna 资料明细（`references/luna/`，不参与构建、不参与算法）：
+
+- `OBR_6200_Series_User_Guide_6225_6235_Rev001.pdf`（DOC000015 Rev001，32 页）：一期距离域布局的主要参照。上下分区与事件表 p.7；光标四模式 p.8–11；事件表、事件类型、宽度、标记与双击 p.12–14；文件与配置 p.15–26。
+- `OBR_4600_User_Guide_UG6_SW3.12.0.pdf`（UG6 / SW3.12.0，236 页）：主窗口六区与双图 p.18–19；光标、图例、积分区 p.72–73；LPA 事件列表字段 p.77、p.85（**不采纳**其 Pass/Fail 与多 trace）。
+- `LUNA_Data_Sheet_OBR_4600_V2.pdf`（V2，4 页）、`LUNA_Data_Sheet_6225_2023.pdf`、`LUNA_Data_Sheet_6235_2023.pdf`：仅用于确认功能边界；其性能参数不是本平台指标。
+- 逐项对照与“明确不照搬”清单：`references/luna/Luna_OBR_UI_参考总结.md`（整理日期 2026-11-01，**晚于** §13.5 的 2026-10-31 落地回填，属事后溯源，不作为设计当时的证据）。
+
+> 引用口径：一期源码中检索 `DllImport`、`qt_acq`、`ofdr.dll`、`detect.dll` 均无匹配，上述厂商资料不参与一期运行。Keysight 文档为扫波长 IL 测法，无距离域与峰值检测，不得表述为“按 Keysight 算法实现”；其 Reference 基线对应本设计的 SRI/SRO/SRB/SRC 基准快照。Luna 资料只作 SDD 设计层的 UI 形态参照，未进入 SRS §1.4；FR-VIS-01~06 的来源标签仍为 `[DEMO]`/`[决策]`。参考资料的需求侧用途与来源标签见 SRS §1.4、§1.5。
 
 ---
 
@@ -99,6 +106,8 @@
 - `OFDR.Replay` 依赖 Contracts + Metrics；提供合成谱源与历史 CSV 读取。
 - `OFDR.App` 是组合根：允许引用 Infrastructure/Replay 的具体实现来装配，但不实现业务规则。
 - 程序集数量 7 个（含 `OFDR.Verify` 验证控制台），避免过度切分。
+
+> 现状差异：`OFDR.Infrastructure.csproj` 多出一个对 `OFDR.Metrics` 的项目引用（源码未使用），属待清理的多余引用，不改变上表的依赖方向。
 
 ### 2.2 部署视图
 
@@ -174,7 +183,7 @@
 | `TriggerMode` | enum | Software / ExtRising / ExtFalling |
 | `TriggerDelayMs` | double | 图上的触发延时 |
 | `SegmentCount` | int | 多段采集段数 |
-| `UploadRange` | (int,int) | 上传数据起止范围（图上第 5 项设置） |
+| `UploadFrom` / `UploadTo` | int / int | 上传数据起止行（图上第 5 项设置）；默认 `0` / `-1`（至末行） |
 | `CalibrationId` | string | 本次使用的校准集合 |
 
 不变量：`Points>0`；`TriggerDelayMs>=0`；`ChannelIn/Out ∈ [1,8]`；分辨率与点数换算必须显式记录在元数据中。
@@ -206,9 +215,9 @@
 | `Values` | double[] | 数值数组；整机路径为逐点 dBm | B+C：物理量需浮点，`decimal` 对含噪声的量无意义；数组便于逐帧 80,619 点处理 |
 | `ValueUnit` | string | `"dBm"` / `"mW"`；其他单位返回 `UnsupportedUnit` | C：单位不写死，由使用方校验而非类型强制 |
 | `Metadata` | `ScanMetadata` | 元数据（见下） | C：与数值分离，使校验和只覆盖轴+数值+单位 |
-| `Quality` | `ScanQuality` | `Ok/Empty/AxisInvalid/CountMismatch/ContainsNonFinite` | C：取值封闭，可穷举 `switch`，并与 `Validate()` 错误一一对应 |
+| `Quality` | `ScanQuality` | `Ok/Empty/AxisInvalid/CountMismatch/ContainsNonFinite` | C：取值封闭，由采集源构造时声明；**一期整机路径恒为 `Ok`，异常判定由 `Validate()` 返回值计算，不读此字段**（见 §13.5） |
 | `SchemaVersion` | int | 默认 1 | C：单调递增整数，便于按版本分支 |
-| 校验和 | `StandardScanCodec.ComputeChecksum` | 只覆盖轴 + 数值 + 单位（SHA256），不覆盖时间戳等易变元数据 | C：时间戳每帧变化，纳入校验会使结果不可复现 |
+| （无存储字段） | `StandardScanCodec.ComputeChecksum(scan)` | 按需计算，只覆盖轴 + 数值 + 单位（SHA256）；时间戳等易变元数据不参与，结果中不落该值 | C：时间戳每帧变化，纳入校验会使结果不可复现；`StandardScan` 本身不含校验和成员 |
 
 **`ScanAxis` 字段**
 
@@ -279,46 +288,55 @@
 
 ## 5. 接口设计
 
+> 下列为**契约签名示意**，以 `ofdr_platform/src` 源码为准；本节只保留跨层契约，Engine/App 的内部实现形状不在文档中复写。
+
 ```csharp
 public interface IScanSource : IDisposable
 {
     string Name { get; }
-    void Open();                                            // 建立连接/握手（离线源空实现）
-    void StartStream();                                     // 开始数据流（在线源发送 START）
-    long BeginChannel(int channelIn, int channelOut);       // 切换通道并递增代次
-    bool TryTake(TimeSpan timeout, out StandardScan? scan); // 取当前代次的标准扫描
-    void Stop();                                            // 幂等停止（在线源发两次 STOP）
-    long DroppedFrames { get; }                             // 代次不符被丢弃的残留帧数
+    void Open();
+    void StartStream();
+    long BeginChannel(int channelIn, int channelOut);
+    bool TryTake(TimeSpan timeout, out StandardScan? scan);
+    void Stop();
+    long DroppedFrames { get; }
 }
 
 public readonly record struct SwitchReply(bool Ok, string Command, string? Response, double ElapsedMs, string? Error);
 
-public interface IOpticalSwitch : IDisposable { void Open(); SwitchReply Select(int channelIn); }
-public interface IMatrixSwitch : IDisposable { void Open(); SwitchReply Select(int channelIn, int channelOut); }
+public interface IOpticalSwitch : IDisposable
+{
+    string Name { get; }
+    void Open();
+    SwitchReply Select(int channelIn);
+}
+
+public interface IMatrixSwitch : IDisposable
+{
+    string Name { get; }
+    void Open();
+    SwitchReply Select(int channelIn, int channelOut);
+}
 
 public static class MetricCalculator
 {
     public static MeasurementResult Compute(StandardScan scan, MetricsConfig config, ReferenceValues references);
     public static MeasurementResult Compute(StandardScan scan, MetricsConfig config, ReferenceValues references, string configId);
 }
-
-public sealed class TestEngine : IDisposable
-{
-    public event Action<string>? Log;
-    public event Action<StandardScan>? ScanProduced;      // 每帧原始扫描；订阅者只读，禁止改 Values
-    public event Action<MeasurementResult>? ResultProduced;
-    public event Action<ChannelAggregate>? ChannelCompleted;
-    public event Action<string>? StateChanged;
-}
-
-public sealed class DistancePlot : Control
-{
-    public void SetTrace(ScanAxis axis, double[] dbm);       // 每帧刷新曲线
-    public void SetEvents(IReadOnlyList<DistanceEvent> events); // 事件刻度 + 表联动；首次有事件时初始化 A/B
-    public void FocusOn(double distanceM);                   // 光标 A 定位（事件表双击）
-    public void Clear();
-}
 ```
+
+Engine / App 内部成员只记语义，不记签名：
+
+| 成员 | 语义 | 约束 |
+| --- | --- | --- |
+| `TestEngine.ScanProduced` | 每帧原始扫描，供曲线与事件表 | `StandardScan.Values` 只读，禁止就地修改；编排线程触发，UI 经 `BeginInvoke` 回投 |
+| `TestEngine.ResultProduced` | 每帧指标结果 | 与 `ScanProduced` 独立；结果回调内写 CSV |
+| `TestEngine.ChannelCompleted` | 通道结束聚合 | 取消场景当前仍记 `Completed`（见 §13.5 已知限制） |
+| `TestEngine.StateChanged` | 状态机文本 | 编排线程触发，UI 经 `BeginInvoke` 回投 |
+| `DistancePlot.SetTrace` | 灌入一帧曲线（dBm） | 强制重算包络；光标只在首次有事件时初始化 |
+| `DistancePlot.SetEvents` | 灌入事件列表 | 事件刻度与表格联动；事件数不变时原地更新单元格 |
+| `DistancePlot.FocusOn` | 光标 A 定位到指定距离 | 事件表双击调用；距离钳制到轴范围 |
+| `DistancePlot.Clear` | 清空曲线、事件与光标 | 停止或新一轮开始时调用 |
 
 设计要点：
 
@@ -383,10 +401,26 @@ TestEngine.Run: source.Open()  → OSI → DELAY_<ms> → SETOK
 
 ### 6.4 单位转换唯一位置
 
-- 原始 int16 → 物理量：采集适配器（显式 `LsbScale`）。
-- 功率归一化与线性→dB：`Processing` 出口。
-- 基准修正（SRI/SRO/SRB/SRC）：`Metrics` 内部，读取 `CalibrationSnapshot`。
+一期（整机 TCP 路径）只有第 3 条生效；第 1、2 条随二期采集板/处理层落地（SRS §4.9）。
+
+- 原始 int16 → 物理量：采集适配器（显式 `LsbScale`）——二期。
+- 功率归一化与线性→dB：`Processing` 出口——二期。
+- 基准修正（SRI/SRO/SRB/SRC）：`Metrics` 内部，读取 `ReferenceValues` 快照（下标 1~8，下标 0 未使用）。
 - UI 与持久化不做任何换算，只格式化。
+
+### 6.5 状态机（FR-ORC-03 一期实况）
+
+`TestEngine.Run` 通过 `StateChanged` 上报 4 个状态文本，与 SRS FR-ORC-03 的六态是**简化映射**，不等价：
+
+| 一期状态文本 | 触发点 | 对应 SRS 六态 | 说明 |
+| --- | --- | --- | --- |
+| `连接中` | `Run` 开始，`Open` 前 | 空闲 → 配置 | 无独立「配置」状态 |
+| `运行中` | `StartStream` 成功后；通道切换期间沿用 | 扫描 / 切换 | 切换与扫描共用同一文本 |
+| `已停止` | 取消令牌触发 | 停止 | — |
+| `已完成` | 全部轮次跑完 | 停止 | — |
+| （无） | 异常路径 | 错误 | 异常直接抛出，由 `finally` 收尾、App 捕获提示 |
+
+差距：缺「空闲」「配置」「切换」「错误」四个显式状态，切换期间无状态区分。补齐六态需扩展状态枚举与 UI 映射，属行为变更，须先改 SRS 验收方式与回归用例；当前在 §13.4 记为部分实施。
 
 ---
 
@@ -397,7 +431,7 @@ TestEngine.Run: source.Open()  → OSI → DELAY_<ms> → SETOK
 | Device | 开卡失败、读超时、断线 | 状态机进入 Error，允许重连/重试；上报 UI |
 | Parameter | 采样率非法、点数超限 | 配置阶段拒绝，给出合法范围 |
 | Data | 帧长度不符、切帧失败、NaN | 隔离并记录 `bad frame`，不参与统计 |
-| Algorithm | 峰数不符、处理失败 | 结果 `Status=BadPeaks`，不输出 0 |
+| Algorithm | 峰数不符、处理失败 | 结果 `Status=Invalid`、`Error=NotEightPeaks`（或 `ComputationFailed`），不输出 0 |
 | Business | 校准缺失、门限冲突 | 阻止测试或标记无效 |
 
 日志：结构化（时间、级别、模块、通道、帧号、耗时）；默认级别不逐行打印数据；文件轮转按大小与数量；单次运行日志目标需相对现状（55.9 MB/次）显著下降（TBD-10）。
@@ -411,7 +445,7 @@ TestEngine.Run: source.Open()  → OSI → DELAY_<ms> → SETOK
 | 配置 | 内容 | 一期实现 |
 | --- | --- | --- |
 | `DeviceProfile` | TCP 地址/端口、延时/稳定等待、队列容量 | `TcpScanOptions`（`Host`、`Port`、`DelayMs`、`DelaySettleMs`、`StartSettleMs`、`RowSpacingM`、`QueueCapacity`） |
-| `AlgorithmProfile` | 阈值、合并间隔、A/D 行、局部平均半窗、长度/光程系数 | `MetricsConfig`（默认 -85 dBm / 50 / 2500 / 32500 / 250 / 0.0002） |
+| `AlgorithmProfile` | 阈值、合并间隔、A/D 行、局部平均半窗、长度系数、光程系数 | `MetricsConfig`（7 字段默认：`PeakThresholdDbm=-85`、`PeakMergeGap=50`、`MarkARow=2500`、`MarkDRow=32500`、`AvgHalfWindow=250`、`LinkLenPerRow=0.0002`、`DutPathPerRow=0.0002`） |
 | `BusinessProfile` | 通道范围、采样帧数、超时、轮次 | `EngineOptions`（`InFrom/InTo/OutFrom/OutTo`、`SamplesPerChannel=5`、`ChannelTimeoutMs=10000`、`Rounds`、`Infinite`） |
 | 结果基准 | SRI/SRO/SRB/SRC 各 8 路 + 标量 SRO | `ReferenceValues`（下标 1~8，下标 0 未使用） |
 
@@ -437,11 +471,13 @@ PC 侧发行包必须包含：
 
 | 类别 | 文件 |
 | --- | --- |
-| 应用 | `OFDR.Platform.exe` + 平台程序集 + `.deps.json` / `.runtimeconfig.json` |
+| 应用 | `OFDR.App.exe`（当前程序集名，二期若改名另行登记） + 平台程序集 + `.deps.json` / `.runtimeconfig.json` |
 | 采集 | 无（采集与收发在板卡固件内，经网络输出；若最终采用厂商 SDK/驱动，按 TBD-15 结论另行补充） |
 | 处理 | `ofdr.dll` 及其依赖 |
 | 结果参考 | `detect.dll`（可选） |
 | 第三方 | `libfftw3/3f/3l-3.dll`、`libliquid.dll`、`pthreadGC2/VC2.dll`、`elog.dll`、`wpcap.dll`、`Packet.dll` |
+
+> 清单取自 `references/` 现有发行包，不是对二期依赖的确认；二期改走网络采集板后是否仍需 `ofdr`/`detect` 与上述第三方 DLL，按 TBD-15 结论复核。
 
 启动自检：x64 校验、处理库存在性与加载、采集板固件版本与连通性检查（协议待定，TBD-15）、串口枚举、网口连通性；失败时输出缺失清单与修复建议，不进入测试。
 
@@ -504,12 +540,7 @@ PC 侧发行包必须包含：
 
 ### 12.2 未决项
 
-- 采集板网络流式读取的具体语义（协议、阻塞粒度、超时、多段回调）——需板卡/固件资料（SRS TBD-15、TBD-09/TBD-10）。
-- `ofdr` 的最大点数、耗时与线程安全——需算法说明（TBD-03）。
-- 整机协议与开关命令的正式文档（TBD-04/TBD-06）。
-- 精度/重复性指标与参照仪器数据（TBD-01）。
-- 历史 run 缺失 80,619 点 raw 全谱，无法逐值反算 IL/RL（TBD-13）。
-- MES/权限/审计范围（TBD-08）。
+不重复登记，逐条见 SRS §9.1：采集板协议与流式语义（TBD-15/TBD-09/TBD-10）、处理库点数与线程安全（TBD-03）、整机协议与开关命令（TBD-04/TBD-06）、精度与重复性（TBD-01）、历史 run 缺 80,619 点 raw 全谱（TBD-13）、MES/权限/审计（TBD-08）。
 
 ---
 
@@ -533,23 +564,9 @@ dotnet build OFDR.Platform.sln
 dotnet run --project OFDR.Verify --no-build
 ```
 
-结果（当前 11 项全部通过；第 4、5 项为 2026-10-31 距离域回填新增）：
+结果：`PASS 11，FAIL 0，SKIP 0`，退出码 0。
 
-| # | 用例 | 结论 |
-| --- | --- | --- |
-| 1 | 契约 `StandardScan`：Validate / JSON / 校验和 | PASS |
-| 2 | 契约 `MetricsConfig`：配置快照标识 | PASS |
-| 3 | 峰值检测：合并间隔边界与质心 | PASS |
-| 4 | 包络降采样：min/max 保留窄峰 | PASS |
-| 5 | 事件抽取：3 峰位置/段插损/累积（不要求 8 峰） | PASS |
-| 6 | 指标公式：8 峰手算基准（IL/RL/光程/链路） | PASS |
-| 7 | 指标公式：非 8 峰判无效 | PASS |
-| 8 | 整机 TCP：握手 + 分片/粘包收帧 + 通道快照 | PASS |
-| 9 | 编排闭环：离线合成 IN×OUT 2×2、每通道 2 帧 | PASS |
-| 10 | 迁移：`config.txt` 读取 | PASS |
-| 11 | 历史基准数据：`ofdr_metrics` CSV 读取与表头一致 | PASS |
-
-汇总：`PASS 11，FAIL 0，SKIP 0`，退出码 0。
+用例名与资产见 §10（其前 11 行即当前执行顺序；第 4、5 项为 2026-10-31 距离域回填新增），本节只记汇总结论，不复制用例表。
 
 ### 13.3 未验证项（明确声明）
 
@@ -570,9 +587,9 @@ dotnet run --project OFDR.Verify --no-build
 | FR-MET-02/12 | 未实施 | 备选算法与 `detect` 交叉验证，列二期 |
 | FR-VIS-01~06 | 已实施 | 距离域页、只读曲线（min/max 包络）、事件表（位置/回损/段插损/累积/宽度）、双光标与 ΔRL/间距、双击联动；事件不落盘 |
 | FR-VIS-07 | 未实施 | 事件类型判定、group/span、基线差分，列二期（SRS TBD-14） |
-| FR-INS-01/02/04/05 | 已实施 | 接口 + 模拟实现（真实命令文本、并行切换、计时） |
+| FR-INS-01/02/04/05 | 已实施 | 接口 + 模拟实现（真实命令文本、并行切换、计时）；无独立断言用例，由离线闭环用例间接覆盖 |
 | FR-INS-03 | 未实施 | 真实串口回显/超时，一期无串口依赖 |
-| FR-ORC-01~05/07 | 已实施 | 通道遍历、采样数、超时跳过、状态事件、代次、聚合 |
+| FR-ORC-01~05/07 | 部分实施 | 通道遍历、采样数、超时跳过、代次、聚合已落地；FR-ORC-03 的状态文本只到 4 态，未覆盖 SRS 六态（见 §6.5） |
 | FR-ORC-06 | 未实施 | 断线仅提示并结束本轮 |
 | FR-DATA-01、FR-DATA-07~10 | 未实施 | 一期不落盘原始帧；留存与清理按 SRS 需求、本文 §14 设计 |
 | FR-DATA-02/05 | 已实施 | 逐帧结果 CSV（前 18 列与 demo 一致）+ 日志文件 |
@@ -580,6 +597,8 @@ dotnet run --project OFDR.Verify --no-build
 | FR-CAL-01~04 | 部分实施 | 仅结果基准 SRI/SRO/SRB/SRC 经 `config.txt` 读取；无校准版本管理 |
 
 ### 13.5 距离域显示回填（2026-10-31）
+
+**参考来源（事后补记）**：UI 形态参照 `references/luna` 的 6200/4600 手册；文件、版本、页码与“不照搬”清单见 §0.2。对照总结整理于 2026-11-01，晚于本节的实现与验证日期，属事后溯源；SRS FR-VIS-01~06 的来源标签仍为 `[DEMO]`/`[决策]`，Luna 不是需求来源。
 
 范围与约束：
 
@@ -602,14 +621,18 @@ dotnet run --project OFDR.Verify --no-build
 已知限制（未改）：
 
 - 事件表在 62/38 分割下 8 行需滚动一格才可见。
+- 段插损按“线性域平均后转 dBm 再相减”（10log 功率比）计算，与 SRS §1.3 的 IL“往返功率差的一半”口径不一致；需确认段插损语义是往返值还是单向值，确认前不改代码、不改夹具与 CSV。
 - 取消采集时通道聚合仍记 `Completed`；要区分「已取消」需扩展 `ChannelRunStatus`。
 - 4M 点真实谱的刷新帧率未验证；若卡顿，预案是把包络计算移出 UI 线程。
+- `StandardScan.Quality` 与 `StandardScanCodec.ComputeChecksum` 在一期运行链路中未被消费：`Quality` 恒为 `Ok`，校验和只在契约用例中计算。
 
 ---
 
 ## 14. 二期设计草案：原始数据留存与清理
 
 状态：设计草案，二期实施，不在 v0.1.0 范围；关联 FR-DATA-01、TBD-13。
+
+> 本节所有类型名、配置键、目录与文件命名均为草案占位；二期落地时以实际实现回填，不作为已定 API 契约。
 
 ### 14.1 目标与一期最小口子
 
@@ -636,12 +659,12 @@ manifest.sha256       # 每文件校验和与行数
 
 策略本身是需求（SRS FR-DATA-07~10），这里只给出它在设计中的承载位置：
 
-| 策略项 | 设计承载 |
+| 策略项 | 设计承载（占位描述，二期落地时回填） |
 | --- | --- |
-| 保存粒度（首末帧 / 异常全帧 / 手动全存） | `RetentionPolicy.SaveMode`，由运行参数注入 |
-| 空间预算 | `RetentionPolicy.QuotaBytes`，运行结束统计占用 |
-| 保留期（天数与运行次数） | `RetentionPolicy.MaxAgeDays` / `MaxRuns`，两者同时满足才删除 |
-| 豁免（NG/异常/人工锁定） | `run.json` 的 `complete` + `reviewStatus`/`locked` 标记 |
+| 保存粒度（首末帧 / 异常全帧 / 手动全存） | 运行参数中的保存模式，运行开始时注入 |
+| 空间预算 | 运行参数中的空间预算，运行结束统计占用 |
+| 保留期（天数与运行次数） | 运行参数中的保留天数与保留次数，两者同时满足才删除 |
+| 豁免（NG/异常/人工锁定） | `run.json` 的 `complete` 与人工复核/锁定标记 |
 | 触发时机 | 运行结束检查；采集过程中不删除 |
 
 ### 14.4 清理机制（实现）
