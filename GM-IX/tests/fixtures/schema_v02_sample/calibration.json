@@ -1,0 +1,1 @@
+{"schemaVersion":"0.2","calibrationId":"CAL-TEST-0001","createdAtUtc":"2026-11-04T15:00:00Z","operator":"test","configHash":"sha256:test","method":"attenuator","distScale":0.9515,"rlOffsetK":-192,"rlCurveKFile":null,"ilSlope":0.5361,"ilIntercept":-0.1,"triggerThresholdDb":35,"reference":{"type":"attenuator","value":3,"serial":"REF-001"},"validationPoints":[]}

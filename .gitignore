@@ -9,6 +9,11 @@ obj/
 
 # 发布包（本地打包产物，不入库）
 dist/
+*.zip
+
+# GM-IX 原始采集数据与运行时（体积大，不入库）
+GM-IX/results/
+GM-IX/runtime/
 
 # Python 缓存
 __pycache__/
@@ -19,3 +24,6 @@ __pycache__/
 Thumbs.db
 Desktop.ini
 .DS_Store
+
+# Office 临时锁文件
+~$*
