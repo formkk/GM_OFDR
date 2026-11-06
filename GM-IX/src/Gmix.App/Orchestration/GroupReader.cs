@@ -19,6 +19,8 @@ namespace Gmix.App.Orchestration
         public double[] Ps;
         /// <summary>dB 功率谱（ps_db.f64，检测出口 20log10 一次得到，供曲线使用）。</summary>
         public double[] PsDb;
+        /// <summary>历史组缺 ps_db.f64 时由线性 ps 临时换算（只用于显示，不落盘、不参与指标）。</summary>
+        public bool PsDbConvertedFromLinear;
         public double[] Baseline;
         public EventsDocument Events;
         public SummaryDocument Summary;
@@ -93,7 +95,22 @@ namespace Gmix.App.Orchestration
             snapshot.Dist = ArrayStore.ReadDoubles(Path.Combine(scanDir, "dist.f64"), 0);
             snapshot.Ps = ArrayStore.ReadDoubles(Path.Combine(scanDir, "ps.f64"), 0);
             string psDbPath = Path.Combine(scanDir, "ps_db.f64");
-            snapshot.PsDb = File.Exists(psDbPath) ? ArrayStore.ReadDoubles(psDbPath, 0) : null;
+            if (File.Exists(psDbPath))
+            {
+                snapshot.PsDb = ArrayStore.ReadDoubles(psDbPath, 0);
+            }
+            else if (snapshot.Ps != null && snapshot.Ps.Length > 0)
+            {
+                // 兼容 ps_db.f64 引入之前的历史组：仅用于显示，不写回、不参与指标计算
+                var converted = new double[snapshot.Ps.Length];
+                for (int i = 0; i < snapshot.Ps.Length; i++)
+                {
+                    double value = snapshot.Ps[i];
+                    converted[i] = value > 0 ? 20.0 * Math.Log10(value) : double.NaN;
+                }
+                snapshot.PsDb = converted;
+                snapshot.PsDbConvertedFromLinear = true;
+            }
             string baselinePath = Path.Combine(scanDir, "baseline.f64");
             snapshot.Baseline = File.Exists(baselinePath) ? ArrayStore.ReadDoubles(baselinePath, 0) : null;
 

@@ -147,7 +147,7 @@ namespace Gmix.Commit
 
                 avgScanId = "AV-" + DateTime.Now.ToString("yyyyMMdd-HHmmss") + "-" + validDirs.Count.ToString("D3");
                 detect = Detector.Process(average.Dist, average.Ps);
-                EventsDocument avgEvents = VendorMapper.ToEventsDocument(detect, avgScanId, SchemaVersion);
+                EventsDocument avgEvents = VendorMapper.ToEventsDocument(detect, avgScanId, SchemaVersion, range.startM);
 
                 string basis;
                 var repeatIl = new List<double>();

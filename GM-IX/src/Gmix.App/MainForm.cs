@@ -18,6 +18,7 @@ namespace Gmix.App
         readonly ResultsPage _results;
         readonly CalibrationPage _calibration;
         readonly HistoryPage _history;
+        TabControl _tabs;
 
         readonly ToolStripStatusLabel _connection = new ToolStripStatusLabel();
         readonly ToolStripStatusLabel _device = new ToolStripStatusLabel();
@@ -44,12 +45,13 @@ namespace Gmix.App
 
         void BuildLayout()
         {
-            var tabs = new TabControl();
-            tabs.Dock = DockStyle.Fill;
-            tabs.TabPages.Add(MakePage("测量主页", _measurement));
-            tabs.TabPages.Add(MakePage("事件表与结果", _results));
-            tabs.TabPages.Add(MakePage("校准向导", _calibration));
-            tabs.TabPages.Add(MakePage("历史检索", _history));
+            _tabs = new TabControl();
+            _tabs.Dock = DockStyle.Fill;
+            _tabs.TabPages.Add(MakePage("测量主页", _measurement));
+            _tabs.TabPages.Add(MakePage("事件表与结果", _results));
+            _tabs.TabPages.Add(MakePage("校准向导", _calibration));
+            _tabs.TabPages.Add(MakePage("历史检索", _history));
+            var tabs = _tabs;
 
             var status = new StatusStrip();
             _connection.Text = "未连接";
@@ -95,6 +97,7 @@ namespace Gmix.App
                 {
                     MeasurementSnapshot snapshot = GroupReader.LoadGroup(groupDir);
                     _results.ShowSnapshot(snapshot);
+                    _tabs.SelectedIndex = 1; // 双击历史组后直接切到结果页
                     _measurement.AppendLog("已打开历史组：" + snapshot.GroupId);
                 }
                 catch (Exception ex)

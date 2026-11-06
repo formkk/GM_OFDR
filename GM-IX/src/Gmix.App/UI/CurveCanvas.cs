@@ -16,7 +16,7 @@ namespace Gmix.App.UI
     {
         const int MarginLeft = 64;
         const int MarginRight = 18;
-        const int MarginTop = 14;
+        const int MarginTop = 40;
         const int MarginBottom = 34;
 
         double[] _dist = new double[0];
@@ -40,6 +40,10 @@ namespace Gmix.App.UI
         bool _hasCursor;
         int? _selectedPeakNo;
 
+        double? _cursorA;
+        double? _cursorB;
+        int _dragCursor = -1;
+
         public CurveCanvas()
         {
             SetStyle(ControlStyles.OptimizedDoubleBuffer | ControlStyles.AllPaintingInWmPaint
@@ -56,6 +60,8 @@ namespace Gmix.App.UI
                 _baseline = new double[0];
                 _peaks = new PeakInfo[0];
                 _range = null;
+                _cursorA = null;
+                _cursorB = null;
             }
             else
             {
@@ -69,6 +75,10 @@ namespace Gmix.App.UI
                 _xMax = _range != null && _range.endM > _range.startM
                     ? _range.endM
                     : (_dist.Length > 0 ? _dist[_dist.Length - 1] : 20);
+
+                // A/B 游标初始落在分析区间两端，与一期 UI 一致
+                _cursorA = _range != null && _range.startM > 0 ? _range.startM : _xMin;
+                _cursorB = _xMax;
             }
             Invalidate();
         }
@@ -105,6 +115,8 @@ namespace Gmix.App.UI
             DrawEnvelope(g, plot, _baseline, Color.SeaGreen, 1);
             DrawEnvelope(g, plot, _psDb, Color.RoyalBlue, 1);
             DrawPeaks(g, plot);
+            DrawCursors(g, plot);
+            DrawReadout(g, plot);
             DrawCursor(g, plot);
             DrawLegend(g, plot);
         }
@@ -201,26 +213,102 @@ namespace Gmix.App.UI
 
         void DrawPeaks(Graphics g, Rectangle plot)
         {
-            using (var font = new Font("Segoe UI", 8))
+            using (var font = new Font("Segoe UI", 7.5f))
             using (var brush = new SolidBrush(Color.Firebrick))
             using (var selected = new SolidBrush(Color.Red))
             {
+                int displayNo = 0;
                 foreach (PeakInfo peak in _peaks)
                 {
-                    bool isZero = peak.zeroPeak.HasValue && peak.zeroPeak.Value;
+                    bool isZero = (peak.zeroPeak.HasValue && peak.zeroPeak.Value)
+                        || (_range != null && _range.startM > 0 && peak.locM < _range.startM);
+                    if (!isZero) displayNo++;
                     if (isZero && !_showZeroPeak) continue;
                     double loc = peak.distanceM.HasValue ? peak.distanceM.Value : peak.locM;
                     if (loc < _xMin || loc > _xMax) continue;
 
                     int x = ToX(loc, plot);
-                    int y = ToY(peak.heightDbRel + _offsetK, plot);
+                    double level = peak.heightDbRel + _offsetK;
+                    int y = ToY(level, plot);
                     Point[] triangle = { new Point(x - 4, y - 8), new Point(x + 4, y - 8), new Point(x, y - 2) };
-                    g.FillPolygon(peak.peakNo.HasValue && _selectedPeakNo.HasValue
-                        && peak.peakNo.Value == _selectedPeakNo.Value ? selected : brush, triangle);
-                    if (peak.peakNo.HasValue)
-                        g.DrawString(peak.peakNo.Value.ToString(), font, brush, x - 3, y - 20);
+                    g.FillPolygon(!isZero && _selectedPeakNo.HasValue && displayNo == _selectedPeakNo.Value
+                        ? selected : brush, triangle);
+                    if (isZero) continue;
+
+                    // 与厂商 UI 一致：峰上方两行标注「P编号 距离」与电平；编号按显示顺序从 1 起
+                    string head = "P" + displayNo + " " + loc.ToString("0.0000") + " m";
+                    string tail = level.ToString("0.00") + " dB";
+                    SizeF headSize = g.MeasureString(head, font);
+                    SizeF tailSize = g.MeasureString(tail, font);
+                    float textX = x - Math.Max(headSize.Width, tailSize.Width) / 2;
+                    textX = Math.Max(plot.Left + 1, Math.Min(textX, plot.Right - Math.Max(headSize.Width, tailSize.Width) - 1));
+                    float textY = Math.Max(plot.Top + 1, y - 34);
+                    g.DrawString(head, font, brush, textX, textY);
+                    g.DrawString(tail, font, brush, textX, textY + 11);
                 }
             }
+        }
+
+        void DrawCursors(Graphics g, Rectangle plot)
+        {
+            using (var penA = new Pen(Color.FromArgb(192, 57, 43), 1.2f) { DashStyle = DashStyle.Dash })
+            using (var penB = new Pen(Color.FromArgb(39, 124, 74), 1.2f) { DashStyle = DashStyle.Dash })
+            using (var font = new Font("Segoe UI", 7.5f))
+            using (var white = new SolidBrush(Color.White))
+            {
+                if (_cursorA.HasValue) DrawCursorLine(g, plot, penA, Color.FromArgb(192, 57, 43), white, font, _cursorA.Value, "A");
+                if (_cursorB.HasValue) DrawCursorLine(g, plot, penB, Color.FromArgb(39, 124, 74), white, font, _cursorB.Value, "B");
+            }
+        }
+
+        void DrawCursorLine(Graphics g, Rectangle plot, Pen pen, Color color, Brush white, Font font,
+            double distance, string label)
+        {
+            int px = ToX(distance, plot);
+            if (px < plot.Left || px > plot.Right) return;
+            g.DrawLine(pen, px, plot.Top, px, plot.Bottom - 1);
+            using (var chip = new SolidBrush(color))
+            {
+                g.FillRectangle(chip, px - 7, plot.Top + 2, 14, 14);
+            }
+            g.DrawString(label, font, white, px - 4, plot.Top + 1);
+        }
+
+        void DrawReadout(Graphics g, Rectangle plot)
+        {
+            if (!_cursorA.HasValue && !_cursorB.HasValue) return;
+            using (var font = new Font("Segoe UI", 7.5f))
+            using (var brush = new SolidBrush(Color.FromArgb(70, 70, 70)))
+            {
+                double aLevel = _cursorA.HasValue ? LevelAt(_cursorA.Value) : double.NaN;
+                double bLevel = _cursorB.HasValue ? LevelAt(_cursorB.Value) : double.NaN;
+                string a = _cursorA.HasValue ? _cursorA.Value.ToString("0.000") + " m / " + Fmt(aLevel) : "—";
+                string b = _cursorB.HasValue ? _cursorB.Value.ToString("0.000") + " m / " + Fmt(bLevel) : "—";
+                string gap = _cursorA.HasValue && _cursorB.HasValue
+                    ? Math.Abs(_cursorB.Value - _cursorA.Value).ToString("0.000") + " m" : "—";
+                string delta = double.IsNaN(aLevel) || double.IsNaN(bLevel) ? "—" : (bLevel - aLevel).ToString("0.00") + " dB";
+                string text = "A " + a + "    B " + b + "    Δ间距 " + gap + "    Δ电平 " + delta;
+                g.DrawString(text, font, brush, plot.Left, 4);
+            }
+        }
+
+        static string Fmt(double value)
+        {
+            return double.IsNaN(value) ? "—" : value.ToString("0.0") + " dB";
+        }
+
+        /// <summary>游标处的显示电平（ps_db + 显示偏移）；按距离二分查找最近点。</summary>
+        double LevelAt(double distance)
+        {
+            if (_dist.Length == 0 || _psDb.Length != _dist.Length) return double.NaN;
+            int lo = 0, hi = _dist.Length - 1;
+            while (lo < hi)
+            {
+                int mid = (lo + hi) / 2;
+                if (_dist[mid] < distance) lo = mid + 1; else hi = mid;
+            }
+            if (lo > 0 && Math.Abs(_dist[lo - 1] - distance) <= Math.Abs(_dist[lo] - distance)) lo--;
+            return _psDb[lo] + _offsetK;
         }
 
         void DrawCursor(Graphics g, Rectangle plot)
@@ -248,26 +336,42 @@ namespace Gmix.App.UI
             using (var blue = new SolidBrush(Color.RoyalBlue))
             using (var green = new SolidBrush(Color.SeaGreen))
             {
-                g.DrawString("— 反射强度", font, blue, plot.Right - 164, plot.Top + 4);
-                g.DrawString("— baseline", font, green, plot.Right - 84, plot.Top + 4);
+                g.DrawString("— 反射强度", font, blue, plot.Right - 164, plot.Bottom - 14);
+                g.DrawString("— baseline", font, green, plot.Right - 84, plot.Bottom - 14);
             }
         }
 
         protected override void OnMouseDown(MouseEventArgs e)
         {
             base.OnMouseDown(e);
-            if (e.Button == MouseButtons.Left)
+            if (e.Button != MouseButtons.Left) return;
+
+            Rectangle plot = PlotRect();
+            if (plot.Contains(e.Location))
             {
-                _dragging = true;
-                _dragX = e.X;
-                _dragXMin = _xMin;
-                _dragXMax = _xMax;
+                int ax = _cursorA.HasValue ? ToX(_cursorA.Value, plot) : int.MinValue;
+                int bx = _cursorB.HasValue ? ToX(_cursorB.Value, plot) : int.MinValue;
+                if (Math.Abs(e.X - ax) <= 8) _dragCursor = 0;
+                else if (Math.Abs(e.X - bx) <= 8) _dragCursor = 1;
+
+                if (_dragCursor >= 0)
+                {
+                    MoveCursorTo(e.X, plot);
+                    Cursor = Cursors.Hand;
+                    return;
+                }
             }
+
+            _dragging = true;
+            _dragX = e.X;
+            _dragXMin = _xMin;
+            _dragXMax = _xMax;
         }
 
         protected override void OnMouseUp(MouseEventArgs e)
         {
             base.OnMouseUp(e);
+            _dragCursor = -1;
             if (e.Button == MouseButtons.Left) _dragging = false;
         }
 
@@ -276,16 +380,26 @@ namespace Gmix.App.UI
             base.OnMouseMove(e);
             _cursor = e.Location;
             _hasCursor = true;
-            if (_dragging)
+
+            Rectangle plot = PlotRect();
+            if (_dragCursor >= 0 && e.Button == MouseButtons.Left)
             {
-                Rectangle plot = PlotRect();
-                if (plot.Width > 0)
-                {
-                    double span = _dragXMax - _dragXMin;
-                    double shift = (_dragX - e.X) * span / plot.Width;
-                    _xMin = _dragXMin + shift;
-                    _xMax = _dragXMax + shift;
-                }
+                MoveCursorTo(e.X, plot);
+                return;
+            }
+
+            if (_dragging && plot.Width > 0)
+            {
+                double span = _dragXMax - _dragXMin;
+                double shift = (_dragX - e.X) * span / plot.Width;
+                _xMin = _dragXMin + shift;
+                _xMax = _dragXMax + shift;
+            }
+            else if (plot.Width > 0)
+            {
+                int ax = _cursorA.HasValue ? ToX(_cursorA.Value, plot) : int.MinValue;
+                int bx = _cursorB.HasValue ? ToX(_cursorB.Value, plot) : int.MinValue;
+                Cursor = Math.Min(Math.Abs(e.X - ax), Math.Abs(e.X - bx)) <= 8 ? Cursors.Hand : Cursors.Cross;
             }
             Invalidate();
         }
@@ -319,6 +433,18 @@ namespace Gmix.App.UI
             _xMax = _range != null && _range.endM > _range.startM
                 ? _range.endM
                 : (_dist.Length > 0 ? _dist[_dist.Length - 1] : 20);
+            Invalidate();
+        }
+
+        void MoveCursorTo(int x, Rectangle plot)
+        {
+            if (plot.Width <= 0) return;
+            double ratio = (x - plot.Left) / (double)plot.Width;
+            if (ratio < 0) ratio = 0;
+            if (ratio > 1) ratio = 1;
+            double distance = _xMin + ratio * (_xMax - _xMin);
+            if (_dragCursor == 0) _cursorA = distance;
+            else _cursorB = distance;
             Invalidate();
         }
 

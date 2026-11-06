@@ -103,7 +103,7 @@ namespace Gmix.Acquirer
                         long ofdrMs = seg.ElapsedMilliseconds; seg.Restart();
                         Detector.Output detect = Detector.Process(ofdr.Dist, ofdr.Ps);
                         long detectMs = seg.ElapsedMilliseconds; seg.Restart();
-                        EventsDocument events = BuildEvents(scanId, detect, ofdr.Length);
+                        EventsDocument events = BuildEvents(scanId, detect, opt.StartM);
 
                         AnalysisRangeInfo range = new AnalysisRangeInfo
                         {
@@ -185,10 +185,10 @@ namespace Gmix.Acquirer
             }
         }
 
-        static EventsDocument BuildEvents(string scanId, Detector.Output detect, int outputLength)
+        static EventsDocument BuildEvents(string scanId, Detector.Output detect, double analysisStartM)
         {
             // 映射集中于 Gmix.Vendor.VendorMapper，采集与编排共用（ICD Part A §4）
-            return VendorMapper.ToEventsDocument(detect, scanId, SchemaVersion);
+            return VendorMapper.ToEventsDocument(detect, scanId, SchemaVersion, analysisStartM);
         }
 
         static void WriteBundle(string scanDir, string scanId, int repeatIndex, Options opt,

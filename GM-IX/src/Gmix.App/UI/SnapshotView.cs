@@ -42,7 +42,11 @@ namespace Gmix.App.UI
 
             _showZeroPeak.Text = "显示零距峰";
             _showZeroPeak.AutoSize = true;
-            _showZeroPeak.CheckedChanged += delegate { _curve.SetZeroPeakVisible(_showZeroPeak.Checked); };
+            _showZeroPeak.CheckedChanged += delegate
+            {
+                _curve.SetZeroPeakVisible(_showZeroPeak.Checked);
+                FillEvents(Snapshot);
+            };
 
             ConfigureMetricsGrid(_metrics);
             ConfigureEventsGrid(_events);
@@ -112,9 +116,10 @@ namespace Gmix.App.UI
 
             string text = snapshot == null
                 ? "当前结果：—"
-                : string.Format("组 {0} · 扫描 {1} · 状态 {2} · {3} · {4}",
+                : string.Format("组 {0} · 扫描 {1} · 状态 {2} · {3} · {4}{5}",
                     snapshot.GroupId ?? "—", snapshot.ScanId ?? "—", snapshot.Status ?? "—",
-                    snapshot.IsAverage ? "平均结果" : "单次", snapshot.Calibrated ? "已标定" : "未标定");
+                    snapshot.IsAverage ? "平均结果" : "单次", snapshot.Calibrated ? "已标定" : "未标定",
+                    snapshot.PsDbConvertedFromLinear ? " · 历史组：曲线由线性 ps 换算" : "");
             _title.Text = text;
 
             FillMetrics(snapshot);
@@ -164,13 +169,17 @@ namespace Gmix.App.UI
 
             EventInfo[] events = snapshot.Events.events;
             PeakInfo[] peaks = snapshot.Events.peaks;
+            int displayNo = 0;
             for (int i = 0; i < events.Length; i++)
             {
                 EventInfo item = events[i];
                 PeakInfo peak = peaks != null && i < peaks.Length ? peaks[i] : null;
-                bool isZero = item.zeroPeak.HasValue && item.zeroPeak.Value;
+                bool isZero = (item.zeroPeak.HasValue && item.zeroPeak.Value)
+                    || (snapshot.Range != null && snapshot.Range.startM > 0 && item.locM < snapshot.Range.startM);
+                if (!isZero) displayNo++;
+                if (isZero && !_showZeroPeak.Checked) continue;
                 int index = _events.Rows.Add(
-                    peak != null && peak.peakNo.HasValue ? peak.peakNo.Value.ToString() : "—",
+                    isZero ? "—" : displayNo.ToString(),
                     (peak != null && peak.distanceM.HasValue ? peak.distanceM.Value : item.locM).ToString("0.000"),
                     item.rlDb.HasValue ? item.rlDb.Value.ToString("0.00") : "—",
                     item.rlDbRel.HasValue ? DisplayTransform.Level(item.rlDbRel.Value, snapshot.OffsetK).ToString("0.00") : "—",
@@ -178,7 +187,7 @@ namespace Gmix.App.UI
                     item.baseBeforeDbRel.HasValue ? DisplayTransform.Level(item.baseBeforeDbRel.Value, snapshot.OffsetK).ToString("0.00") : "—",
                     item.baseAfterDbRel.HasValue ? DisplayTransform.Level(item.baseAfterDbRel.Value, snapshot.OffsetK).ToString("0.00") : "—",
                     isZero ? "是" : "否");
-                _events.Rows[index].Tag = peak != null ? peak.peakNo : null;
+                _events.Rows[index].Tag = isZero ? null : (int?)displayNo;
             }
 
             if (_events.Rows.Count > 0)

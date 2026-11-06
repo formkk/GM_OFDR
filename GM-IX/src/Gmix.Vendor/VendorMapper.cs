@@ -12,21 +12,35 @@ namespace Gmix.Vendor
     {
         public static EventsDocument ToEventsDocument(Detector.Output detect, string scanId, string schemaVersion)
         {
+            return ToEventsDocument(detect, scanId, schemaVersion, 0.0);
+        }
+
+        /// <summary>
+        /// 映射检测结果。分析起点之前的峰按零距/伪峰处理（`zeroPeak=true`，不编号），
+        /// 其余峰按显示顺序从 1 编号；detect 本身不提供零距峰标志（TBD-D04）。
+        /// </summary>
+        public static EventsDocument ToEventsDocument(Detector.Output detect, string scanId, string schemaVersion,
+            double analysisStartM)
+        {
             if (detect == null) throw new ArgumentNullException(nameof(detect));
 
             var peaks = new PeakInfo[detect.Peaks.Length];
+            int peakNo = 0;
+            int zeroCount = 0;
             for (int i = 0; i < peaks.Length; i++)
             {
                 Detector.Peak peak = detect.Peaks[i];
+                bool zero = analysisStartM > 0 && peak.LocM < analysisStartM;
+                if (zero) zeroCount++;
                 peaks[i] = new PeakInfo
                 {
                     locM = peak.LocM,
                     heightDbRel = peak.HeightDb,
                     baseDbRel = peak.BaseDb,
                     prominenceDb = peak.ProminenceDb,
-                    peakNo = i + 1,
+                    peakNo = zero ? (int?)null : ++peakNo,
                     distanceM = peak.LocM,
-                    zeroPeak = false
+                    zeroPeak = zero
                 };
             }
 
@@ -55,7 +69,7 @@ namespace Gmix.Vendor
                     baseBeforeDbRel = src.BaseBeforeDb,
                     baseAfterDbRel = src.BaseAfterDb,
                     stepLossDb = src.IlDb.HasValue ? -src.IlDb.Value : (double?)null,
-                    zeroPeak = false
+                    zeroPeak = peaks[i].zeroPeak
                 };
             }
 
@@ -76,9 +90,9 @@ namespace Gmix.Vendor
                 peaks = peaks,
                 segments = segments,
                 events = events,
-                zeroPeakIncluded = false,
+                zeroPeakIncluded = zeroCount > 0,
                 units = new UnitsInfo { level = "dB_rel", distance = "m" },
-                display = new DisplayInfo { peakCount = peaks.Length, zeroPeakExcluded = true },
+                display = new DisplayInfo { peakCount = peaks.Length - zeroCount, zeroPeakExcluded = zeroCount > 0 },
                 arrays = new EventsArraysInfo
                 {
                     baseline = new ArrayInfo
