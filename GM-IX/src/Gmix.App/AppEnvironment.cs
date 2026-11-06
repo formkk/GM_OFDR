@@ -54,9 +54,10 @@ namespace Gmix.App
             if (File.Exists(local)) return local;
             string debug = FindUpwards(baseDir,
                 Path.Combine("src", "Gmix.Acquirer", "bin", "Debug", "net8.0"), "Gmix.Acquirer.exe");
-            if (debug != null) return debug;
-            return FindUpwards(baseDir,
+            if (debug != null) return Path.Combine(debug, "Gmix.Acquirer.exe");
+            string release = FindUpwards(baseDir,
                 Path.Combine("src", "Gmix.Acquirer", "bin", "Release", "net8.0"), "Gmix.Acquirer.exe");
+            return release == null ? null : Path.Combine(release, "Gmix.Acquirer.exe");
         }
 
         /// <summary>从当前目录逐级向上查找相对路径下的文件（开发期定位 SDK/采集进程，发行包不依赖）。</summary>
