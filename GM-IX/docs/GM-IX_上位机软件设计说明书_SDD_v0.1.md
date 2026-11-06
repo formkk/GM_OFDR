@@ -461,10 +461,11 @@ MainForm (1280×720 起，可缩放)
 
 1. 视图区间 `{xMin, xMax, yMin, yMax}`（默认 X `0 ~ endM`、Y `-150 ~ -40`，DS-01）；
 2. 计算绘图区宽度 `W`（像素）；
-3. `EnvelopeSampler.Reduce(dist, values, xMin, xMax, W)` → 每列 `(minIndex, maxIndex)`；
+3. `EnvelopeSampler.Reduce(dist, values, xMin, xMax, W)` → 每列 `(minIndex, maxIndex)`；曲线数据源固定为 **`ps_db.f64`（detect 出口 dB_rel）** 与 `baseline.f64`，**不得绘制线性 `ps.f64`**（线性值域 1e2~1e7，超出 −150~−40 的显示窗，会把曲线压成一条平线）；
 4. 每列画竖线段 `min → max`（**保峰**，`SRS FR-CHT-07`），相邻列连线；
 5. 叠加：基线曲线（细线）、峰标记（▲ + `peakNo`）、分析区间遮罩（半透明 + guard 虚线）、零距峰（按 `display.zeroPeakExcluded` 隐藏）；
-6. 游标：两条竖线 + 读数框（距离、电平），拖拽时只重绘游标层。
+6. 游标：可拖拽的 A/B 双游标（A 红、B 绿），顶部读数条显示各自距离/电平、Δ间距与 Δ电平；鼠标靠近游标 8 px 内变为手型并起拖，其余区域左键拖拽平移视图；
+7. 峰标注：每条非伪峰上方两行显示 `P{编号} {距离} m` 与 `{电平} dB`，编号与事件表一致、从 1 起。
 
 **性能预算**：`N/2+1 ≈ 200 001` 点（50 MHz/8 ms），`W ≈ 800` → 250 点/列；抽稀后 ≤ 1600 段绘制，GDI+ 实测远低于 100 ms（`SRS NFR-PERF-02`）。抽稀与绘制在工作线程生成 `Bitmap`，UI 线程只 `Invalidate` + 贴图。
 
@@ -731,7 +732,7 @@ Gmix/
 | 项 | 内容 | 影响 | 处置 |
 |---|---|---|---|
 | 采集信号漂移（`TBD-D11`） | 同一 `open`-`close` 周期内连续 20 帧，`dist` 末值波动 16~17%、`ps` 最大值波动约 3 倍；已排除 ofdr 随机性、触发相位、AFE 自动增益，根因为硬件输入信号本身漂移（`GM-IX/investigations/signal-drift`） | 超出 ICD §2.2 的 5% 轴容差时 `GroupAssembler` 判 `invalid`，N>1 平均在实机上暂不可用（2026-11-06 实机 N=3 复现：R002/R003 超出容差，组判 failed） | 容差暂按 5% 保留；UI 与历史页须能展示组 `failed/invalid` 原因，不得静默降级；N=1 单次测量不受影响 |
-| 零距峰未识别（`TBD-D04`） | `detect.dll` 输出无零距峰标志位，`VendorMapper` 恒置 `zeroPeak=false`；实机 0.042 m 峰按普通峰显示（号 1） | 曲线「显示零距峰」开关当前不改变结果；与分析起点 0.05 m 的共同作用待厂商确认 | 不臆造距离阈值；待 `TBD-S10`/`TBD-D04` 裁定后再实现过滤与编号 |
+| 伪峰（零距峰）判定（`TBD-D04`，已裁定 2026-11-06） | `detect.dll` 无零距峰标志位；现按「峰位置 < 分析起点 `startM`」判定伪峰，置 `zeroPeak=true`、`peakNo=null`，其余峰重新从 1 编号 | 实机 0.042 m 峰已隐藏，编号变为 P1~P4，与厂商一致；`startM` 设为 0 时伪峰将不再被过滤 | 规则只依赖分析起点、不引入绝对距离阈值；`TBD-S10` 若给出厂商零距定义，再切换判定口径 |
 
 ---
 

@@ -103,6 +103,7 @@ GMIX_DATA/                     # 数据根目录
    │  ├─ dist.f64              # 距离轴 double[]，长度 N/2+1
    │  ├─ freq.f64              # 频率轴 double[]，长度 N/2+1
    │  ├─ ps.f64                # 功率谱 double[]，线性幅值
+   │  ├─ ps_db.f64             # 功率谱 double[]，dB_rel（检测出口 20log10，UI 直接绘制）
    │  ├─ baseline.f64          # 可选：基线 double[]，长度 N/2+1
    │  ├─ events.json           # 峰/段/事件与相对 IL/RL
    │  ├─ summary.json          # 总 IL/RL、精度、分析区间
@@ -224,9 +225,11 @@ N=1 与 N>1 共用同一套结构，只有 `AVG/` 是否存在不同。
 
 | 参数 | raw.bin | 派生数组 | 单次约 | N=5 重复合计 |
 |---|---:|---:|---:|---:|
-| 50 MHz / 8 ms | 3.2 MB | 6.4 MB | ~9.6 MB | ~48 MB |
-| 250 MHz / 10 ms | 20 MB | 40 MB | ~60 MB | ~300 MB |
-| 250 MHz / 50 ms | 100 MB | 200 MB | ~300 MB | ~1.5 GB |
+| 50 MHz / 8 ms | 3.2 MB | 8.0 MB | ~11.2 MB | ~56 MB |
+| 250 MHz / 10 ms | 20 MB | 50 MB | ~70 MB | ~350 MB |
+| 250 MHz / 50 ms | 100 MB | 250 MB | ~350 MB | ~1.75 GB |
+
+> 派生数组为 5 个 `float64` 数组（dist / freq / ps / ps_db / baseline），每个长度 `N/2+1`。
 
 建议配置：
 
@@ -313,7 +316,7 @@ retentionDays / maxTotalBytes
 |---|---|---|---|
 | `peaks[].peakNo` | int | 否 | 显示编号，1..N |
 | `peaks[].distanceM` | double | 否 | 与 `locM` 相同，UI 用 |
-| `peaks[].zeroPeak` | bool | 否 | 是否零距峰 |
+| `peaks[].zeroPeak` | bool | 否 | 是否零距/伪峰：峰值位置 < 分析起点 `startM` 的峰 |
 | `events[].stepLossDb` | double/null | 否 | **正损耗** = `-ilDb` |
 | `events[].rlDb` | double/null | 否 | 绝对回损（标定后，负值：原始比值口径，见下方裁定） |
 | `events[].rlDbRel` | double | 否 | 相对回损（未标定，与 `peakDbRel` 同刻度，g50 实测正值） |
@@ -323,11 +326,16 @@ retentionDays / maxTotalBytes
 | `arrays.baseline.file` | string | 否 | `baseline.f64`，来自 `detect.baseline_db` |
 | `arrays.baseline.dtype` | string | 否 | `float64_le` |
 | `arrays.baseline.count` | int | 否 | `outputLength` |
+| `arrays.psDb.file` | string | 否 | `ps_db.f64`，来自 `detect.ps_db` |
+| `arrays.psDb.dtype` | string | 否 | `float64_le` |
+| `arrays.psDb.count` | int | 否 | `outputLength` |
+| `arrays.psDb.unit` | string | 否 | `dB_rel` |
 
 规则：
 
+- `ps_db.f64` 是距离域曲线的**唯一绘制数据源**：`20log10` 只在检测出口发生一次并落盘，UI、历史回读、导出只格式化，不得再次换算；`ps.f64` 保留线性原始值作为证据；
 - `ilDb` 保留原始差值（负值）；`stepLossDb = -ilDb` 用于 UI 显示正损耗；
-- 零距峰默认 `zeroPeak=true`，UI 默认不显示，但数据保留；
+- **伪峰（零距峰）判定（2026-11-06 裁定）**：`detect.dll` 不提供零距峰标志，按数据规则判定——峰位置 `< session.analysisRange.startM` 的峰置 `zeroPeak=true`、`peakNo=null`，数据保留但默认不显示；其余峰按显示顺序从 1 编号（`display.peakCount` 为伪峰之外的数量）。该规则只依赖分析起点，不引入绝对距离阈值；
 - `rlDb` 为 `null` 表示未标定，UI 只能显示 `rlDbRel`；
 - **dB 相对电平值域**：`baseline.f64`、`heightDbRel`、`noiseFloorDbRel` 等均为 detect 原始输出的 `20log10` 相对电平，g50 实测典型为**正值**（基线约 +98 ~ +103 dB，峰 +120 ~ +147 dB）；厂商 UI 显示的负值（约 -50 ~ -90 dB）是其标定后的口径，与原始输出不得混淆。detect 无文档化的哨兵值约定，基线统计**不设符号过滤**，不得臆测过滤规则；
 - `peaks[]` 中全部已检出峰参与功率求和（`heightDbRel` 为 detect 原始正值 dB_rel）。
