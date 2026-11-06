@@ -12,6 +12,7 @@ namespace Gmix.Data
         public string calibrationId { get; set; }
         public string configHash { get; set; }
         public double distScale { get; set; }
+        public double? psdRef { get; set; }
         public double? rlOffsetK { get; set; }
         public double? ilSlope { get; set; }
         public double? ilIntercept { get; set; }
@@ -29,6 +30,7 @@ namespace Gmix.Data
             m.calibrationId = doc.calibrationId;
             m.configHash = doc.configHash;
             m.distScale = doc.distScale <= 0 ? 1.0 : doc.distScale;
+            m.psdRef = doc.psdRef;
             m.rlOffsetK = doc.rlOffsetK;
             m.ilSlope = doc.ilSlope;
             m.ilIntercept = doc.ilIntercept;

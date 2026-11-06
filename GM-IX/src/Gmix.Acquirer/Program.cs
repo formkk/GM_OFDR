@@ -22,6 +22,7 @@ namespace Gmix.Acquirer
 
         static int Main(string[] args)
         {
+            Console.OutputEncoding = Encoding.UTF8;
             Options opt;
             try
             {
