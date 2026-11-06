@@ -127,7 +127,8 @@ namespace Gmix.Data
             double? totalIl = totalIlRaw.HasValue && calibration != null
                 ? calibration.ApplyIlTotal(totalIlRaw.Value) : null;
 
-            if (calibration != null && !string.IsNullOrEmpty(currentConfigHash)
+            if (calibration != null && (calibration.HasAbsoluteRl() || calibration.HasIlCalibration())
+                && !string.IsNullOrEmpty(currentConfigHash)
                 && !calibration.MatchesConfig(currentConfigHash))
             {
                 warnings.Add("校准 configHash 与当前配置不匹配，绝对标定不应用");
