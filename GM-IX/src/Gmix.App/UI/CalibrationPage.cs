@@ -19,6 +19,7 @@ namespace Gmix.App.UI
         readonly TextBox _rlOffsetK = new TextBox();
         readonly TextBox _distScale = new TextBox();
         readonly Label _status = new Label();
+        readonly Label _banner = new Label();
 
         public event Action<CalibrationModel, string> CalibrationSaved;
 
@@ -74,7 +75,28 @@ namespace Gmix.App.UI
             table.Controls.Add(new Label { Text = "状态", AutoSize = true, Padding = new Padding(0, 8, 6, 0) }, 0, statusRow);
             table.Controls.Add(_status, 1, statusRow);
 
+            _banner.Dock = DockStyle.Top;
+            _banner.Height = 54;
+            _banner.Padding = new Padding(16, 8, 16, 0);
+            _banner.Font = new Font("Segoe UI", 9, FontStyle.Bold);
+
             Controls.Add(table);
+            Controls.Add(_banner);
+        }
+
+        void ShowCalibrationState(bool calibrated, string calibrationId)
+        {
+            if (calibrated)
+            {
+                _banner.ForeColor = Color.ForestGreen;
+                _banner.Text = "当前状态：已标定" + (string.IsNullOrEmpty(calibrationId) ? "" : "（" + calibrationId + "）")
+                    + " —— 回损按 rlOffsetK 计算为绝对回损。";
+                return;
+            }
+            _banner.ForeColor = Color.Firebrick;
+            _banner.Text = "当前状态：未标定 —— 回损按显示锚点 " + DisplayTransform.DefaultOffsetK.ToString("0")
+                + " dB 预览（来自本机实测拟合），仅影响显示，不参与指标、不落盘、不进入导出。\r\n"
+                + "完成下方『回损偏移』标定并保存后，自动切换为真实回损。";
         }
 
         static void AddRow(TableLayoutPanel table, string label, TextBox box, string hint)
@@ -96,8 +118,8 @@ namespace Gmix.App.UI
             CalibrationModel latest = CalibrationStore.LoadLatest(_env.DataRoot);
             if (latest == null)
             {
-                _status.Text = "未找到历史校准；未标定态回损按显示锚点 " + DisplayTransform.DefaultOffsetK.ToString("0")
-                    + " dB 预览（仅影响显示，不参与指标与导出）";
+                _status.Text = "未找到历史校准";
+                ShowCalibrationState(false, null);
                 return;
             }
             _psdRef.Text = Format(latest.psdRef);
@@ -107,6 +129,7 @@ namespace Gmix.App.UI
             _rlOffsetK.Text = Format(latest.rlOffsetK);
             _distScale.Text = latest.distScale.ToString("R", CultureInfo.InvariantCulture);
             _status.Text = "已载入 " + latest.calibrationId + "（配置哈希 " + ShortHash(latest.configHash) + "）";
+            ShowCalibrationState(latest.HasAbsoluteRl(), latest.calibrationId);
         }
 
         static string Format(double? value)
@@ -198,6 +221,7 @@ namespace Gmix.App.UI
                 string path = CalibrationStore.Save(_env.DataRoot, model, configHash);
                 _status.Text = "已保存 " + model.calibrationId + " → " + path;
                 _status.ForeColor = Color.ForestGreen;
+                ShowCalibrationState(model.HasAbsoluteRl(), model.calibrationId);
 
                 Action<CalibrationModel, string> handler = CalibrationSaved;
                 if (handler != null) handler(model, path);

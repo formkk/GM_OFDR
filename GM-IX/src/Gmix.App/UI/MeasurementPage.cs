@@ -28,8 +28,7 @@ namespace Gmix.App.UI
         readonly Button _startButton = new Button();
         readonly Button _stopButton = new Button();
         readonly Button _saveButton = new Button();
-        readonly Label _badge = new Label();
-        readonly ToolTip _badgeTip = new ToolTip();
+
         readonly RichTextBox _log = new RichTextBox();
 
         CancellationTokenSource _cts;
@@ -62,15 +61,7 @@ namespace Gmix.App.UI
         {
             _calibration = model;
             _calibrationPath = path;
-            UpdateBadge();
             if (_view.Snapshot != null) Recompute();
-        }
-
-        void UpdateBadge()
-        {
-            bool calibrated = _calibration != null && _calibration.HasAbsoluteRl();
-            _badge.Text = calibrated ? "已标定" : "未标定 · 回损为预览值";
-            _badge.ForeColor = calibrated ? Color.ForestGreen : Color.Firebrick;
         }
 
         void BuildLayout()
@@ -144,15 +135,7 @@ namespace Gmix.App.UI
             _saveButton.Click += OnSave;
             parameters.Controls.Add(_saveButton);
 
-            _badge.AutoSize = true;
-            _badge.Padding = new Padding(12, 8, 0, 0);
-            parameters.Controls.Add(_badge);
-
-            _badgeTip.SetToolTip(_badge,
-                "未标定：回损按固定显示锚点 -192 dB 预览（来自本机 g50 四峰拟合），"
-                + "仅影响显示，不参与指标、不写入数据、不进入导出；标定后改用 rlOffsetK。");
-
-            parameters.SetFlowBreak(_badge, true);
+            parameters.SetFlowBreak(_saveButton, true);
             var hint = new Label();
             hint.AutoSize = true;
             hint.ForeColor = Color.DimGray;

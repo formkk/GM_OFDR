@@ -446,8 +446,7 @@ MainForm (1280×720 起，可缩放)
 │  │   ├─ 连续采集 ComboBox（界面「关闭 / 开启」= single / loop；开启后每组提交即开始下一组）
 │  │   ├─ 分析区间：起点 / 终点 TextBox + 保护带 guardM（只读灰底框，默认 0.1，仅用于插损起止窗口）
 │  │   ├─ 回损模式 ComboBox（界面「仅峰值 / 基线+峰值」，落盘仍为 peak_only / baseline_plus_peak）
-│  │   ├─ 按钮：开始 · 停止 · 保存本组
-│  │   └─ 未标定提示条（DS-06 常驻标注）
+│  │   └─ 按钮：开始 · 停止 · 保存本组
 │  ├─ [行1 左] CurveCanvas (自绘)
 │  └─ [行1 右] TableLayoutPanel
 │      ├─ 指标表 DataGridView（4 指标 + 溯源项）
@@ -498,7 +497,7 @@ static string Precision(double? v) => v is null ? "—" : v.Value.ToString("0.00
 | DS-03 | 事件表直接绑定 `stepLossDb` |
 | DS-04 | `DisplayTransform.TotalIl`（仅 IL 域） |
 | DS-05 | `DisplayTransform.Precision` |
-| DS-06 | `DisplayTransform.DefaultOffsetK = -192`（显示锚点，非标定值）：参数条只显示「未标定 · 回损为预览值」徽标，-192 数值仅在校准页说明与徽标悬浮提示中出现；它不参与指标、不落盘、不进导出 |
+| DS-06 | `DisplayTransform.DefaultOffsetK = -192`（显示锚点，非标定值）。常驻标注分三处：状态栏「校准：未标定（回损为预览值）」、指标表「校准状态」行、回损数值后缀「（未标定）」；完整说明（-192 来源、不落盘、不导出、如何消除）只放在校准向导页顶部状态栏。参数条不显示该提示，也不暴露 -192 |
 | DS-07 | `view.json` 只写 `xRange/yRange/cursor/activeTab/selectedPeakNo` |
 | DS-08 | 仅 `Gmix.App` 引用 `DisplayTransform`；Core/Acquirer 不得引用 |
 
@@ -510,6 +509,7 @@ static string Precision(double? v) => v is null ? "—" : v.Value.ToString("0.00
 
 ### 8.6 校准向导
 
+0. 顶部状态栏：已标定显示绿色「当前状态：已标定（CAL-…）—— 回损按 rlOffsetK 计算为绝对回损」；未标定显示红色「回损按显示锚点 -192 dB 预览，仅影响显示，不参与指标、不落盘、不进入导出」；
 1. 录入：`psdRef`、`ilSlope`、`ilIntercept`、`triggerThresholdDb`、`rlOffsetK`、`distScale`（`SRS FR-CAL-01`）；默认 `ilSlope = 0.5361`、`ilIntercept = -0.1`（厂商确认 2026-11-05），**不得沿用校准页初值 `0.7373`**；
 2. 校验：数值范围、`configHash` 与当前配置一致；
 3. 保存：`CAL-YYYYMMDD-NNN` → `_calibration/<id>/calibration.json`；

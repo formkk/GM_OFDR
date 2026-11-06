@@ -159,7 +159,7 @@ namespace Gmix.App.UI
             _metrics.Rows.Add("分析区间", range == null ? "—" : string.Format("{0:0.###} ~ {1:0.###} m，保护带 {2:0.###} m",
                 range.startM, range.endM, range.guardM > 0 ? range.guardM : 0.1));
             _metrics.Rows.Add("回损模式", summary.rlMode == "baseline_plus_peak" ? "基线+峰值" : "仅峰值");
-            _metrics.Rows.Add("校准状态", calibrated ? "已标定" : "未标定（显示偏移 " + DisplayTransform.DefaultOffsetK.ToString("0") + "）");
+            _metrics.Rows.Add("校准状态", calibrated ? "已标定" : "未标定（回损为预览值）");
         }
 
         void FillEvents(MeasurementSnapshot snapshot)
