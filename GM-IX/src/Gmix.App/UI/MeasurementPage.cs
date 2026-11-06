@@ -22,12 +22,14 @@ namespace Gmix.App.UI
         readonly ComboBox _runMode = new ComboBox();
         readonly TextBox _startM = new TextBox();
         readonly TextBox _endM = new TextBox();
+        readonly TextBox _guardM = new TextBox();
         readonly ComboBox _rlMode = new ComboBox();
         readonly CheckBox _synthetic = new CheckBox();
         readonly Button _startButton = new Button();
         readonly Button _stopButton = new Button();
         readonly Button _saveButton = new Button();
         readonly Label _badge = new Label();
+        readonly ToolTip _badgeTip = new ToolTip();
         readonly RichTextBox _log = new RichTextBox();
 
         CancellationTokenSource _cts;
@@ -67,7 +69,7 @@ namespace Gmix.App.UI
         void UpdateBadge()
         {
             bool calibrated = _calibration != null && _calibration.HasAbsoluteRl();
-            _badge.Text = calibrated ? "已标定" : "未标定：回损按默认偏移 " + DisplayTransform.DefaultOffsetK.ToString("0") + " 显示";
+            _badge.Text = calibrated ? "已标定" : "未标定 · 回损为预览值";
             _badge.ForeColor = calibrated ? Color.ForestGreen : Color.Firebrick;
         }
 
@@ -105,7 +107,14 @@ namespace Gmix.App.UI
             _endM.Width = 64;
             parameters.Controls.Add(_endM);
 
-            parameters.Controls.Add(MakeLabel("保护带 0.1 m（只读）"));
+            parameters.Controls.Add(MakeLabel("保护带 m"));
+            _guardM.Text = "0.1";
+            _guardM.Width = 48;
+            _guardM.ReadOnly = true;
+            _guardM.TabStop = false;
+            _guardM.BackColor = SystemColors.Control;
+            _guardM.TextAlign = HorizontalAlignment.Center;
+            parameters.Controls.Add(_guardM);
 
             parameters.Controls.Add(MakeLabel("回损模式"));
             _rlMode.DropDownStyle = ComboBoxStyle.DropDownList;
@@ -138,6 +147,10 @@ namespace Gmix.App.UI
             _badge.AutoSize = true;
             _badge.Padding = new Padding(12, 8, 0, 0);
             parameters.Controls.Add(_badge);
+
+            _badgeTip.SetToolTip(_badge,
+                "未标定：回损按固定显示锚点 -192 dB 预览（来自本机 g50 四峰拟合），"
+                + "仅影响显示，不参与指标、不写入数据、不进入导出；标定后改用 rlOffsetK。");
 
             parameters.SetFlowBreak(_badge, true);
             var hint = new Label();

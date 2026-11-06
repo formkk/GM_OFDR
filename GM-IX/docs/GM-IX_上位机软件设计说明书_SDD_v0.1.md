@@ -444,7 +444,7 @@ MainForm (1280×720 起，可缩放)
 │  │   ├─ 采样率(只读 50 MHz) · 采集时长(只读 8 ms)
 │  │   ├─ 组内平均次数 NumericUpDown (1..N)：同组内采集 N 次后在线性 ps 域平均，N>1 才生成 AVG
 │  │   ├─ 连续采集 ComboBox（界面「关闭 / 开启」= single / loop；开启后每组提交即开始下一组）
-│  │   ├─ 分析区间：startM / endM TextBox + guardM(默认 0.1，只读)
+│  │   ├─ 分析区间：起点 / 终点 TextBox + 保护带 guardM（只读灰底框，默认 0.1，仅用于插损起止窗口）
 │  │   ├─ 回损模式 ComboBox（界面「仅峰值 / 基线+峰值」，落盘仍为 peak_only / baseline_plus_peak）
 │  │   ├─ 按钮：开始 · 停止 · 保存本组
 │  │   └─ 未标定提示条（DS-06 常驻标注）
@@ -498,7 +498,7 @@ static string Precision(double? v) => v is null ? "—" : v.Value.ToString("0.00
 | DS-03 | 事件表直接绑定 `stepLossDb` |
 | DS-04 | `DisplayTransform.TotalIl`（仅 IL 域） |
 | DS-05 | `DisplayTransform.Precision` |
-| DS-06 | `DisplayTransform.DefaultOffsetK = -192`，未标定态强制显示提示条 |
+| DS-06 | `DisplayTransform.DefaultOffsetK = -192`（显示锚点，非标定值）：参数条只显示「未标定 · 回损为预览值」徽标，-192 数值仅在校准页说明与徽标悬浮提示中出现；它不参与指标、不落盘、不进导出 |
 | DS-07 | `view.json` 只写 `xRange/yRange/cursor/activeTab/selectedPeakNo` |
 | DS-08 | 仅 `Gmix.App` 引用 `DisplayTransform`；Core/Acquirer 不得引用 |
 

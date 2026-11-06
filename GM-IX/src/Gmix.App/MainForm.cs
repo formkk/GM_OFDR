@@ -152,7 +152,7 @@ namespace Gmix.App
             bool calibrated = model != null && model.HasAbsoluteRl();
             _calibrationState.Text = calibrated
                 ? "校准：已标定（" + model.calibrationId + "）"
-                : "校准：未标定（显示偏移 " + DisplayTransform.DefaultOffsetK.ToString("0") + "）";
+                : "校准：未标定（回损为预览值）";
         }
     }
 }

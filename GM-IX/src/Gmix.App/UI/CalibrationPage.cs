@@ -96,7 +96,8 @@ namespace Gmix.App.UI
             CalibrationModel latest = CalibrationStore.LoadLatest(_env.DataRoot);
             if (latest == null)
             {
-                _status.Text = "未找到历史校准；未标定态回损按默认偏移 " + DisplayTransform.DefaultOffsetK.ToString("0") + " 预览";
+                _status.Text = "未找到历史校准；未标定态回损按显示锚点 " + DisplayTransform.DefaultOffsetK.ToString("0")
+                    + " dB 预览（仅影响显示，不参与指标与导出）";
                 return;
             }
             _psdRef.Text = Format(latest.psdRef);
