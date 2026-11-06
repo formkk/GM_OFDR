@@ -52,8 +52,8 @@ namespace Gmix.Data.Test
             {
                 dist[i] = distEnd * i / (outLen - 1);
                 freq[i] = 5e6 * i / (outLen - 1);
-                ps[i] = 1e-5;
-                baseline[i] = -100.0;
+                ps[i] = 1000.0;
+                baseline[i] = 100.0;
             }
 
             ArrayStore.WriteDoubles(Path.Combine(root, "dist.f64"), dist);
@@ -121,12 +121,12 @@ namespace Gmix.Data.Test
             events.counts = new EventCountsInfo { peaks = 4, segments = 5, events = 4 };
             events.peaks = new PeakInfo[4];
             double[] locs = { 1.1128, 3.1768, 6.1904, 8.2707 };
-            double[] heights = { -70.0, -80.0, -58.0, -67.0 };
+            double[] heights = { 130.0, 120.0, 142.0, 133.0 };
             for (int i = 0; i < 4; i++)
             {
                 events.peaks[i] = new PeakInfo();
                 events.peaks[i].locM = locs[i]; events.peaks[i].heightDbRel = heights[i];
-                events.peaks[i].baseDbRel = -100.0; events.peaks[i].prominenceDb = heights[i] + 100.0;
+                events.peaks[i].baseDbRel = 100.0; events.peaks[i].prominenceDb = heights[i] - 100.0;
                 events.peaks[i].peakNo = i + 1; events.peaks[i].distanceM = locs[i]; events.peaks[i].zeroPeak = false;
             }
             events.segments = new SegmentInfo[5];
@@ -135,7 +135,7 @@ namespace Gmix.Data.Test
                 events.segments[i] = new SegmentInfo();
                 events.segments[i].startIndex = i * outLen / 5;
                 events.segments[i].endIndex = (i + 1) * outLen / 5;
-                events.segments[i].noiseFloorDbRel = -100.0 - i;
+                events.segments[i].noiseFloorDbRel = 100.0 - i;
             }
             events.events = new EventInfo[4];
             for (int i = 0; i < 4; i++)
@@ -144,7 +144,7 @@ namespace Gmix.Data.Test
                 events.events[i].locM = locs[i]; events.events[i].peakDbRel = heights[i];
                 events.events[i].ilDb = -0.5 - i * 0.1; events.events[i].stepLossDb = 0.5 + i * 0.1;
                 events.events[i].rlDbRel = heights[i]; events.events[i].rlDb = null;
-                events.events[i].baseBeforeDbRel = -100.0; events.events[i].baseAfterDbRel = -100.5 - i * 0.1;
+                events.events[i].baseBeforeDbRel = 100.0; events.events[i].baseAfterDbRel = 99.5 - i * 0.1;
                 events.events[i].zeroPeak = false;
             }
             events.zeroPeakIncluded = false;
@@ -197,24 +197,24 @@ namespace Gmix.Data.Test
             for (int i = 0; i < outLen; i++)
             {
                 dist[i] = step * i;
-                baseline[i] = i < outLen / 2 ? -90.0 : -102.0;
+                baseline[i] = i < outLen / 2 ? 102.0 : 90.0;
             }
 
             var events = new EventsDocument();
             events.display = new DisplayInfo { peakCount = 4, zeroPeakExcluded = true };
             events.peaks = new PeakInfo[4];
             double[] locs = { 1.16924785, 3.33760668, 6.51393779, 8.68628421 };
-            double[] heights = { -69.886736, -79.672122, -57.644031, -66.651936 };
+            double[] heights = { 130.113264, 120.327878, 142.355969, 133.348064 };
             for (int i = 0; i < 4; i++)
             {
                 events.peaks[i] = new PeakInfo();
                 events.peaks[i].locM = locs[i]; events.peaks[i].heightDbRel = heights[i];
-                events.peaks[i].baseDbRel = -100.0; events.peaks[i].prominenceDb = heights[i] + 100.0;
+                events.peaks[i].baseDbRel = 100.0; events.peaks[i].prominenceDb = heights[i] - 100.0;
                 events.peaks[i].zeroPeak = false;
             }
             events.segments = new SegmentInfo[2];
-            events.segments[0] = new SegmentInfo { startIndex = 0, endIndex = 100000, noiseFloorDbRel = -90.0 };
-            events.segments[1] = new SegmentInfo { startIndex = 100001, endIndex = 200000, noiseFloorDbRel = -102.0 };
+            events.segments[0] = new SegmentInfo { startIndex = 0, endIndex = 100000, noiseFloorDbRel = 102.0 };
+            events.segments[1] = new SegmentInfo { startIndex = 100001, endIndex = 200000, noiseFloorDbRel = 90.0 };
 
             var range = new AnalysisRangeInfo { startM = 0.05, endM = step * (outLen - 1), guardM = 0.1 };
             var cal = new CalibrationModel();
@@ -230,6 +230,18 @@ namespace Gmix.Data.Test
             Check(Math.Abs(peakOnly.totalIlRawDb.Value - 12.0) < 1e-9, "区间插损 raw=12dB", ref failures);
             Check(Math.Abs(peakOnly.totalIlDb.Value - (0.5361 * 12.0 - 0.1)) < 1e-9, "插损标定公式", ref failures);
             Check(Math.Abs(peakOnly.totalRlDb.Value - (peakOnly.totalRlRawDb.Value - 192.0)) < 1e-9, "绝对回损公式", ref failures);
+
+            // RL 符号口径裁定（2026-11-05）回归：全程不取负；反射增强 → raw 增大、标定后 RL 更接近 0
+            Check(peakOnly.totalRlRawDb.Value > 0, "RL 裁定：未标定 totalRlRaw 为正电平刻度", ref failures);
+            Check(peakOnly.totalRlDb.Value < 0, "RL 裁定：标定后 totalRl 为负值", ref failures);
+            for (int i = 0; i < events.peaks.Length; i++) events.peaks[i].heightDbRel += 3.0;
+            var stronger = MetricsAggregator.Compute("S3", events, dist, baseline, range, "peak_only", 1, cal, null, null);
+            // 全部峰 +3dB → 每峰功率 ×10^0.3，求和后仍 ×10^0.3 → totalRlRaw 精确 +3dB（正电平刻度直通；若实现取负则增量为 -3dB）
+            const double deltaDb = 3.0;
+            Check(Math.Abs(stronger.totalRlRawDb.Value - (peakOnly.totalRlRawDb.Value + deltaDb)) < 1e-9,
+                "RL 裁定：全部峰 +3dB → totalRlRaw 增大 3dB（正刻度，不取负）", ref failures);
+            Check(stronger.totalRlDb.Value > peakOnly.totalRlDb.Value,
+                "RL 裁定：反射增强 → 标定后 RL 更接近 0", ref failures);
 
             var repeats = new List<double> { 10.0, 10.2, 9.8 };
             var withPrecision = MetricsAggregator.Compute("S2", events, dist, baseline, range, "peak_only", 3, cal, repeats, repeats);

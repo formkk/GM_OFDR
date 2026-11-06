@@ -84,7 +84,6 @@ namespace Gmix.Data
                 {
                     double d = dist[i];
                     if (d < range.startM || d > range.endM) continue;
-                    if (baselineDb[i] >= 0) continue; // dB 基线典型为负；>= 0 视为无效/哨兵值
                     basePower += Math.Pow(10.0, baselineDb[i] / 10.0);
                 }
             }
@@ -169,7 +168,7 @@ namespace Gmix.Data
             var vals = new List<double>();
             for (int i = 0; i < dist.Length; i++)
             {
-                if (dist[i] >= fromM && dist[i] <= toM && baselineDb[i] < 0)
+                if (dist[i] >= fromM && dist[i] <= toM)
                     vals.Add(baselineDb[i]);
             }
             if (vals.Count == 0) return null;
