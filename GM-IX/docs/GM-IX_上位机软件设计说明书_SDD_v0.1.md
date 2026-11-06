@@ -297,11 +297,10 @@ Gmix.Acquirer.exe --groupId GR-20261105-1530-001 --repeat 5 --root D:\GMIX_DATA 
 
 | 模块 | 职责 |
 |---|---|
-| `MainForm` | 4 页承载（`TabControl`）、状态栏、启动自检（`SRS FR-ACQ-09`） |
+| `MainForm` | 3 页承载（`TabControl`）、状态栏、启动自检（`SRS FR-ACQ-09`） |
 | `Pages/MeasurementPage` | 参数条 + 曲线 + 指标表 + 事件表 + 日志 |
-| `Pages/ResultsPage` | 完整事件表 + 指标 + 单组导出 |
+| `Pages/ResultsHistoryPage` | 左侧组列表 + 右侧完整事件表/指标/曲线 + 单组导出（合并原 ResultsPage 与 HistoryPage） |
 | `Pages/CalibrationPage` | 校准参数录入、校验、版本化保存、重算 |
-| `Pages/HistoryPage` | 组列表、回读、曲线/指标/事件重现、导出 |
 | `Orchestration/ScanJob` | 启动 Acquirer、轮询 `.ready`、校验、组提交、超时与失败处理 |
 | `Orchestration/GroupCommitter` | 唯一写者：`_staging` → 最终目录原子提交 |
 | `Orchestration/HistoryIndex` | 只存索引与路径，不存波形（`ICD §2.3`） |
@@ -423,14 +422,15 @@ Gmix.Acquirer.exe --groupId GR-20261105-1530-001 --repeat 5 --root D:\GMIX_DATA 
 
 ## 8. UI 设计
 
-### 8.1 页面划分（P0 4 页）
+### 8.1 页面划分（P0 3 页）
 
 | 页 | 内容 | 主用例 |
 |---|---|---|
 | 测量主页 | 参数条 + 距离域曲线 + 指标表 + 事件表 + 日志区 | `UC-02`、`UC-03`、`UC-04`、`UC-05` |
-| 事件表与结果 | 完整事件表 + 指标 + 单组导出 | `UC-07`、`UC-09` |
+| 结果与历史 | 左侧组列表（搜索/刷新/打开）+ 右侧曲线/指标/事件 + CSV 导出；实时结果与历史组共用同一视图 | `UC-07`、`UC-08`、`UC-09` |
 | 校准向导 | 参数录入 → 校验 → 版本化保存 → 重算 | `UC-06` |
-| 历史检索与导出 | 组列表 + 回读 + 导出 | `UC-08`、`UC-09` |
+
+> 2026-11-06 合并：原「事件表与结果」与「历史检索」是同一视图的入口与容器，合并后减少一次跳转与重复控件；历史组打开不再需要切换页签。
 
 ### 8.2 主窗体控件树（测量主页）
 

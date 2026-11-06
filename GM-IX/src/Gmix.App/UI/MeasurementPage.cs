@@ -41,6 +41,9 @@ namespace Gmix.App.UI
         /// <summary>结果视图更新（测量完成、提交完成或校准重算）。</summary>
         public event Action<MeasurementSnapshot> SnapshotChanged;
 
+        /// <summary>组提交成功，历史列表需要刷新。</summary>
+        public event Action GroupCommitted;
+
         public MeasurementPage(AppEnvironment env)
         {
             _env = env;
@@ -219,6 +222,7 @@ namespace Gmix.App.UI
                         CommitOutcome commit = await _runner.CommitAsync(outcome.GroupId, _calibrationPath);
                         ShowGroup(commit.GroupDir);
                         if (!commit.Success) break;
+                        RaiseGroupCommitted();
                         await Task.Delay(500, _cts.Token);
                     }
                     else
@@ -258,6 +262,12 @@ namespace Gmix.App.UI
             await CommitPendingAsync();
         }
 
+        void RaiseGroupCommitted()
+        {
+            Action handler = GroupCommitted;
+            if (handler != null) handler();
+        }
+
         async Task CommitPendingAsync()
         {
             if (string.IsNullOrEmpty(_pendingGroupId)) return;
@@ -265,6 +275,7 @@ namespace Gmix.App.UI
             _pendingGroupId = null;
             CommitOutcome outcome = await _runner.CommitAsync(groupId, _calibrationPath);
             ShowGroup(outcome.GroupDir);
+            if (outcome.Success) RaiseGroupCommitted();
         }
 
         void ShowStaging(string scanDir, string groupId)

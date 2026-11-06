@@ -15,9 +15,8 @@ namespace Gmix.App
 
         readonly AppEnvironment _env;
         readonly MeasurementPage _measurement;
-        readonly ResultsPage _results;
+        readonly ResultsHistoryPage _results;
         readonly CalibrationPage _calibration;
-        readonly HistoryPage _history;
         TabControl _tabs;
 
         readonly ToolStripStatusLabel _connection = new ToolStripStatusLabel();
@@ -34,9 +33,8 @@ namespace Gmix.App
             Size = new Size(1360, 800);
 
             _measurement = new MeasurementPage(env);
-            _results = new ResultsPage();
+            _results = new ResultsHistoryPage(env);
             _calibration = new CalibrationPage(env);
-            _history = new HistoryPage(env);
 
             BuildLayout();
             WireEvents();
@@ -48,9 +46,8 @@ namespace Gmix.App
             _tabs = new TabControl();
             _tabs.Dock = DockStyle.Fill;
             _tabs.TabPages.Add(MakePage("测量主页", _measurement));
-            _tabs.TabPages.Add(MakePage("事件表与结果", _results));
+            _tabs.TabPages.Add(MakePage("结果与历史", _results));
             _tabs.TabPages.Add(MakePage("校准向导", _calibration));
-            _tabs.TabPages.Add(MakePage("历史检索", _history));
             var tabs = _tabs;
 
             var status = new StatusStrip();
@@ -84,26 +81,16 @@ namespace Gmix.App
                 _results.ShowSnapshot(snapshot);
             };
 
+            _measurement.GroupCommitted += delegate
+            {
+                _results.RefreshList();
+            };
+
             _calibration.CalibrationSaved += delegate (CalibrationModel model, string path)
             {
                 _measurement.SetCalibration(model, path);
                 _measurement.AppendLog("校准已保存：" + model.calibrationId + " → " + path);
                 UpdateCalibrationState(model);
-            };
-
-            _history.GroupOpened += delegate (string groupDir)
-            {
-                try
-                {
-                    MeasurementSnapshot snapshot = GroupReader.LoadGroup(groupDir);
-                    _results.ShowSnapshot(snapshot);
-                    _tabs.SelectedIndex = 1; // 双击历史组后直接切到结果页
-                    _measurement.AppendLog("已打开历史组：" + snapshot.GroupId);
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show("打开历史组失败：" + ex.Message, "历史", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
             };
         }
 
@@ -146,7 +133,7 @@ namespace Gmix.App
                 UpdateCalibrationState(null);
             }
 
-            _history.RefreshList();
+            _results.RefreshList();
         }
 
         void UpdateCalibrationState(CalibrationModel model)
