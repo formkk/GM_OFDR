@@ -1,5 +1,7 @@
 # GM-IX 数据与处理规范 v1.0
 
+**English title**：GM-IX Data & Processing Interface Control Document (ICD) v1.0
+
 > **定位：规范即契约。**
 > 本文档是 GM-IX 上位机各模块协作的唯一契约：采集进程、处理编排、校准、UI、报表、测试互不感知彼此实现，只通过本契约交互。
 > Part A 是**数据契约**（格式与字段的唯一事实源）；Part B 是**处理与生命周期契约**（行为、边界与错误）。
@@ -15,7 +17,7 @@
 
 | 边界 | 契约内容 | 承载章节 | 违反后果 |
 |---|---|---|---|
-| 进程边界：采集进程 ⇄ 编排/UI | staging 写入路径、提交时序、单写者 | Part B §7 | 数据竞争、组丢失/重复 |
+| 进程边界：采集进程 ⇄ 编排/UI | staging 写入路径、提交时序、单写者、交接判据（`.ready`） | Part B §7 | 数据竞争、组丢失/重复 |
 | 厂商边界：SDK 黑盒 ⇄ 自有数据 | 字段映射、`N/2+1` 长度口径、明确拒绝路径 | Part A §3/§4、Part B §3/§4 | 垃圾数据入库、静默错误 |
 | 数据边界：落盘 ⇄ 长期读取 | `schemaVersion`、兼容规则、字段语义冻结 | Part A §1 | 旧数据不可读 |
 | 协作边界：模块 ⇄ 模块 | 字段锚定（校准/精度/审计/UI/测试共用一套定义） | Part A §2–§7 | 一处变更、多处失配 |
@@ -40,10 +42,11 @@
 5. 厂商类型、指针、句柄不越出处理层（Part B §3.3、§5）；
 6. 平均只在线性 `ps` 域，且只对平均结果做一次 `detect`（Part A §2.2）；
 7. 精度口径组内统一（`precisionBasis`），样本标准差分母 `N-1`（Part A §2.2/§5.1）；
-8. dB 基线统计只使用 `baselineDb < 0` 的点（Part A §4）；
+8. dB 相对电平符号口径：detect 原始输出为正值 dB_rel（g50：基线 +98~+103、峰 +120~+147），厂商 UI 负值为标定后显示；基线统计不设符号过滤（Part A §4）；
 9. 指标计算是纯函数：只依赖输入数据、配置快照与校准值，不做 IO（Part B §5）；
-10. 组提交：先 `_staging` 后原子重命名，单写者，目标已存在即拒绝（Part B §7）；
-11. `configHash` 变化即旧校准失效（Part A §1、Part B §6）。
+10. 组提交：先 `_staging` 后原子重命名，单写者，目标已存在即拒绝；交接判据见 Part B §7.1（Part B §7）；
+11. `configHash` 变化即旧校准失效（Part A §1、Part B §6）；
+12. RL 符号口径（裁定）：`RL = 10·log10(P_refl/P_inc)` 原始比值、不取倒数——未标定量保持正电平刻度，标定后为负数且反射越强越接近 0；任何层不得对 RL 字段取负号（Part A §4/§5.1）。
 
 ### 0.4 契约变更纪律
 
@@ -86,6 +89,8 @@
 GMIX_DATA/                     # 数据根目录
 ├─ _staging/                   # 暂存区：未完成采集/处理，启动时清理
 │  └─ <groupId>/               # 按组暂存，失败不进入最终目录
+│     ├─ Rxxx/                 # 与最终 Rxxx 同构（scan.json/raw.bin/数组/JSON）
+│     └─ Rxxx/.ready           # 交接标记：采集进程写完该次扫描后原子写入（Part B §7.1）
 ├─ _calibration/               # 全局校准库
 │  └─ <calibrationId>/         # 一个校准版本
 │     └─ calibration.json      # 校准参数、标定件、校验点
@@ -137,6 +142,7 @@ GMIX_DATA/                     # 数据根目录
 - `sequence` 是会话内序号，但 **不建独立“会话目录”**。
 - 失败/中断/强杀的采集留在 `_staging/<groupId>/`，不进入最终目录；失败组目录重命名加 `.failed` 标记（`_staging/<groupId>.failed/`），保留失败现场（`saveRaw=onFailure` 时的 raw.bin 即在此），按 `retentionDays` 清理。
 - 每个 `Rxxx/` 与 `AVG/` 内复制一份 `calibration.json` 快照；全局校准库在 `_calibration/<calibrationId>/`。
+- 交接标记 `.ready` 由采集进程写、编排进程读，提交前必须删除，**不进入最终组目录**（Part B §7.1）。
 - `view.json`、`session.log` 可选；缺失不影响测量语义。
 
 ### 2.2 平均规则
@@ -309,8 +315,8 @@ retentionDays / maxTotalBytes
 | `peaks[].distanceM` | double | 否 | 与 `locM` 相同，UI 用 |
 | `peaks[].zeroPeak` | bool | 否 | 是否零距峰 |
 | `events[].stepLossDb` | double/null | 否 | **正损耗** = `-ilDb` |
-| `events[].rlDb` | double/null | 否 | 绝对回损（标定后，可为负） |
-| `events[].rlDbRel` | double | 否 | 相对回损（未标定） |
+| `events[].rlDb` | double/null | 否 | 绝对回损（标定后，负值：原始比值口径，见下方裁定） |
+| `events[].rlDbRel` | double | 否 | 相对回损（未标定，与 `peakDbRel` 同刻度，g50 实测正值） |
 | `events[].zeroPeak` | bool | 否 | 是否零距峰 |
 | `display.peakCount` | int | 否 | 过滤后显示峰数 |
 | `display.zeroPeakExcluded` | bool | 否 | 是否已排除零距峰 |
@@ -323,8 +329,9 @@ retentionDays / maxTotalBytes
 - `ilDb` 保留原始差值（负值）；`stepLossDb = -ilDb` 用于 UI 显示正损耗；
 - 零距峰默认 `zeroPeak=true`，UI 默认不显示，但数据保留；
 - `rlDb` 为 `null` 表示未标定，UI 只能显示 `rlDbRel`；
-- **dB 相对电平值域**：`baseline.f64`、`heightDbRel`、`noiseFloorDbRel` 等均为 `20log10` 相对电平，实测典型为**负值**（约 -40 ~ -110 dB）；基线统计（中值窗口、基线功率求和）只使用 `baselineDb < 0` 的点，`>= 0` 视为无效/哨兵值不参与计算；
-- `peaks[]` 中全部已检出峰参与功率求和，`heightDbRel` 可为负。
+- **dB 相对电平值域**：`baseline.f64`、`heightDbRel`、`noiseFloorDbRel` 等均为 detect 原始输出的 `20log10` 相对电平，g50 实测典型为**正值**（基线约 +98 ~ +103 dB，峰 +120 ~ +147 dB）；厂商 UI 显示的负值（约 -50 ~ -90 dB）是其标定后的口径，与原始输出不得混淆。detect 无文档化的哨兵值约定，基线统计**不设符号过滤**，不得臆测过滤规则；
+- `peaks[]` 中全部已检出峰参与功率求和（`heightDbRel` 为 detect 原始正值 dB_rel）。
+- **RL 符号口径（裁定 2026-11-05）**：RL 取**原始比值** `RL = 10·log10(P_refl / P_inc)`，**不取倒数**（dB 域取倒数等价于取负号）；反射功率恒小于入射，标定后 RL 为**负数**（原本含义，如 -61 dB），且**反射越强数值越接近 0**（单调增大）。实现约束：未标定量保持正电平刻度（`rlDbRel = peakDbRel`、`totalRlRawDb = +10·log10(P)`），由 `rlOffsetK` 加性负偏移完成比值换算；**任何层不得对 RL 字段取负号**（取负 = 翻转比值方向 = 变相取倒数，违反本裁定）。厂商对照（g50 同 DUT 四峰拟合）：`rlDb ≈ heightDbRel + rlOffsetK`，斜率 ≈ +1。
 
 ---
 
@@ -344,8 +351,8 @@ retentionDays / maxTotalBytes
 | `averageCount` | int | 是 | 参与平均的次数 |
 | `totalIlRawDb` | double/null | 是 | 未标定区间插损；无法计算（无有效基线/段）时为 `null` |
 | `totalIlDb` | double/null | 是 | 标定后总插损 |
-| `totalRlRawDb` | double/null | 是 | 未标定总回损；区间内无有效峰时为 `null` |
-| `totalRlDb` | double/null | 是 | 标定后总回损 |
+| `totalRlRawDb` | double/null | 是 | 未标定总回损（正电平刻度，见 §4 裁定）；区间内无有效峰时为 `null` |
+| `totalRlDb` | double/null | 是 | 标定后总回损（负值；反射越强越接近 0） |
 | `ilPrecisionDb` | double/null | 否 | 插损精度；仅 `AVG/` 填，样本标准差 |
 | `rlPrecisionDb` | double/null | 否 | 回损精度；仅 `AVG/` 填，样本标准差 |
 | `precisionMode` | string | 否 | `sample_std` |
@@ -368,12 +375,22 @@ totalRlRawDb = 10 × log10(P_peak)
 P_base = Σ 10^(baselineDb_k / 10)
 totalRlRawDb = 10 × log10(P_peak + P_base)
 
-绝对回损：
-totalRlDb = totalRlRawDb + rlOffsetK
+绝对回损（裁定：原始比值，不取倒数）：
+totalRlDb = totalRlRawDb + rlOffsetK     # rlOffsetK < 0；结果为负值，反射越强越接近 0
 
-区间插损：
+区间插损（保护带窗口，自有口径）：
+L_start 取 [startM, startM + guardM] 窗口内基线点的中位数
+L_end   取 [endM − guardM, endM] 窗口内基线点的中位数
+（guardM 未设置或 ≤ 0 时按 0.1 m 计算）
 totalIlRawDb = median(L_start) - median(L_end)
 totalIlDb = ilSlope × totalIlRawDb + ilIntercept
+基线缺失或窗口内无点时，L_start/L_end 退用段噪声顶（首段/末段 noiseFloorDbRel）；仍无法取得 → totalIlRawDb = null
+
+插损标定作用对象（裁定 2026-11-05，自有口径）：
+totalIlDb   = ilSlope × totalIlRawDb + ilIntercept   # 截距只加一次（绝对量）
+stepLossDb  = ilSlope × rawStepLossDb                # 逐事件台阶只乘斜率，不加截距
+理据：截距是仿射标定 y = a·x + b 的零点项，属绝对量属性；台阶为差分量 Δy = a·Δx，零点在相减时抵消。
+若逐事件加截距，零损耗段会显示 -0.1 dB，与"台阶 = 相对损耗"语义矛盾。
 
 精度（仅 AVG/，自有口径）：
 组已标定且所有有效重复均有标定值 → basis = "calibrated"，v_i = totalIlDb/totalRlDb
@@ -388,7 +405,7 @@ precisionCount = valid.Count
 precisionBasis = "calibrated" | "raw"
 ```
 
-说明：这些是**自有口径**，不保证与厂商 UI 数值一致；厂商公式仍属 TBD-S1~S6。`peakHeightDb_i` 即 `peaks[].heightDbRel`（相对电平，可为负），全部已检出峰参与求和；`median(L_start)`/`median(L_end)` 只统计窗口内 `baselineDb < 0` 的点。
+说明：这些是**自有口径**，不保证与厂商 UI 数值一致；厂商公式仍属 TBD-S1~S6。`peakHeightDb_i` 即 `peaks[].heightDbRel`（detect 原始正值 dB_rel），全部已检出峰参与求和；`median(L_start)`/`median(L_end)` 取窗口内全部基线点（正值 dB_rel，不设符号过滤）的中位数。RL 符号按 §4 裁定：功率求和回 dB 后**保持正刻度、不取负**，负值来自 `rlOffsetK` 标定后的比值本身（P_refl < P_inc）；功率越大（反射越强）→ RL 越接近 0。
 
 ---
 
@@ -403,7 +420,8 @@ precisionBasis = "calibrated" | "raw"
 | `configHash` | string | 是 | 采样率/AFE/量程/通道组合哈希 |
 | `method` | string | 是 | `reference_reflector` / `attenuator` / `vendor` |
 | `distScale` | double | 是 | 距离比例 |
-| `rlOffsetK` | double/null | 否 | 绝对回损偏移，dB |
+| `psdRef` | double/null | 否 | 功率谱密度基准（厂商校准页「功率谱密度」，如 48）；绝对 RL 标定的 PSD 基准，见 TBD-S5 |
+| `rlOffsetK` | double/null | 否 | 绝对回损偏移 dB（负偏移，见 §4 裁定：`rlDb = rlDbRel + rlOffsetK`） |
 | `rlCurveKFile` | string/null | 否 | 频率相关 K 曲线文件 |
 | `ilSlope` | double | 否 | 插损斜率 |
 | `ilIntercept` | double | 否 | 插损截距 |
@@ -420,14 +438,66 @@ precisionBasis = "calibrated" | "raw"
 触发阈值   = 35
 ```
 
-本次实机标定记录（自有口径）：
+厂商确认值（2026-11-05 确认，取代校准页默认值）：
 
 ```text
-插损斜率 = 0.5361
-插损截距 = -0.1
+插损斜率 = 0.5361   # 沿用厂商校准页截图值
+插损截距 = -0.1     # 厂商明确要求：校准页截距须手动改为 -0.1
 ```
 
-当前斜率取自厂商截图值 `0.5361`；实现与测试样例已按该值计算，后续如有实测斜率再替换。
+说明：厂商校准页默认截距 `0.7373` **不得直接使用**，必须手动改为 `-0.1`；本实现与测试样例均按 `-0.1` 计算。斜率 `0.5361` 沿用厂商截图值，如有实测斜率再替换。
+
+### 6.1 `configHash` 计算口径（冻结，2026-11-05）
+
+**作用**：把"影响测量口径的配置"绑定到校准与组；配置一变，旧 `calibrationId` 即失效（§0.3 #11）。
+
+**算法版本标识**：`canonical-json/sha256/v1`。该标识一旦变更，历史 `configHash` 全部作废，按 §0.4 走破坏性变更流程。
+
+**参与域（白名单，固定顺序）**：
+
+| 序 | 段名 | 内容 |
+|---|---|---|
+| 1 | `interface` | `Interface.json` 规范化全文（板卡槽位、寄存器基址、`CardIndx`） |
+| 2 | `channelMap` | `{p, s, aux, ignored}` |
+| 3 | `acquisition` | 仅 8 项：`sampleRateMhz`、`acqTimeMs`、`segCount`、`triggerMode`、`triggerDelayMs`、`sweepPeriodMs`、`windowStartMs`、`windowEndMs` |
+| 4 | `afe` | AFE 配置规范化全文（文件待确认，TBD-S15） |
+| 5 | `range` | 量程配置规范化全文（同上） |
+| 6 | `functional` | 功能配置规范化全文（同上） |
+
+**排除域（明确不参与）**：
+
+- 校准参数本身：`distScale`、`rlOffsetK`、`ilSlope`、`ilIntercept`、`psdRef`——被保护对象不能参与自身指纹；
+- 派生值：`expectedFrames`、`bufferBytes`、`bytesPerFrame`——由公式算出，计算方式微调不应使校准失效；
+- 运行态：路径、操作员、时间戳、`scanId`/`groupId`、版本号。
+
+**规范化（Canon）规则**：
+
+- 对象键按 UTF-16 序数（Ordinal）升序排列；数组保持原序；
+- 无空白：`{"a":1,"b":2}`；
+- 字符串按 JSON 转义，不做 Unicode 归一化；
+- 数值：整数原样，浮点用最短 round-trip 表示；
+- `null` 原样；
+- 缺失配置文件 → 该段为 `null`（与空对象 `{}` 可区分）。
+
+**拼接与哈希**：
+
+```text
+RS = U+001E（记录分隔符，防段间拼接歧义）
+canonical = "interface=" + Canon(interface) + RS
+          + "channelMap=" + Canon(channelMap) + RS
+          + "acquisition=" + Canon(acquisition) + RS
+          + "afe=" + Canon(afe) + RS
+          + "range=" + Canon(range) + RS
+          + "functional=" + Canon(functional)
+configHash = "sha256:" + lowercaseHex(SHA256(UTF-8(canonical)))
+```
+
+**一致性要求**：
+
+- 采集进程、编排进程、UI 必须使用同一实现；禁止各进程自行实现（键序或格式差异会使组内校验误判）；
+- `group.json`、`calibration.json`、`scan.json` 中的该值必须逐字节相同。
+
+**失效传播**：`configHash` 不等 → 不应用绝对 IL/RL，`totalIlDb`/`totalRlDb = null` 并写 warning（Part B §3.5）；组内不一致 → 拒绝平均（§2.2）。
 
 ---
 
@@ -448,6 +518,13 @@ precisionBasis = "calibrated" | "raw"
 }
 ```
 
+`yRange`/`cursor` 的 y 值是**显示口径**，统一为厂商负刻度（-150 ~ -40）：显示值 = dB_rel 数据 + `rlOffsetK`（≈ -192，即 `+147` → `-45`、`+120` → `-72`）。
+
+- 已标定：`rlOffsetK` 取自 `calibration.json`；
+- 未标定：允许使用**默认显示偏移**并标注"未标定"，该偏移只是显示参数，不进入任何数据字段、不参与合格判定（`rlDb` 仍为 `null`）。
+
+显示口径只存于 `view.json`，**不得写回任何数据字段**：数据字段（`heightDbRel`/`rlDbRel`/`totalRlRawDb`）恒为正电平刻度（见 §4 裁定）。
+
 `session.log` 为纯文本运行日志，记录连接、配置、采集、异常、耗时。
 
 ---
@@ -461,15 +538,16 @@ precisionBasis = "calibrated" | "raw"
 | TBD-S3 | 总插损定义（台阶求和 vs 区间基线差） | 总 IL 数值口径 | 已关闭 | 自有口径已定；厂商对齐移入可选扩展 | P1 |
 | TBD-S4 | 总回损仅峰值/基线+峰值积分范围 | 总 RL 数值口径 | 已关闭 | 自有口径已定；厂商对齐移入可选扩展 | P1 |
 | TBD-S5 | 绝对回损 `K`/PSD 基准与可溯源标定件 | 无法显示绝对 RL/dBm | 待定 | 标定实验 + 参考件 | P0 |
-| TBD-S6 | IL 斜率/截距作用对象（逐事件/总 IL，截距是否只加一次） | 标定后数值偏差 | 待定 | 厂商确认或自定义 | P1 |
+| TBD-S6 | IL 斜率/截距作用对象（逐事件/总 IL，截距是否只加一次） | 标定后数值偏差 | 已关闭 | 自有口径裁定（§5.1）：截距只加总 IL 一次，台阶只乘斜率；厂商对齐移入可选扩展 | P1 |
 | TBD-S7 | 厂商触发阈值 35 的语义 | 峰值检出差异 | 待定 | 厂商确认 | P2 |
 | TBD-S8 | 平均次数与精度统计方式 | 精度口径 | 已关闭 | 自有口径：样本标准差 + `precisionBasis` 回退规则 | P2 |
 | TBD-S9 | 距离标定基准与 `dist_scale` 溯源 | 距离绝对值偏差 | 待定 | 已知长度光纤/反射件 | P0 |
 | TBD-S10 | 零距峰过滤规则与峰编号 | UI 峰数不一致 | 待定 | 已确认默认排除，规则待定 | P2 |
-| TBD-S11 | 分析区间边界处理/保护带 | 区间总 IL/RL 偏差 | 待定 | 自定义并记录 | P2 |
-| TBD-S12 | 配置变化后校准失效规则 | 误用旧校准 | 已定义待实现 | configHash 不匹配即失效 | P1 |
+| TBD-S11 | 分析区间边界处理/保护带 | 区间总 IL/RL 偏差 | 已定义（自有口径）待实现 | 保护带窗口见 §5.1；厂商对齐待定 | P2 |
+| TBD-S12 | 配置变化后校准失效规则 | 误用旧校准 | 已定义（§6.1 口径）待实现 | `configHash` 按 §6.1 计算，不匹配即失效 | P1 |
 | TBD-S13 | PDF 报表格式 | 导出功能 | 待定 | 第二阶段 | P2 |
 | TBD-S14 | 多段/外触发 | 采集模式 | 待定 | 厂商解决后再说 | P2 |
+| TBD-S15 | `afe`/`range`/`functional` 三类配置文件的实际内容与字段 | `configHash` 输入段只能整文件参与，无法做字段级语义校验 | 待定 | 实机确认三类配置文件 | P1 |
 
 ---
 
@@ -486,7 +564,7 @@ precisionBasis = "calibrated" | "raw"
 ## 10. 当前实现（v0.2 字段已落地，v1.0 组结构待实现）
 
 > 当前 `Gmix.Data` 代码仍按 `schemaVersion="0.2"` 输出；实现组结构时升级为 `"1.0"`。
-> 基线过滤（`baselineDb < 0`）、guard 默认 0.1、全部已检出峰参与功率求和，已按本文口径修正代码与测试（2026-11-05）；`precisionBasis` 随组结构落地实现。
+> guard 默认 0.1、全部已检出峰参与功率求和、基线统计不设符号过滤（detect 原始 dB_rel 为正值，厂商负值为标定后口径），已按本文口径修正代码与测试（2026-11-05）；RL 符号裁定（§0.3 #12）已随代码落地，含 4 条方向回归断言；`precisionBasis` 随组结构落地实现。
 
 | 文件 | 作用 |
 |---|---|
@@ -498,21 +576,26 @@ precisionBasis = "calibrated" | "raw"
 | `GM-IX/src/Gmix.Data/Program.cs` | 合成样例 + 公式回归测试 |
 | `GM-IX/src/Gmix.Data/build-and-test.ps1` | 一键编译 `Gmix.Data.dll` + 测试 |
 
-测试输出：
+测试输出（14 项断言全绿，2026-11-05）：
 
 ```text
 PASS schema validation
 PASS calibration round-trip
+PASS summary rl fields
 PASS peak_only totalRlRaw
-PASS baseline_plus_peak
+PASS baseline_plus_peak 应大于 peak_only
 PASS 区间插损 raw=12dB
 PASS 插损标定公式
 PASS 绝对回损公式
+PASS RL 裁定：未标定 totalRlRaw 为正电平刻度
+PASS RL 裁定：标定后 totalRl 为负值
+PASS RL 裁定：全部峰 +3dB → totalRlRaw 增大 3dB（正刻度，不取负）
+PASS RL 裁定：反射增强 → 标定后 RL 更接近 0
 PASS 精度 sample std
 PASS schema v0.2
 ```
 
-样例数据生成在 `GM-IX/tests/fixtures/schema_v02_sample/`（10 MHz / 1 ms，含 raw、数组、JSON）。
+样例数据生成在 `GM-IX/tests/fixtures/schema_v02_sample/`（50 MHz / 8 ms，含 raw、数组、JSON）。
 
 ---
 
@@ -522,7 +605,7 @@ PASS schema v0.2
 > 契约地位：Part B 承载**进程边界**与**厂商边界**的契约（见 §0.1）；各角色的义务与禁止见 §0.2。
 > 适用范围：定义自研软件内部的数据处理契约，包括输入/输出、边界条件、错误处理、数据所有权与持久化规则。
 > 不包含：厂商私有算法复刻、UI 实现、数据库与多工位部署。
-> 数据协议见 **Part A**；字段、公式与文件布局以 Part A 为准。
+> 数据契约见 **Part A**；字段、公式与文件布局以 Part A 为准。
 
 ---
 
@@ -629,6 +712,9 @@ GMIX_DATA/<groupId>/R001..R00N/ + AVG/
 | `dist` 轴长度不同或偏差超 §2.2 阈值 | 拒绝整组平均，`alignment=invalid`，组留 `_staging` |
 | `dist` 轴轻微偏差（浮点误差外、5% 内） | 插值到参考轴，标记 `resampled`，写 warning |
 | 组内 `configHash`/`calibrationId` 不一致 | 拒绝平均，组标记 `failed` |
+| `.ready` 超时未出现（默认 30 s，可配） | 该次扫描判 `rejected`，写 warning，组内继续；`validCount = 0` 时组 `failed` |
+| `.ready` 清单与实际文件不符（缺失/字节数或 sha256 不匹配） | 该次扫描 `rejected`，按"数据"分类上报 |
+| `.ready` 中含 `scan.json` 无法解析或 `Lout != N/2+1` | 该次扫描 `rejected`，按"数据"分类上报 |
 | `scanIds` 与 `Rxxx/` 目录不一致 | 拒绝提交 `group.json`，报组完整性错误 |
 | 提交时最终目录已存在 | 拒绝重命名，报冲突，不覆盖已有数据 |
 | `validCount = 0` | 不生成 `AVG/`，组标记 `failed` |
@@ -666,7 +752,7 @@ GMIX_DATA/<groupId>/R001..R00N/ + AVG/
 - `schemaVersion` 固定随协议版本；
 - 新增字段必须可选，不改变已有语义；
 - 不兼容变更升主版本；
-- `configHash` 变化即旧校准失效；
+- `configHash` 按 Part A §6.1 口径计算；变化即旧校准失效；
 - 缺字段时按“不支持/未启用”，不得猜默认值。
 
 ---
@@ -681,6 +767,58 @@ GMIX_DATA/<groupId>/R001..R00N/ + AVG/
 - `saveRaw` 可配置；关闭时 `rawFile=null`，派生数组仍保存；
 - `keepRepeats` 可配置，但 `group.json` 与 `AVG/` 必须保留；
 - 单写者假设：同一 `GMIX_DATA` 同一时刻只允许一个编排进程执行 staging→最终目录的提交；采集进程只写 `_staging/<groupId>/`，不执行提交。
+
+### 7.1 采集进程 ↔ 编排进程交接（`.ready`）
+
+**为什么需要**：§7 只规定"采集进程只写 `_staging`、编排进程提交"，未定义"一次扫描写完"的可观察判据；没有判据，编排进程无法区分"正在写"与"已写完"。
+
+**标记文件**：`_staging/<groupId>/Rxxx/.ready`
+
+```json
+{
+  "schemaVersion": "1.0",
+  "scanId": "SC-20261105-153022-001",
+  "repeatIndex": 1,
+  "folder": "R001",
+  "files": [
+    { "path": "scan.json", "bytes": 1428, "sha256": "sha256:..." },
+    { "path": "raw.bin", "bytes": 3200000, "sha256": "sha256:..." }
+  ],
+  "acquirerVersion": "1.0.0",
+  "finishedAtUtc": "2026-11-05T07:30:22Z"
+}
+```
+
+| 字段 | 类型 | 必填 | 说明 |
+|---|---|---|---|
+| `schemaVersion` | string | 是 | `"1.0"` |
+| `scanId` | string | 是 | 与同目录 `scan.json` 一致 |
+| `repeatIndex` | int | 是 | 组内序号，1..N |
+| `folder` | string | 是 | `Rxxx` |
+| `files[].path` | string | 是 | 相对 `Rxxx/` 的文件名 |
+| `files[].bytes` | long | 是 | 字节数 |
+| `files[].sha256` | string | 是 | 与 `checksums` 同格式：`sha256:` + 小写 hex |
+| `acquirerVersion` | string | 是 | 写入方版本，用于排查 |
+| `finishedAtUtc` | string | 是 | 完成时间（UTC） |
+
+**写入方（采集进程）**：
+
+1. 按 §7 顺序写完该 `Rxxx/` 的全部文件；
+2. 计算每个文件的 `bytes` 与 `sha256`；
+3. 写 `.ready.tmp` → 原子重命名为 `.ready`（同卷，保证观察者不会读到半个标记）；
+4. 不得写 `group.json`，不得把目录改名到最终位置。
+
+**读取方（编排进程）**：
+
+1. 轮询 `_staging/*/R*/.ready`（推荐周期 1 s；以文件存在性判定，不依赖文件系统事件，避免丢事件）；
+2. 校验：清单齐全、`bytes` 与磁盘一致、`sha256` 匹配、`scan.json` 可解析、`Lout == N/2+1`、`dist` 严格递增；
+3. 校验通过才纳入组；不通过 → `rejected` 并按 §4 分类上报；
+4. 超时（默认 30 s，可配）未见 `.ready` → 该次扫描 `rejected`（错误分类"超时"）；
+5. 全部 `Rxxx` 就绪后执行 §7 的提交序列，**提交前删除所有 `.ready`**。
+
+**兼容**：旧数据（v0.1/v0.2）无 `.ready`，仅回读场景按"已完成"处理，不参与新采集判定。
+
+**不变量**：`.ready` 不进入最终组目录；最终目录的可信判据始终是 `group.json`。
 
 ---
 
@@ -718,6 +856,12 @@ GMIX_DATA/<groupId>/R001..R00N/ + AVG/
 - [ ] N>1 时 `AVG/summary.json` 填 `ilPrecisionDb/rlPrecisionDb`，各 `Rxxx/` 保持 `null`；
 - [ ] 精度按样本标准差（N-1）计算，`validCount<2` 或值为 `null` 时为 `null`；
 - [ ] 精度取值口径组内统一，`precisionBasis` 正确标注；未标定组用原始值，不再恒为 `null`；
-- [ ] 基线统计只使用 `baselineDb < 0` 的点；
+- [ ] 基线统计不设符号过滤；数据字段 dB_rel 恒为正刻度（detect 原始），UI 曲线统一按标定后负刻度显示（= dB_rel + `rlOffsetK`，-150 ~ -40，与厂商一致），显示值只存 `view.json`、不写回数据字段；
+- [ ] RL 链路全程无取负/取倒数；未标定 `totalRlRawDb` 为正电平刻度，标定后 RL 为负数，反射更强时数值更接近 0；
 - [ ] 每个 `Rxxx/` 与 `AVG/` 可回读并通过 SchemaValidator（按 `keepRepeats` 模式：已被保留策略删除的数组不参与校验）；
 - [ ] 任何失败不进入最终目录，`_staging/<groupId>/` 可清理。
+- [ ] `_staging/<groupId>/Rxxx/.ready` 由采集进程写入，`files` 清单与实际文件一致，`sha256` 可校验；
+- [ ] 提交前删除全部 `.ready`，最终组目录不含 `.ready`；
+- [ ] 编排进程按 Part B §7.1 判定"已写完"，`.ready` 超时进入"超时"分类；
+- [ ] `configHash` 按 Part A §6.1 计算，采集进程与编排进程对同一配置产出同一值；
+- [ ] 配置变更后旧 `calibrationId` 失效：`configHash` 不等时绝对 IL/RL 为 `null` 并写 warning。
