@@ -75,22 +75,22 @@ namespace Gmix.App.UI
         {
             var parameters = new FlowLayoutPanel();
             parameters.Dock = DockStyle.Top;
-            parameters.Height = 96;
+            parameters.Height = 120;
             parameters.AutoSize = false;
             parameters.WrapContents = true;
             parameters.Padding = new Padding(6);
 
             parameters.Controls.Add(MakeLabel("采样率 50 MHz · 时长 8 ms · 软件触发（只读）"));
-            parameters.Controls.Add(MakeLabel("平均次数"));
+            parameters.Controls.Add(MakeLabel("组内平均次数"));
             _repeat.Minimum = 1;
             _repeat.Maximum = 100;
             _repeat.Value = 1;
             _repeat.Width = 56;
             parameters.Controls.Add(_repeat);
 
-            parameters.Controls.Add(MakeLabel("运行模式"));
+            parameters.Controls.Add(MakeLabel("连续采集"));
             _runMode.DropDownStyle = ComboBoxStyle.DropDownList;
-            _runMode.Items.AddRange(new object[] { "单次", "循环" });
+            _runMode.Items.AddRange(new object[] { "关闭", "开启" });
             _runMode.SelectedIndex = 0;
             _runMode.Width = 80;
             parameters.Controls.Add(_runMode);
@@ -138,6 +138,16 @@ namespace Gmix.App.UI
             _badge.AutoSize = true;
             _badge.Padding = new Padding(12, 8, 0, 0);
             parameters.Controls.Add(_badge);
+
+            parameters.SetFlowBreak(_badge, true);
+            var hint = new Label();
+            hint.AutoSize = true;
+            hint.ForeColor = Color.DimGray;
+            hint.Font = new Font("Segoe UI", 8);
+            hint.Padding = new Padding(0, 6, 0, 0);
+            hint.Text = "组内平均次数：同一组内采集 N 次后在线性 ps 域平均（N>1 才生成平均结果）；"
+                + "连续采集开启：每组提交后自动开始下一组，直到点『停止』";
+            parameters.Controls.Add(hint);
 
             _log.Dock = DockStyle.Fill;
             _log.ReadOnly = true;
@@ -191,7 +201,7 @@ namespace Gmix.App.UI
 
             if (!string.IsNullOrEmpty(_pendingGroupId)) await CommitPendingAsync();
 
-            bool loop = string.Equals(_runMode.SelectedItem as string, "循环", StringComparison.Ordinal);
+            bool loop = string.Equals(_runMode.SelectedItem as string, "开启", StringComparison.Ordinal);
             _cts = new CancellationTokenSource();
             _running = true;
             SetRunningState(true);

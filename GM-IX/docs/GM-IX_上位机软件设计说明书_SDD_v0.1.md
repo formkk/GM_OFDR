@@ -442,8 +442,8 @@ MainForm (1280×720 起，可缩放)
 ├─ TableLayoutPanel (2 行 × 2 列)
 │  ├─ [行0 跨2列] 参数条 Panel
 │  │   ├─ 采样率(只读 50 MHz) · 采集时长(只读 8 ms)
-│  │   ├─ 平均次数 NumericUpDown (1..N)
-│  │   ├─ 运行模式 ComboBox（界面「单次 / 循环」，落盘仍为 single / loop）
+│  │   ├─ 组内平均次数 NumericUpDown (1..N)：同组内采集 N 次后在线性 ps 域平均，N>1 才生成 AVG
+│  │   ├─ 连续采集 ComboBox（界面「关闭 / 开启」= single / loop；开启后每组提交即开始下一组）
 │  │   ├─ 分析区间：startM / endM TextBox + guardM(默认 0.1，只读)
 │  │   ├─ 回损模式 ComboBox（界面「仅峰值 / 基线+峰值」，落盘仍为 peak_only / baseline_plus_peak）
 │  │   ├─ 按钮：开始 · 停止 · 保存本组
