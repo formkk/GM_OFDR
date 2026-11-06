@@ -271,7 +271,7 @@ namespace Gmix.App.UI
                     if (isZero) continue;
 
                     // 与厂商 UI 一致：峰上方两行标注「P编号 距离」与电平；编号按显示顺序从 1 起
-                    string head = "峰" + displayNo + " " + loc.ToString("0.0000") + " m";
+                    string head = "P" + displayNo + " " + loc.ToString("0.0000") + " m";
                     string tail = level.ToString("0.00") + " dB";
                     SizeF headSize = g.MeasureString(head, font);
                     SizeF tailSize = g.MeasureString(tail, font);
