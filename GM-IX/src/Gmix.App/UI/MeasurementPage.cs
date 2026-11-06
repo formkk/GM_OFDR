@@ -90,7 +90,7 @@ namespace Gmix.App.UI
 
             parameters.Controls.Add(MakeLabel("运行模式"));
             _runMode.DropDownStyle = ComboBoxStyle.DropDownList;
-            _runMode.Items.AddRange(new object[] { "single", "loop" });
+            _runMode.Items.AddRange(new object[] { "单次", "循环" });
             _runMode.SelectedIndex = 0;
             _runMode.Width = 80;
             parameters.Controls.Add(_runMode);
@@ -109,7 +109,7 @@ namespace Gmix.App.UI
 
             parameters.Controls.Add(MakeLabel("回损模式"));
             _rlMode.DropDownStyle = ComboBoxStyle.DropDownList;
-            _rlMode.Items.AddRange(new object[] { "peak_only", "baseline_plus_peak" });
+            _rlMode.Items.AddRange(new object[] { "仅峰值", "基线+峰值" });
             _rlMode.SelectedIndex = 0;
             _rlMode.Width = 150;
             parameters.Controls.Add(_rlMode);
@@ -191,7 +191,7 @@ namespace Gmix.App.UI
 
             if (!string.IsNullOrEmpty(_pendingGroupId)) await CommitPendingAsync();
 
-            bool loop = string.Equals(_runMode.SelectedItem as string, "loop", StringComparison.Ordinal);
+            bool loop = string.Equals(_runMode.SelectedItem as string, "循环", StringComparison.Ordinal);
             _cts = new CancellationTokenSource();
             _running = true;
             SetRunningState(true);
@@ -205,7 +205,8 @@ namespace Gmix.App.UI
                         Repeat = (int)_repeat.Value,
                         StartM = startM,
                         EndM = endM,
-                        RlMode = _rlMode.SelectedItem as string ?? "peak_only",
+                        RlMode = string.Equals(_rlMode.SelectedItem as string, "基线+峰值", StringComparison.Ordinal)
+                            ? "baseline_plus_peak" : "peak_only",
                         CalibrationPath = _calibrationPath,
                         Synthetic = _synthetic.Checked
                     };

@@ -424,6 +424,8 @@ Gmix.Acquirer.exe --groupId GR-20261105-1530-001 --repeat 5 --root D:\GMIX_DATA 
 
 ### 8.1 页面划分（P0 3 页）
 
+> 界面名词统一采用中文：组号（group）、扫描号（scan）、平均结果、读数游标 A/B、峰 1..N、反射强度、基线、插损/回损、待提交/完整/部分完成/失败；数据文件与接口枚举仍保留英文原值，仅界面翻译。
+
 | 页 | 内容 | 主用例 |
 |---|---|---|
 | 测量主页 | 参数条 + 距离域曲线 + 指标表 + 事件表 + 日志区 | `UC-02`、`UC-03`、`UC-04`、`UC-05` |
@@ -441,9 +443,9 @@ MainForm (1280×720 起，可缩放)
 │  ├─ [行0 跨2列] 参数条 Panel
 │  │   ├─ 采样率(只读 50 MHz) · 采集时长(只读 8 ms)
 │  │   ├─ 平均次数 NumericUpDown (1..N)
-│  │   ├─ 运行模式 ComboBox (single/loop)
+│  │   ├─ 运行模式 ComboBox（界面「单次 / 循环」，落盘仍为 single / loop）
 │  │   ├─ 分析区间：startM / endM TextBox + guardM(默认 0.1，只读)
-│  │   ├─ 回损模式 ComboBox (peak_only / baseline_plus_peak)
+│  │   ├─ 回损模式 ComboBox（界面「仅峰值 / 基线+峰值」，落盘仍为 peak_only / baseline_plus_peak）
 │  │   ├─ 按钮：开始 · 停止 · 保存本组
 │  │   └─ 未标定提示条（DS-06 常驻标注）
 │  ├─ [行1 左] CurveCanvas (自绘)

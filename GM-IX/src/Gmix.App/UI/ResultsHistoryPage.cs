@@ -39,7 +39,7 @@ namespace Gmix.App.UI
             bar.Height = 40;
             bar.Padding = new Padding(6);
 
-            bar.Controls.Add(new Label { Text = "组 ID 搜索", AutoSize = true, Padding = new Padding(0, 8, 6, 0) });
+            bar.Controls.Add(new Label { Text = "组号搜索", AutoSize = true, Padding = new Padding(0, 8, 6, 0) });
             _search.Width = 180;
             _search.TextChanged += delegate { RefreshList(); };
             bar.Controls.Add(_search);
@@ -99,10 +99,10 @@ namespace Gmix.App.UI
             _grid.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
             _grid.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
             _grid.MultiSelect = false;
-            _grid.Columns.Add("groupId", "组 ID");
+            _grid.Columns.Add("groupId", "组号");
             _grid.Columns.Add("createdAt", "时间");
             _grid.Columns.Add("status", "状态");
-            _grid.Columns.Add("valid", "有效");
+            _grid.Columns.Add("valid", "有效/总数");
             _grid.Columns[0].FillWeight = 44;
             _grid.Columns[1].FillWeight = 26;
             _grid.Columns[2].FillWeight = 17;
@@ -124,7 +124,8 @@ namespace Gmix.App.UI
             foreach (GroupSummary group in groups)
             {
                 if (filter.Length > 0 && group.GroupId.IndexOf(filter, StringComparison.OrdinalIgnoreCase) < 0) continue;
-                int index = _grid.Rows.Add(group.GroupId, FormatTime(group.CreatedAtUtc), group.Status,
+                int index = _grid.Rows.Add(group.GroupId, FormatTime(group.CreatedAtUtc),
+                    GroupStatusText.Describe(group.Status),
                     group.ValidCount + "/" + group.AverageCount);
                 _grid.Rows[index].Tag = group.Dir;
             }

@@ -68,6 +68,22 @@ namespace Gmix.App.Orchestration
         public string Dir;
     }
 
+    /// <summary>组状态的中文显示（数据文件仍存英文枚举，只在界面翻译）。</summary>
+    public static class GroupStatusText
+    {
+        public static string Describe(string status)
+        {
+            switch (status)
+            {
+                case "complete": return "完整";
+                case "incomplete": return "部分完成";
+                case "failed": return "失败";
+                case "pending": return "待提交";
+                default: return string.IsNullOrEmpty(status) ? "—" : status;
+            }
+        }
+    }
+
     public static class GroupReader
     {
         public static MeasurementSnapshot LoadGroup(string groupDir)

@@ -57,7 +57,7 @@ namespace Gmix.Acquirer
                 if (!opt.Synthetic)
                 {
                     device = new QtAcquisition(opt.Runtime);
-                    Console.WriteLine("SDK 版本: " + device.Version());
+                    Console.WriteLine("厂商库版本: " + device.Version());
                     device.Open(opt.Card);
                     device.Configure((uint)acquisition.sampleRateMhz, (uint)acquisition.acqTimeMs,
                         (uint)acquisition.segCount, acquisition.triggerMode, (uint)acquisition.triggerDelayMs);
@@ -123,7 +123,7 @@ namespace Gmix.Acquirer
 
                         acquired.Add(scanId);
                         Console.WriteLine(string.Format(
-                            "{0}: 峰 {1}，事件 {2}，总IL raw={3}；采集={4} 处理={5} 检测={6} 聚合={7} 落盘={8} 总计={9} ms",
+                            "{0}: 峰数 {1}，事件数 {2}，总插损（原始）={3}；采集={4} 处理={5} 检测={6} 聚合={7} 落盘={8} 合计={9} 毫秒",
                             scanId, detect.Peaks.Length, detect.Events.Length, summary.totalIlRawDb,
                             acquireMs, ofdrMs, detectMs, aggMs, writeMs, totalMs + writeMs));
                     }

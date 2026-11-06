@@ -116,8 +116,8 @@ namespace Gmix.App.UI
 
             string text = snapshot == null
                 ? "当前结果：—"
-                : string.Format("组 {0} · 扫描 {1} · 状态 {2} · {3} · {4}{5}",
-                    snapshot.GroupId ?? "—", snapshot.ScanId ?? "—", snapshot.Status ?? "—",
+                : string.Format("组号 {0} · 扫描号 {1} · 状态 {2} · {3} · {4}{5}",
+                    snapshot.GroupId ?? "—", snapshot.ScanId ?? "—", GroupStatusText.Describe(snapshot.Status),
                     snapshot.IsAverage ? "平均结果" : "单次", snapshot.Calibrated ? "已标定" : "未标定",
                     snapshot.PsDbConvertedFromLinear ? " · 历史组：曲线由线性 ps 换算" : "");
             _title.Text = text;

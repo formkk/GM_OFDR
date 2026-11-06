@@ -38,15 +38,15 @@ namespace Gmix.App.UI
             table.ColumnCount = 2;
             table.Padding = new Padding(16, 12, 16, 12);
 
-            AddRow(table, "功率谱密度基准 psdRef", _psdRef, "厂商校准页「功率谱密度」，未标定可留空");
+            AddRow(table, "功率谱密度", _psdRef, "字段 psdRef；厂商校准页同名项，本机实测 -88，未标定可留空");
             _ilSlope.Text = "0.5361";
-            AddRow(table, "插损斜率 ilSlope", _ilSlope, "厂商确认值 0.5361（默认值 0.7373 不得使用）");
+            AddRow(table, "插损斜率", _ilSlope, "字段 ilSlope；厂商确认 0.5361，默认值 0.7373 不得使用");
             _ilIntercept.Text = "-0.1";
-            AddRow(table, "插损截距 ilIntercept", _ilIntercept, "厂商要求手动改为 -0.1；只作用于总插损");
-            AddRow(table, "触发阈值 triggerThresholdDb", _triggerThreshold, "厂商阈值 35 语义待确认（TBD-D06）");
-            AddRow(table, "回损偏移 rlOffsetK", _rlOffsetK, "负偏移；rlDb = rlDbRel + rlOffsetK");
+            AddRow(table, "插损截距", _ilIntercept, "字段 ilIntercept；厂商要求改为 -0.1，只作用于总插损");
+            AddRow(table, "触发阈值", _triggerThreshold, "字段 triggerThresholdDb；厂商值 35，语义待确认（TBD-D06）");
+            AddRow(table, "回损偏移", _rlOffsetK, "字段 rlOffsetK；负偏移，绝对回损 = 相对回损 + 本值");
             _distScale.Text = "1";
-            AddRow(table, "距离比例 distScale", _distScale, "只作用于 dist 轴，默认 1");
+            AddRow(table, "距离比例", _distScale, "字段 distScale；只作用于距离轴，本机标定 0.9502");
 
             var buttons = new FlowLayoutPanel();
             buttons.AutoSize = true;
@@ -105,7 +105,7 @@ namespace Gmix.App.UI
             _triggerThreshold.Text = Format(latest.triggerThresholdDb);
             _rlOffsetK.Text = Format(latest.rlOffsetK);
             _distScale.Text = latest.distScale.ToString("R", CultureInfo.InvariantCulture);
-            _status.Text = "已载入 " + latest.calibrationId + "（configHash " + ShortHash(latest.configHash) + "）";
+            _status.Text = "已载入 " + latest.calibrationId + "（配置哈希 " + ShortHash(latest.configHash) + "）";
         }
 
         static string Format(double? value)
