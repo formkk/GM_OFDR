@@ -28,6 +28,7 @@ namespace Gmix.App
         {
             _env = env;
             Text = "GM-IX 上位机 v" + AppVersion + " — " + env.DataRoot;
+            Icon = LoadWindowIcon();
             StartPosition = FormStartPosition.CenterScreen;
             MinimumSize = new Size(1280, 720);
             Size = new Size(1360, 800);
@@ -65,6 +66,16 @@ namespace Gmix.App
 
             Controls.Add(tabs);
             Controls.Add(status);
+        }
+
+        /// <summary>从嵌入资源读取程序图标，保证 dotnet run 与发行包下窗口/任务栏图标一致。</summary>
+        static Icon LoadWindowIcon()
+        {
+            using (System.IO.Stream stream = typeof(MainForm).Assembly
+                .GetManifestResourceStream("Gmix.App.guangmai.ico"))
+            {
+                return stream == null ? null : new Icon(stream);
+            }
         }
 
         static TabPage MakePage(string title, Control content)
