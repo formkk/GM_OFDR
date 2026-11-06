@@ -60,6 +60,7 @@ namespace Gmix.Vendor
             }
 
             int baselineLength = detect.BaselineDb == null ? 0 : detect.BaselineDb.Length;
+            int psDbLength = detect.PsDb == null ? 0 : detect.PsDb.Length;
             return new EventsDocument
             {
                 schemaVersion = schemaVersion,
@@ -85,6 +86,13 @@ namespace Gmix.Vendor
                         file = "baseline.f64",
                         dtype = "float64_le",
                         count = baselineLength,
+                        unit = "dB_rel"
+                    },
+                    psDb = new ArrayInfo
+                    {
+                        file = "ps_db.f64",
+                        dtype = "float64_le",
+                        count = psDbLength,
                         unit = "dB_rel"
                     }
                 }

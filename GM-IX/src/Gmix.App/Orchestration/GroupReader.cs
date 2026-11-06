@@ -15,7 +15,10 @@ namespace Gmix.App.Orchestration
         public bool IsAverage;
         public string SourceDir;
         public double[] Dist;
+        /// <summary>线性功率谱（ps.f64，仅作原始证据，不直接绘制）。</summary>
         public double[] Ps;
+        /// <summary>dB 功率谱（ps_db.f64，检测出口 20log10 一次得到，供曲线使用）。</summary>
+        public double[] PsDb;
         public double[] Baseline;
         public EventsDocument Events;
         public SummaryDocument Summary;
@@ -89,6 +92,8 @@ namespace Gmix.App.Orchestration
 
             snapshot.Dist = ArrayStore.ReadDoubles(Path.Combine(scanDir, "dist.f64"), 0);
             snapshot.Ps = ArrayStore.ReadDoubles(Path.Combine(scanDir, "ps.f64"), 0);
+            string psDbPath = Path.Combine(scanDir, "ps_db.f64");
+            snapshot.PsDb = File.Exists(psDbPath) ? ArrayStore.ReadDoubles(psDbPath, 0) : null;
             string baselinePath = Path.Combine(scanDir, "baseline.f64");
             snapshot.Baseline = File.Exists(baselinePath) ? ArrayStore.ReadDoubles(baselinePath, 0) : null;
 

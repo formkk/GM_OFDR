@@ -218,6 +218,7 @@ namespace Gmix.Acquirer
             files.Add(WriteArray(scanDir, "dist.f64", ofdr.Dist));
             files.Add(WriteArray(scanDir, "freq.f64", ofdr.Freq));
             files.Add(WriteArray(scanDir, "ps.f64", ofdr.Ps));
+            files.Add(WriteArray(scanDir, "ps_db.f64", detect.PsDb));
             files.Add(WriteArray(scanDir, "baseline.f64", detect.BaselineDb));
 
             JsonStore.Write(Path.Combine(scanDir, "events.json"), events);

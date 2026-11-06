@@ -20,7 +20,7 @@ namespace Gmix.App.UI
         const int MarginBottom = 34;
 
         double[] _dist = new double[0];
-        double[] _ps = new double[0];
+        double[] _psDb = new double[0];
         double[] _baseline = new double[0];
         PeakInfo[] _peaks = new PeakInfo[0];
         AnalysisRangeInfo _range;
@@ -52,7 +52,7 @@ namespace Gmix.App.UI
             if (snapshot == null)
             {
                 _dist = new double[0];
-                _ps = new double[0];
+                _psDb = new double[0];
                 _baseline = new double[0];
                 _peaks = new PeakInfo[0];
                 _range = null;
@@ -60,7 +60,7 @@ namespace Gmix.App.UI
             else
             {
                 _dist = snapshot.Dist ?? new double[0];
-                _ps = snapshot.Ps ?? new double[0];
+                _psDb = snapshot.PsDb ?? new double[0];
                 _baseline = snapshot.Baseline ?? new double[0];
                 _peaks = snapshot.Events != null && snapshot.Events.peaks != null ? snapshot.Events.peaks : new PeakInfo[0];
                 _range = snapshot.Range;
@@ -95,7 +95,7 @@ namespace Gmix.App.UI
                 Math.Max(10, Width - MarginLeft - MarginRight), Math.Max(10, Height - MarginTop - MarginBottom));
 
             DrawGrid(g, plot);
-            if (_dist.Length < 2 || _ps.Length != _dist.Length)
+            if (_dist.Length < 2 || _psDb.Length != _dist.Length)
             {
                 DrawNoData(g, plot);
                 return;
@@ -103,7 +103,7 @@ namespace Gmix.App.UI
 
             DrawAnalysisMask(g, plot);
             DrawEnvelope(g, plot, _baseline, Color.SeaGreen, 1);
-            DrawEnvelope(g, plot, _ps, Color.RoyalBlue, 1);
+            DrawEnvelope(g, plot, _psDb, Color.RoyalBlue, 1);
             DrawPeaks(g, plot);
             DrawCursor(g, plot);
             DrawLegend(g, plot);
@@ -138,16 +138,22 @@ namespace Gmix.App.UI
                     g.DrawString(text, font, brush, plot.Left - size.Width - 6, y - size.Height / 2);
                 }
 
-                g.DrawString("dB", font, brush, 6, plot.Top - 2);
+                var state = g.Save();
+                g.TranslateTransform(12, plot.Bottom);
+                g.RotateTransform(-90);
+                g.DrawString("反射强度(dB)", font, brush, 0, 0);
+                g.Restore(state);
             }
         }
 
         void DrawNoData(Graphics g, Rectangle plot)
         {
+            string text = _dist.Length < 2
+                ? "暂无数据：完成一次采集或从历史组加载"
+                : "该组缺少 ps_db.f64，无法绘制反射强度曲线";
             using (var font = new Font("Segoe UI", 10))
             using (var brush = new SolidBrush(Color.Gray))
             {
-                const string text = "暂无数据：完成一次采集或从历史组加载";
                 SizeF size = g.MeasureString(text, font);
                 g.DrawString(text, font, brush, plot.Left + (plot.Width - size.Width) / 2,
                     plot.Top + (plot.Height - size.Height) / 2);
@@ -242,8 +248,8 @@ namespace Gmix.App.UI
             using (var blue = new SolidBrush(Color.RoyalBlue))
             using (var green = new SolidBrush(Color.SeaGreen))
             {
-                g.DrawString("— ps", font, blue, plot.Right - 110, plot.Top + 4);
-                g.DrawString("— baseline", font, green, plot.Right - 66, plot.Top + 4);
+                g.DrawString("— 反射强度", font, blue, plot.Right - 164, plot.Top + 4);
+                g.DrawString("— baseline", font, green, plot.Right - 84, plot.Top + 4);
             }
         }
 

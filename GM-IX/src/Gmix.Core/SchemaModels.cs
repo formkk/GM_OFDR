@@ -280,6 +280,8 @@ namespace Gmix.Data
     public class EventsArraysInfo
     {
         public ArrayInfo baseline { get; set; }
+        /// <summary>功率谱 dB 数组（20log10 在检测出口完成，UI 直接绘制，不重复换算）。</summary>
+        public ArrayInfo psDb { get; set; }
     }
 
     public class EventsDocument

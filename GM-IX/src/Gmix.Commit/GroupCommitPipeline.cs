@@ -235,6 +235,7 @@ namespace Gmix.Commit
             ArrayStore.WriteDoubles(Path.Combine(avgDir, "dist.f64"), average.Dist);
             ArrayStore.WriteDoubles(Path.Combine(avgDir, "freq.f64"), average.Freq);
             ArrayStore.WriteDoubles(Path.Combine(avgDir, "ps.f64"), average.Ps);
+            ArrayStore.WriteDoubles(Path.Combine(avgDir, "ps_db.f64"), detect.PsDb);
             ArrayStore.WriteDoubles(Path.Combine(avgDir, "baseline.f64"), detect.BaselineDb);
 
             JsonStore.Write(Path.Combine(avgDir, "events.json"), events);
