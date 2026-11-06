@@ -428,7 +428,7 @@ precisionBasis = "calibrated" | "raw"
 | `configHash` | string | 是 | 采样率/AFE/量程/通道组合哈希 |
 | `method` | string | 是 | `reference_reflector` / `attenuator` / `vendor` |
 | `distScale` | double | 是 | 距离比例 |
-| `psdRef` | double/null | 否 | 功率谱密度基准（厂商校准页「功率谱密度」，如 48）；绝对 RL 标定的 PSD 基准，见 TBD-S5 |
+| `psdRef` | double/null | 否 | 功率谱密度基准（厂商校准页「功率谱密度」，本机实测为 **-88**）；绝对 RL 标定的 PSD 基准，见 TBD-S5 |
 | `rlOffsetK` | double/null | 否 | 绝对回损偏移 dB（负偏移，见 §4 裁定：`rlDb = rlDbRel + rlOffsetK`） |
 | `rlCurveKFile` | string/null | 否 | 频率相关 K 曲线文件 |
 | `ilSlope` | double | 否 | 插损斜率 |
@@ -437,14 +437,20 @@ precisionBasis = "calibrated" | "raw"
 | `reference.type/value/serial` | string/double/string | 否 | 标定件信息 |
 | `validation.points` | array | 否 | 标定点与残差 |
 
-厂商截图示例（仅作对照，不是默认值）：
+厂商校准页实测值（2026-11-06，同设备 HRAS-9000 截图）：
 
 ```text
-功率谱密度 = 48
+功率谱密度 = -88
 插损斜率   = 0.5361
-插损截距   = 0.7373
+插损截距   = -0.1      # 厂商要求手动由 0.7373 改为 -0.1
 触发阈值   = 35
+距离比例   = 0.9502    # 由同 DUT 四峰位置反算，见下方说明
 ```
+
+距离比例说明：`distScale = 1` 时四个峰位为 1.169/3.338/6.502/8.687 m，厂商 UI 为
+1.111/3.171/6.178/8.254 m，四峰比值一致为 **1.0524**，故 `distScale = 1 / 1.0524 ≈ 0.9502`。
+实机复核（2026-11-06）：`distScale = 0.9502` 后峰位 1.1108/3.1713/6.1779/8.2543 m，
+与厂商误差 ≤ 0.3 mm。该值属**逐机距离标定**，更换光路或整机后需重新反算（`TBD-D02`）。
 
 厂商确认值（2026-11-05 确认，取代校准页默认值）：
 

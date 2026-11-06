@@ -680,6 +680,7 @@ Gmix/
 | 组结构 schema 1.0（`group.json`、`AVG/`、`psdRef`、精度字段） | 已完成：`GroupStore`/`GroupAssembler`/`Gmix.Commit`，12 条组装配断言全绿 |
 | `GroupCommitPipeline` | 已抽取（2026-11-06）：`Gmix.Commit.exe` 与 `Gmix.App` 共用同一提交流水线，避免两处漂移 |
 | **`Gmix.App`（WinForms 4 页 + 编排）** | **已完成（2026-11-06）**：`MainForm` + 测量主页/事件表与结果/校准向导/历史检索；`ScanRunner` 启动 Acquirer 子进程、轮询 `.ready`、超时与停止；`GroupReader` 回读组；`CsvExporter` 导出原值；`CalibrationStore` 版本化保存。合成数据端到端（采集→提交→回读→表格 853 行）与离线 UI 冒烟通过；**实机 UI 联调（2026-11-06）通过**：单次 5 峰、端到端 509 ms、提交 `complete`、指标/事件表 5 行、`_calibration` 载入正常；N=3 平均按 `TBD-D11` 判 failed |
+| 逐机校准值落地（2026-11-06） | `CAL-20261106-002`：`distScale = 0.9502`（同 DUT 四峰反算）、`psdRef = -88`（厂商校准页实测）、`ilSlope = 0.5361`、`ilIntercept = -0.1`、`triggerThresholdDb = 35`。实机复核峰位 1.1108/3.1713/6.1779/8.2543 m，与厂商误差 ≤ 0.3 mm |
 | ICD v1.0 / SRS v0.1 | 已评审，无遗留待评审项 |
 
 ### 13.2 P0 待实现
