@@ -68,7 +68,7 @@ namespace Gmix.App.UI
         {
             var parameters = new FlowLayoutPanel();
             parameters.Dock = DockStyle.Top;
-            parameters.Height = 120;
+            parameters.Height = 96;
             parameters.AutoSize = false;
             parameters.WrapContents = true;
             parameters.Padding = new Padding(6);
@@ -134,16 +134,6 @@ namespace Gmix.App.UI
             _saveButton.Enabled = false;
             _saveButton.Click += OnSave;
             parameters.Controls.Add(_saveButton);
-
-            parameters.SetFlowBreak(_saveButton, true);
-            var hint = new Label();
-            hint.AutoSize = true;
-            hint.ForeColor = Color.DimGray;
-            hint.Font = new Font("Segoe UI", 8);
-            hint.Padding = new Padding(0, 6, 0, 0);
-            hint.Text = "组内平均次数：同一组内采集 N 次后在线性 ps 域平均（N>1 才生成平均结果）；"
-                + "连续采集开启：每组提交后自动开始下一组，直到点『停止』";
-            parameters.Controls.Add(hint);
 
             _log.Dock = DockStyle.Fill;
             _log.ReadOnly = true;
