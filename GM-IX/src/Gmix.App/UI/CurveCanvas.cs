@@ -83,9 +83,12 @@ namespace Gmix.App.UI
                     ? _range.endM
                     : (_dist.Length > 0 ? _dist[_dist.Length - 1] : 20);
 
-                // A/B 游标初始落在分析区间两端，与一期 UI 一致
-                _cursorA = _range != null && _range.startM > 0 ? _range.startM : _xMin;
-                _cursorB = _xMax;
+                // A/B 游标初始位置内缩，避免压住左右边框导致难以抓取
+                double span = _xMax - _xMin;
+                double a = _range != null && _range.startM > 0 ? _range.startM : _xMin;
+                if (a < _xMin + span * 0.02) a = _xMin + span * 0.02;
+                _cursorA = a;
+                _cursorB = _xMin + span * 0.95;
             }
             Invalidate();
         }
@@ -299,11 +302,12 @@ namespace Gmix.App.UI
             int px = ToX(distance, plot);
             if (px < plot.Left || px > plot.Right) return;
             g.DrawLine(pen, px, plot.Top, px, plot.Bottom - 1);
+            int chipX = Math.Max(plot.Left + 1, Math.Min(px - 7, plot.Right - 15));
             using (var chip = new SolidBrush(color))
             {
-                g.FillRectangle(chip, px - 7, plot.Top + 2, 14, 14);
+                g.FillRectangle(chip, chipX, plot.Top + 2, 14, 14);
             }
-            g.DrawString(label, font, white, px - 4, plot.Top + 1);
+            g.DrawString(label, font, white, chipX + 3, plot.Top + 1);
         }
 
         void DrawReadout(Graphics g, Rectangle plot)
@@ -374,8 +378,8 @@ namespace Gmix.App.UI
             using (var blue = new SolidBrush(Color.RoyalBlue))
             using (var green = new SolidBrush(Color.SeaGreen))
             {
-                g.DrawString("— 反射强度", font, blue, plot.Right - 164, plot.Bottom - 14);
-                g.DrawString("— 基线", font, green, plot.Right - 84, plot.Bottom - 14);
+                g.DrawString("— 反射强度", font, blue, plot.Right - 164, 4);
+                g.DrawString("— 基线", font, green, plot.Right - 84, 4);
             }
         }
 
