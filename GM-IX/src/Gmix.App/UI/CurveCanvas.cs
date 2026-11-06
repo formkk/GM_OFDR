@@ -44,11 +44,18 @@ namespace Gmix.App.UI
         double? _cursorB;
         int _dragCursor = -1;
 
+        // 参照厂商 HRAS-9000：绘图区浅米绿底、绘图区外浅灰底、网格浅灰绿
+        static readonly Color PlotBackground = Color.FromArgb(247, 249, 236);
+        static readonly Color PanelBackground = Color.FromArgb(242, 242, 240);
+        static readonly Color GridLine = Color.FromArgb(214, 219, 198);
+        static readonly Color AxisLine = Color.FromArgb(140, 140, 132);
+        static readonly Color AxisText = Color.FromArgb(70, 70, 66);
+
         public CurveCanvas()
         {
             SetStyle(ControlStyles.OptimizedDoubleBuffer | ControlStyles.AllPaintingInWmPaint
                 | ControlStyles.UserPaint | ControlStyles.ResizeRedraw, true);
-            BackColor = Color.White;
+            BackColor = PanelBackground;
         }
 
         public void ShowSnapshot(MeasurementSnapshot snapshot)
@@ -104,6 +111,9 @@ namespace Gmix.App.UI
             Rectangle plot = new Rectangle(MarginLeft, MarginTop,
                 Math.Max(10, Width - MarginLeft - MarginRight), Math.Max(10, Height - MarginTop - MarginBottom));
 
+            using (var plotBrush = new SolidBrush(PlotBackground))
+                g.FillRectangle(plotBrush, plot);
+
             DrawGrid(g, plot);
             if (_dist.Length < 2 || _psDb.Length != _dist.Length)
             {
@@ -123,29 +133,40 @@ namespace Gmix.App.UI
 
         void DrawGrid(Graphics g, Rectangle plot)
         {
-            using (var axis = new Pen(Color.DimGray))
-            using (var grid = new Pen(Color.Gainsboro))
+            using (var axis = new Pen(AxisLine))
+            using (var grid = new Pen(GridLine))
             using (var font = new Font("Segoe UI", 8))
-            using (var brush = new SolidBrush(Color.DimGray))
+            using (var brush = new SolidBrush(AxisText))
             {
                 g.DrawRectangle(axis, plot);
 
-                for (int i = 0; i <= 5; i++)
+                // X：取整刻度（1/2/2.5/5×10ⁿ），避免出现 -2.86 这类非整数标签
+                double xStep = NiceStep(_xMax - _xMin, 6);
+                double xStart = Math.Ceiling(_xMin / xStep) * xStep;
+                for (double v = xStart; v <= _xMax + 1e-9; v += xStep)
                 {
-                    int x = plot.Left + plot.Width * i / 5;
-                    if (i > 0 && i < 5) g.DrawLine(grid, x, plot.Top, x, plot.Bottom);
-                    double value = _xMin + (_xMax - _xMin) * i / 5.0;
-                    string text = value.ToString("0.##") + " m";
+                    int x = ToX(v, plot);
+                    if (x <= plot.Left || x >= plot.Right)
+                    {
+                        x = Math.Max(plot.Left, Math.Min(x, plot.Right));
+                    }
+                    else
+                    {
+                        g.DrawLine(grid, x, plot.Top, x, plot.Bottom);
+                    }
+                    string text = v.ToString("0.##") + " m";
                     SizeF size = g.MeasureString(text, font);
                     g.DrawString(text, font, brush, x - size.Width / 2, plot.Bottom + 4);
                 }
 
-                for (int i = 0; i <= 5; i++)
+                // Y：固定 10 dB 整数刻度（-40、-50 … -150），与原厂一致
+                const double yStep = 10.0;
+                for (double v = Math.Ceiling(_yMin / yStep) * yStep; v <= _yMax + 1e-9; v += yStep)
                 {
-                    int y = plot.Bottom - plot.Height * i / 5;
-                    if (i > 0 && i < 5) g.DrawLine(grid, plot.Left, y, plot.Right, y);
-                    double value = _yMin + (_yMax - _yMin) * i / 5.0;
-                    string text = value.ToString("0");
+                    int y = ToY(v, plot);
+                    if (y < plot.Top || y > plot.Bottom) continue;
+                    if (y > plot.Top && y < plot.Bottom) g.DrawLine(grid, plot.Left, y, plot.Right, y);
+                    string text = v.ToString("0");
                     SizeF size = g.MeasureString(text, font);
                     g.DrawString(text, font, brush, plot.Left - size.Width - 6, y - size.Height / 2);
                 }
@@ -156,6 +177,17 @@ namespace Gmix.App.UI
                 g.DrawString("反射强度(dB)", font, brush, 0, 0);
                 g.Restore(state);
             }
+        }
+
+        /// <summary>取 1/2/2.5/5×10ⁿ 的“好看”步长，使刻度落在整数或半整数上。</summary>
+        static double NiceStep(double span, int targetTicks)
+        {
+            if (!(span > 0) || targetTicks <= 0) return 1;
+            double raw = span / targetTicks;
+            double magnitude = Math.Pow(10, Math.Floor(Math.Log10(raw)));
+            double normalized = raw / magnitude;
+            double nice = normalized <= 1 ? 1 : normalized <= 2 ? 2 : normalized <= 2.5 ? 2.5 : normalized <= 5 ? 5 : 10;
+            return nice * magnitude;
         }
 
         void DrawNoData(Graphics g, Rectangle plot)
@@ -277,8 +309,10 @@ namespace Gmix.App.UI
         void DrawReadout(Graphics g, Rectangle plot)
         {
             if (!_cursorA.HasValue && !_cursorB.HasValue) return;
-            using (var font = new Font("Segoe UI", 7.5f))
-            using (var brush = new SolidBrush(Color.FromArgb(70, 70, 70)))
+            using (var font = new Font("Segoe UI", 9.5f, FontStyle.Bold))
+            using (var brush = new SolidBrush(Color.FromArgb(32, 32, 32)))
+            using (var background = new SolidBrush(Color.FromArgb(235, 255, 255, 255)))
+            using (var border = new Pen(Color.FromArgb(200, 204, 188)))
             {
                 double aLevel = _cursorA.HasValue ? LevelAt(_cursorA.Value) : double.NaN;
                 double bLevel = _cursorB.HasValue ? LevelAt(_cursorB.Value) : double.NaN;
@@ -287,8 +321,12 @@ namespace Gmix.App.UI
                 string gap = _cursorA.HasValue && _cursorB.HasValue
                     ? Math.Abs(_cursorB.Value - _cursorA.Value).ToString("0.000") + " m" : "—";
                 string delta = double.IsNaN(aLevel) || double.IsNaN(bLevel) ? "—" : (bLevel - aLevel).ToString("0.00") + " dB";
-                string text = "A " + a + "    B " + b + "    Δ间距 " + gap + "    Δ电平 " + delta;
-                g.DrawString(text, font, brush, plot.Left, 4);
+                string text = "A " + a + "     B " + b + "     Δ间距 " + gap + "     Δ电平 " + delta;
+                SizeF size = g.MeasureString(text, font);
+                var box = new RectangleF(plot.Left - 4, 1, size.Width + 10, size.Height + 4);
+                g.FillRectangle(background, box);
+                g.DrawRectangle(border, box.X, box.Y, box.Width, box.Height);
+                g.DrawString(text, font, brush, box.X + 5, box.Y + 2);
             }
         }
 

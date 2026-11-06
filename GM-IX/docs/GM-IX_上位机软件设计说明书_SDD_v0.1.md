@@ -459,7 +459,7 @@ MainForm (1280×720 起，可缩放)
 
 **绘制流程**：
 
-1. 视图区间 `{xMin, xMax, yMin, yMax}`（默认 X `0 ~ endM`、Y `-150 ~ -40`，DS-01）；
+1. 视图区间 `{xMin, xMax, yMin, yMax}`（默认 X `0 ~ endM`、Y `-150 ~ -40`，DS-01）；绘图区浅米绿底、区外浅灰底、浅灰绿网格，Y 轴固定 **10 dB 整数刻度**（−40、−50 … −150），X 轴按 1/2/2.5/5×10ⁿ 取整步长；
 2. 计算绘图区宽度 `W`（像素）；
 3. `EnvelopeSampler.Reduce(dist, values, xMin, xMax, W)` → 每列 `(minIndex, maxIndex)`；曲线数据源固定为 **`ps_db.f64`（detect 出口 dB_rel）** 与 `baseline.f64`，**不得绘制线性 `ps.f64`**（线性值域 1e2~1e7，超出 −150~−40 的显示窗，会把曲线压成一条平线）；
 4. 每列画竖线段 `min → max`（**保峰**，`SRS FR-CHT-07`），相邻列连线；
