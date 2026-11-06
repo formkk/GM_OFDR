@@ -11,7 +11,7 @@ namespace Gmix.Data.Test
     {
         static int Main(string[] args)
         {
-            string root = args.Length > 0 ? args[0] : @"C:\Mycode\GM-OFDR\GM-IX\tests\fixtures\schema_v02_sample";
+            string root = args.Length > 0 ? args[0] : DefaultFixtureRoot();
             int failures = 0;
             try
             {
@@ -30,6 +30,19 @@ namespace Gmix.Data.Test
             }
             Console.WriteLine(failures == 0 ? "PASS schema v1.0" : "FAIL schema v1.0: " + failures);
             return failures == 0 ? 0 : 1;
+        }
+
+        /// <summary>夹具根目录按仓库相对位置解析，不依赖开发者本机绝对路径。</summary>
+        static string DefaultFixtureRoot()
+        {
+            var dir = new DirectoryInfo(AppContext.BaseDirectory);
+            while (dir != null)
+            {
+                if (string.Equals(dir.Name, "GM-IX", StringComparison.OrdinalIgnoreCase))
+                    return Path.Combine(dir.FullName, "tests", "fixtures", "schema_v02_sample");
+                dir = dir.Parent;
+            }
+            return Path.Combine(AppContext.BaseDirectory, "fixtures", "schema_v02_sample");
         }
 
         static void RunFileRoundTrip(string root, ref int failures)
