@@ -678,7 +678,7 @@ Gmix/
 | 数据夹具 | 已生成（`schema_v02_sample`）；根目录按仓库相对位置解析，不依赖本机绝对路径 |
 | 组结构 schema 1.0（`group.json`、`AVG/`、`psdRef`、精度字段） | 已完成：`GroupStore`/`GroupAssembler`/`Gmix.Commit`，12 条组装配断言全绿 |
 | `GroupCommitPipeline` | 已抽取（2026-11-06）：`Gmix.Commit.exe` 与 `Gmix.App` 共用同一提交流水线，避免两处漂移 |
-| **`Gmix.App`（WinForms 4 页 + 编排）** | **已完成（2026-11-06）**：`MainForm` + 测量主页/事件表与结果/校准向导/历史检索；`ScanRunner` 启动 Acquirer 子进程、轮询 `.ready`、超时与停止；`GroupReader` 回读组；`CsvExporter` 导出原值；`CalibrationStore` 版本化保存。合成数据端到端（采集→提交→回读→表格 853 行）与离线 UI 冒烟通过；实机 UI 联调待设备在场 |
+| **`Gmix.App`（WinForms 4 页 + 编排）** | **已完成（2026-11-06）**：`MainForm` + 测量主页/事件表与结果/校准向导/历史检索；`ScanRunner` 启动 Acquirer 子进程、轮询 `.ready`、超时与停止；`GroupReader` 回读组；`CsvExporter` 导出原值；`CalibrationStore` 版本化保存。合成数据端到端（采集→提交→回读→表格 853 行）与离线 UI 冒烟通过；**实机 UI 联调（2026-11-06）通过**：单次 5 峰、端到端 509 ms、提交 `complete`、指标/事件表 5 行、`_calibration` 载入正常；N=3 平均按 `TBD-D11` 判 failed |
 | ICD v1.0 / SRS v0.1 | 已评审，无遗留待评审项 |
 
 ### 13.2 P0 待实现
@@ -687,7 +687,7 @@ Gmix/
 |---|---|---|
 | 1 | 合成数据量级校准（当前合成谱的 dB_rel 为负，与 g50 实测正刻度不符，仅用于流程验证） | — |
 | 2 | 采集耗时优化（TBD-D10，需厂商确认 SDK 固定等待与传输参数） | 厂商 |
-| 3 | 实机 UI 联调（连续采集、停止、超时与 `.failed` 现场展示） | 设备在场 |
+| 3 | 实机 UI 复核：循环模式、停止/超时路径、CSV 导出对话框与 `.failed` 现场展示 | 设备在场 |
 
 ### 13.3 延期（P1/P2，仅登记不设计）
 
@@ -730,7 +730,8 @@ Gmix/
 
 | 项 | 内容 | 影响 | 处置 |
 |---|---|---|---|
-| 采集信号漂移（`TBD-D11`） | 同一 `open`-`close` 周期内连续 20 帧，`dist` 末值波动 16~17%、`ps` 最大值波动约 3 倍；已排除 ofdr 随机性、触发相位、AFE 自动增益，根因为硬件输入信号本身漂移（`GM-IX/investigations/signal-drift`） | 超出 ICD §2.2 的 5% 轴容差时 `GroupAssembler` 判 `invalid`，N>1 平均在实机上暂不可用 | 容差暂按 5% 保留；UI 与历史页须能展示组 `failed/invalid` 原因，不得静默降级；N=1 单次测量不受影响 |
+| 采集信号漂移（`TBD-D11`） | 同一 `open`-`close` 周期内连续 20 帧，`dist` 末值波动 16~17%、`ps` 最大值波动约 3 倍；已排除 ofdr 随机性、触发相位、AFE 自动增益，根因为硬件输入信号本身漂移（`GM-IX/investigations/signal-drift`） | 超出 ICD §2.2 的 5% 轴容差时 `GroupAssembler` 判 `invalid`，N>1 平均在实机上暂不可用（2026-11-06 实机 N=3 复现：R002/R003 超出容差，组判 failed） | 容差暂按 5% 保留；UI 与历史页须能展示组 `failed/invalid` 原因，不得静默降级；N=1 单次测量不受影响 |
+| 零距峰未识别（`TBD-D04`） | `detect.dll` 输出无零距峰标志位，`VendorMapper` 恒置 `zeroPeak=false`；实机 0.042 m 峰按普通峰显示（号 1） | 曲线「显示零距峰」开关当前不改变结果；与分析起点 0.05 m 的共同作用待厂商确认 | 不臆造距离阈值；待 `TBD-S10`/`TBD-D04` 裁定后再实现过滤与编号 |
 
 ---
 
