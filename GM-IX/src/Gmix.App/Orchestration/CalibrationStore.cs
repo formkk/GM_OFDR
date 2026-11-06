@@ -49,15 +49,26 @@ namespace Gmix.App.Orchestration
 
         public static CalibrationModel LoadLatest(string dataRoot)
         {
+            string ignored;
+            return LoadLatest(dataRoot, out ignored);
+        }
+
+        /// <summary>读取最新校准并回传文件路径；采集进程需要该路径写入每次扫描的校准快照。</summary>
+        public static CalibrationModel LoadLatest(string dataRoot, out string path)
+        {
+            path = null;
             string root = Path.Combine(dataRoot, "_calibration");
             if (!Directory.Exists(root)) return null;
             string[] dirs = Directory.GetDirectories(root);
             Array.Sort(dirs, StringComparer.Ordinal);
             for (int i = dirs.Length - 1; i >= 0; i--)
             {
-                string path = Path.Combine(dirs[i], "calibration.json");
-                if (File.Exists(path))
-                    return CalibrationModel.FromDocument(JsonStore.Read<CalibrationDocument>(path));
+                string candidate = Path.Combine(dirs[i], "calibration.json");
+                if (File.Exists(candidate))
+                {
+                    path = candidate;
+                    return CalibrationModel.FromDocument(JsonStore.Read<CalibrationDocument>(candidate));
+                }
             }
             return null;
         }

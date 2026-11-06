@@ -131,8 +131,9 @@ namespace Gmix.App
 
             try
             {
-                CalibrationModel latest = CalibrationStore.LoadLatest(_env.DataRoot);
-                _measurement.SetCalibration(latest, null);
+                string calibrationPath;
+                CalibrationModel latest = CalibrationStore.LoadLatest(_env.DataRoot, out calibrationPath);
+                _measurement.SetCalibration(latest, calibrationPath);
                 UpdateCalibrationState(latest);
                 if (latest != null) _measurement.AppendLog("自检：读取校准 " + latest.calibrationId);
             }
