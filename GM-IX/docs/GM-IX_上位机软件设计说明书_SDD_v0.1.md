@@ -675,18 +675,19 @@ Gmix/
 | 设备接入探针（2026-11-05） | **已通过**：`qt_acq_version`=0.1.0、`calc_buffer_bytes`=3,200,000、`open(0)`=0、`close`=0；条件为 x64 + `MSVCR100.dll` + `config/` 目录 |
 | ICD 回填：`.ready` 交接协议（Part B §7.1）、`configHash` 口径（Part A §6.1） | 已完成（2026-11-05），TBD-D09 关闭 |
 | 厂商 P/Invoke 声明 | 已抽取到 `Gmix.Vendor/NativeApi.cs`（唯一 P/Invoke 位置）；`Qt2144Probe.cs` 保留为历史探针，不参与构建 |
-| 数据夹具 | 已生成（`schema_v02_sample`） |
+| 数据夹具 | 已生成（`schema_v02_sample`）；根目录按仓库相对位置解析，不依赖本机绝对路径 |
+| 组结构 schema 1.0（`group.json`、`AVG/`、`psdRef`、精度字段） | 已完成：`GroupStore`/`GroupAssembler`/`Gmix.Commit`，12 条组装配断言全绿 |
+| `GroupCommitPipeline` | 已抽取（2026-11-06）：`Gmix.Commit.exe` 与 `Gmix.App` 共用同一提交流水线，避免两处漂移 |
+| **`Gmix.App`（WinForms 4 页 + 编排）** | **已完成（2026-11-06）**：`MainForm` + 测量主页/事件表与结果/校准向导/历史检索；`ScanRunner` 启动 Acquirer 子进程、轮询 `.ready`、超时与停止；`GroupReader` 回读组；`CsvExporter` 导出原值；`CalibrationStore` 版本化保存。合成数据端到端（采集→提交→回读→表格 853 行）与离线 UI 冒烟通过；实机 UI 联调待设备在场 |
 | ICD v1.0 / SRS v0.1 | 已评审，无遗留待评审项 |
 
 ### 13.2 P0 待实现
 
 | 序 | 内容 | 依赖 |
 |---|---|---|
-| 1 | `Gmix.App`：WinForms 4 页（测量主页/结果/校准/历史） | Core/Vendor/Acquirer 已完成 |
-| 2 | 历史检索与 CSV 导出 | 1 |
-| 3 | 组结构 schema 1.0（`group.json`、`AVG/`、`psdRef`、精度字段） | — |
-| 4 | 合成数据量级校准（当前合成谱的 dB_rel 为负，与 g50 实测正刻度不符，仅用于流程验证） | — |
-| 5 | 采集耗时优化（TBD-D10，需厂商确认 SDK 固定等待与传输参数） | 厂商 |
+| 1 | 合成数据量级校准（当前合成谱的 dB_rel 为负，与 g50 实测正刻度不符，仅用于流程验证） | — |
+| 2 | 采集耗时优化（TBD-D10，需厂商确认 SDK 固定等待与传输参数） | 厂商 |
+| 3 | 实机 UI 联调（连续采集、停止、超时与 `.failed` 现场展示） | 设备在场 |
 
 ### 13.3 延期（P1/P2，仅登记不设计）
 
