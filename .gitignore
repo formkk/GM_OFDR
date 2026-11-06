@@ -27,3 +27,13 @@ Desktop.ini
 
 # Office 临时锁文件
 ~$*
+
+# GM-IX 漂移验证：原始帧、原始采样与压缩包体积大，不入库（脚本与结论入库）
+GM-IX/investigations/**/raw/
+GM-IX/investigations/**/raw_batch1/
+GM-IX/investigations/**/*.zip
+GM-IX/investigations/**/*.rar
+GM-IX/investigations/signal-drift/ch0_raw_20frames.csv
+
+# 临时实验目录
+.tmp/
