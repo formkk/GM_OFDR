@@ -112,7 +112,7 @@ namespace Gmix.Commit
             AcquisitionInfo acquisition = scans[0].acquisition;
             AnalysisRangeInfo range = scans[0].session != null && scans[0].session.analysisRange != null
                 ? scans[0].session.analysisRange
-                : new AnalysisRangeInfo { startM = 0.05, endM = 20.0, guardM = 0.1 };
+                : new AnalysisRangeInfo { startM = 0.05, endM = 20.0, guardM = AcquisitionDefaults.GuardM };
             string rlMode = scans[0].session != null && !string.IsNullOrEmpty(scans[0].session.rlMode)
                 ? scans[0].session.rlMode : "peak_only";
 
@@ -148,6 +148,7 @@ namespace Gmix.Commit
                 avgScanId = "AV-" + DateTime.Now.ToString("yyyyMMdd-HHmmss") + "-" + validDirs.Count.ToString("D3");
                 detect = Detector.Process(average.Dist, average.Ps);
                 EventsDocument avgEvents = VendorMapper.ToEventsDocument(detect, avgScanId, SchemaVersion, range.startM);
+                if (calibration.CanApplyAbsoluteRl(configHash)) calibration.ApplyAbsoluteRl(avgEvents);
 
                 string basis;
                 var repeatIl = new List<double>();
@@ -155,7 +156,7 @@ namespace Gmix.Commit
                 CollectPrecision(validDirs, calibration, out basis, repeatIl, repeatRl);
 
                 avgSummary = MetricsAggregator.Compute(avgScanId, avgEvents, average.Dist, detect.BaselineDb,
-                    range, rlMode, scanDirs.Count, calibration, repeatIl, repeatRl, configHash);
+                    range, rlMode, scanDirs.Count, calibration, repeatRl, repeatIl, configHash);
                 avgSummary.precisionBasis = basis;
                 avgSummary.precisionMode = "sample_std";
                 avgSummary.precisionCount = repeatIl.Count;
@@ -184,32 +185,17 @@ namespace Gmix.Commit
             out string basis, List<double> ilValues, List<double> rlValues)
         {
             bool calibrated = calibration != null && calibration.HasIlCalibration() && calibration.HasAbsoluteRl();
-            bool allHaveCalibrated = calibrated;
-
             var summaries = new List<SummaryDocument>();
             foreach (string dir in dirs)
             {
                 string path = Path.Combine(dir, "summary.json");
-                if (!File.Exists(path)) { allHaveCalibrated = false; continue; }
-                SummaryDocument summary = JsonStore.Read<SummaryDocument>(path);
-                summaries.Add(summary);
-                if (!summary.totalIlDb.HasValue || !summary.totalRlDb.HasValue) allHaveCalibrated = false;
+                if (File.Exists(path)) summaries.Add(JsonStore.Read<SummaryDocument>(path));
             }
 
-            basis = allHaveCalibrated ? "calibrated" : "raw";
-            foreach (SummaryDocument summary in summaries)
-            {
-                if (basis == "calibrated")
-                {
-                    if (summary.totalIlDb.HasValue) ilValues.Add(summary.totalIlDb.Value);
-                    if (summary.totalRlDb.HasValue) rlValues.Add(summary.totalRlDb.Value);
-                }
-                else
-                {
-                    if (summary.totalIlRawDb.HasValue) ilValues.Add(summary.totalIlRawDb.Value);
-                    if (summary.totalRlRawDb.HasValue) rlValues.Add(summary.totalRlRawDb.Value);
-                }
-            }
+            PrecisionSeries series = MetricsAggregator.CollectPrecision(summaries, calibrated);
+            basis = series.Basis;
+            ilValues.AddRange(series.Il);
+            rlValues.AddRange(series.Rl);
         }
 
         static CalibrationModel LoadCalibration(string explicitPath, string firstScanDir)

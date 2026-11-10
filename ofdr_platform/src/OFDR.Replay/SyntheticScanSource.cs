@@ -79,12 +79,12 @@ public sealed class SyntheticScanSource : IScanSource
         long seq = Interlocked.Increment(ref _sequence);
 
         double[] values = SyntheticSpectrum.Create((int)(seq - 1), _options.Spectrum);
-        var axis = new ScanAxis(AxisKind.Distance, 0, 0.0002, "m", values.Length);
+        var axis = new ScanAxis(0, 0.0002, values.Length);
         var metadata = new ScanMetadata(
-            _options.DeviceId, "SYNTH", inCh, outCh, epoch, DateTimeOffset.Now, SegmentIndex: 0);
+            SourceType.Replay, _options.DeviceId, "SYNTH", inCh, outCh, epoch, DateTimeOffset.Now, SegmentIndex: 0);
 
         scan = new StandardScan(
-            $"SYNTH#{seq}", seq, axis, values, "dBm", metadata);
+            $"SYNTH#{seq}", seq, axis, values, metadata);
         return true;
     }
 

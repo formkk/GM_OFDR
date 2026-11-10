@@ -48,11 +48,11 @@ public sealed class DistancePlot : Control
 
     // ---------------- 数据灌入 ----------------
 
-    /// <summary>灌入一帧曲线（数值统一为 dBm）。光标只在首次有事件时初始化，之后由用户控制。</summary>
-    public void SetTrace(ScanAxis axis, double[] dbm)
+    /// <summary>灌入一帧曲线（数值为 dB 相对功率电平）。光标只在首次有事件时初始化，之后由用户控制。</summary>
+    public void SetTrace(ScanAxis axis, double[] values)
     {
         _axis = axis;
-        _values = dbm;
+        _values = values;
         _envelopeSource = null; // 强制重算包络
         Invalidate();
     }

@@ -1,38 +1,36 @@
+using System.Text.Json.Serialization;
+
 namespace OFDR.Contracts;
 
-public enum AxisKind
+/// <summary>数据来源：决定采集参数如何解释（见统一数据契约 §4.4）。必填，缺失即视为契约违约。</summary>
+public enum SourceType
 {
-    Distance,
-    Frequency,
+    Lianxun,
+    HengLga50,
+    Replay,
 }
 
-/// <summary>标准扫描轴：类型 + 起点 + 步距 + 单位 + 点数。平台只认这一种轴描述。</summary>
-public sealed record ScanAxis(AxisKind Kind, double Start, double Step, string Unit, int Count)
+/// <summary>标准扫描轴：起点 + 步距 + 点数。横轴恒为距离，单位恒为米，不设类型与单位字段。</summary>
+public sealed record ScanAxis(double Start, double Step, int Count)
 {
+    /// <summary>派生值，不落盘、不参与比较、不进入构造参数。</summary>
+    [JsonIgnore]
     public double End => Start + Step * Math.Max(0, Count - 1);
 
+    [JsonIgnore]
     public bool IsValid =>
         Count > 0 &&
         double.IsFinite(Start) &&
         double.IsFinite(Step) &&
-        Step > 0 &&
-        !string.IsNullOrWhiteSpace(Unit);
+        Step > 0;
 
     /// <summary>单调轴在第 i 点的坐标。</summary>
     public double At(int index) => Start + Step * index;
 }
 
-public enum ScanQuality
-{
-    Ok,
-    Empty,
-    AxisInvalid,
-    CountMismatch,
-    ContainsNonFinite,
-}
-
 /// <summary>标准扫描元数据。通道/代次在帧到达时刻即固化，避免解析滞后导致通道错位。</summary>
 public sealed record ScanMetadata(
+    SourceType SourceType,
     string DeviceId,
     string SdkVersion,
     int ChannelIn,
@@ -45,17 +43,16 @@ public sealed record ScanMetadata(
     double? TriggerDelayMs = null);
 
 /// <summary>
-/// 平台唯一跨层数据契约：轴 + 数值 + 单位 + 元数据 + 质量标记 + schema 版本。
-/// 数值语义由 ValueUnit 指明；整机 TCP 路径当前为逐点 dBm。
+/// 平台唯一跨层数据契约：轴 + 数值 + 元数据 + schema 版本。
+/// 数值恒为 dB 相对功率电平（10·log10 功率域），绝对性由标定状态决定，不由数值换算体现。
+/// 只表示有效帧：完整性判定由适配器在构造前完成，不携带状态字段。
 /// </summary>
 public sealed record StandardScan(
     string ScanId,
     long Sequence,
     ScanAxis Axis,
     double[] Values,
-    string ValueUnit,
     ScanMetadata Metadata,
-    ScanQuality Quality = ScanQuality.Ok,
     int SchemaVersion = 1)
 {
     public int Count => Values.Length;
@@ -66,8 +63,8 @@ public sealed record StandardScan(
         if (string.IsNullOrWhiteSpace(ScanId)) errors.Add("ScanId 不能为空");
         if (Values.Length == 0) errors.Add("Values 为空");
         if (Axis.Count != Values.Length) errors.Add($"轴点数 {Axis.Count} 与数值长度 {Values.Length} 不一致");
-        if (!Axis.IsValid) errors.Add("轴非法（点数/起点/步距/单位）");
-        if (string.IsNullOrWhiteSpace(ValueUnit)) errors.Add("ValueUnit 不能为空");
+        if (!Axis.IsValid) errors.Add("轴非法（点数/起点/步距）");
+        if (!Enum.IsDefined(Metadata.SourceType)) errors.Add($"SourceType={Metadata.SourceType} 非法");
         if (Metadata.ChannelIn is < 1 or > 8) errors.Add($"ChannelIn={Metadata.ChannelIn} 超出 1~8");
         if (Metadata.ChannelOut is < 1 or > 8) errors.Add($"ChannelOut={Metadata.ChannelOut} 超出 1~8");
         int nonFinite = 0;

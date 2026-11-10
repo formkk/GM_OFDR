@@ -48,12 +48,12 @@ namespace Gmix.App
             _tabs.Dock = DockStyle.Fill;
             _tabs.TabPages.Add(MakePage("测量主页", _measurement));
             _tabs.TabPages.Add(MakePage("结果与历史", _results));
-            _tabs.TabPages.Add(MakePage("校准向导", _calibration));
+            _tabs.TabPages.Add(MakePage("校准与维护", _calibration));
             var tabs = _tabs;
 
             var status = new StatusStrip();
             _connection.Text = "未连接";
-            _device.Text = "设备 192.168.5.20";
+            _device.Text = "设备 " + _env.DeviceIp;
             _version.Text = "v" + AppVersion;
             _calibrationState.Text = "校准：未标定";
             status.Items.Add(_connection);
@@ -103,13 +103,26 @@ namespace Gmix.App
                 _measurement.AppendLog("校准已保存：" + model.calibrationId + " → " + path);
                 UpdateCalibrationState(model);
             };
+
+            _calibration.SyntheticChanged += delegate (bool on)
+            {
+                _measurement.SyntheticMode = on;
+                _measurement.AppendLog("合成数据模式：" + (on ? "开启" : "关闭"));
+            };
+
+            _measurement.SavingLimitGb = _calibration.RetentionGb;
+            _calibration.RetentionChanged += delegate (decimal gb)
+            {
+                _measurement.SavingLimitGb = gb;
+                _measurement.AppendLog("保存上限改为 " + gb + " GB");
+            };
         }
 
         void RunStartupChecks()
         {
             _version.Text = "v" + AppVersion;
             _connection.Text = _env.DeviceReady ? "设备就绪" : "设备未就绪";
-            _device.Text = "设备 192.168.5.20";
+            _device.Text = "设备 " + _env.DeviceIp;
 
             if (!_env.DeviceReady)
                 _measurement.AppendLog("自检：未找到 qt_acq/ofdr/detect，实机采集不可用");

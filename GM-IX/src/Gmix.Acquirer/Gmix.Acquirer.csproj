@@ -16,4 +16,8 @@
     <ProjectReference Include="..\Gmix.Vendor\Gmix.Vendor.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <EmbeddedResource Include="Synthetic\raw_template.bin.gz" />
+  </ItemGroup>
+
 </Project>

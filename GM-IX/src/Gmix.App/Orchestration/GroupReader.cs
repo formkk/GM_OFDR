@@ -33,7 +33,7 @@ namespace Gmix.App.Orchestration
             {
                 if (Scan != null && Scan.session != null && Scan.session.analysisRange != null)
                     return Scan.session.analysisRange;
-                return new AnalysisRangeInfo { startM = 0.05, endM = Dist == null || Dist.Length == 0 ? 20 : Dist[Dist.Length - 1], guardM = 0.1 };
+                return new AnalysisRangeInfo { startM = 0.05, endM = Dist == null || Dist.Length == 0 ? 20 : Dist[Dist.Length - 1], guardM = AcquisitionDefaults.GuardM };
             }
         }
 
@@ -52,9 +52,25 @@ namespace Gmix.App.Orchestration
             get { return Calibration != null && Calibration.HasAbsoluteRl(); }
         }
 
+        /// <summary>非联讯来源（当前为昊衡 LGA50-D 抓包导入）——其 dB 已是负刻度。</summary>
+        public bool IsHengwei
+        {
+            get
+            {
+                return Scan != null && Scan.device != null && !string.IsNullOrEmpty(Scan.device.model)
+                    && Scan.device.model.IndexOf("LGA50", StringComparison.OrdinalIgnoreCase) >= 0;
+            }
+        }
+
         public double OffsetK
         {
-            get { return Calibrated ? Calibration.rlOffsetK.Value : DisplayTransform.DefaultOffsetK; }
+            get
+            {
+                if (Calibrated) return Calibration.rlOffsetK.Value;
+                // DS-06 的 -192 锚点是联讯原始谱（正刻度 +120~+147）的显示约定；
+                // 昊衡抓包本身已是负刻度 dB（约 -60~-123），再叠加锚点会整条曲线掉出显示区间。
+                return IsHengwei ? 0.0 : DisplayTransform.DefaultOffsetK;
+            }
         }
     }
 

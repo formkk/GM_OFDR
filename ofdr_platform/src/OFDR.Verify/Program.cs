@@ -61,6 +61,7 @@ internal static class Program
         Run("指标公式：非 8 峰判无效", Tests.MetricNotEightPeaks);
         Run("整机 TCP：握手 + 分片/粘包收帧 + 通道快照", Tests.TcpEndToEnd);
         Run("编排闭环：离线合成 IN×OUT 2×2、每通道 2 帧", Tests.EngineOfflineLoop);
+        Run("离线回放：昊衡抓包解析 + 契约帧", Tests.HengCaptureReplay);
         Run("迁移：config.txt 读取", Tests.LegacyConfigMigration);
         Run("历史基准数据：ofdr_metrics CSV 读取与表头一致", Tests.LegacyMetricsBaseline);
 

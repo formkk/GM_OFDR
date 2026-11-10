@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Globalization;
 using System.IO;
@@ -22,9 +23,7 @@ namespace Gmix.App.UI
         readonly ComboBox _runMode = new ComboBox();
         readonly TextBox _startM = new TextBox();
         readonly TextBox _endM = new TextBox();
-        readonly TextBox _guardM = new TextBox();
         readonly ComboBox _rlMode = new ComboBox();
-        readonly CheckBox _synthetic = new CheckBox();
         readonly Button _startButton = new Button();
         readonly Button _stopButton = new Button();
         readonly Button _saveButton = new Button();
@@ -34,10 +33,17 @@ namespace Gmix.App.UI
         CancellationTokenSource _cts;
         bool _running;
         string _pendingGroupId;
+        int _commitsSinceRetention;
         CalibrationModel _calibration;
         string _calibrationPath;
 
         public SnapshotView View { get { return _view; } }
+
+        /// <summary>合成数据（调试）开关，由校准向导页的「设备参数」区域控制。</summary>
+        public bool SyntheticMode { get; set; }
+
+        /// <summary>数据根保存上限（GB），由校准向导页的「存储与维护」区域控制。</summary>
+        public decimal SavingLimitGb { get; set; }
 
         /// <summary>结果视图更新（测量完成、提交完成或校准重算）。</summary>
         public event Action<MeasurementSnapshot> SnapshotChanged;
@@ -50,6 +56,7 @@ namespace Gmix.App.UI
             _env = env;
             _runner = new ScanRunner(env);
             _runner.Log += OnRunnerLog;
+            SavingLimitGb = AcquisitionDefaults.RetentionBytes / (1024m * 1024m * 1024m);
 
             Dock = DockStyle.Fill;
             BuildLayout();
@@ -68,12 +75,11 @@ namespace Gmix.App.UI
         {
             var parameters = new FlowLayoutPanel();
             parameters.Dock = DockStyle.Top;
-            parameters.Height = 96;
-            parameters.AutoSize = false;
+            parameters.AutoSize = true;
+            parameters.AutoSizeMode = AutoSizeMode.GrowAndShrink;
             parameters.WrapContents = true;
-            parameters.Padding = new Padding(6);
+            parameters.Padding = new Padding(6, 4, 6, 4);
 
-            parameters.Controls.Add(MakeLabel("采样率 50 MHz · 时长 8 ms · 软件触发（只读）"));
             parameters.Controls.Add(MakeLabel("组内平均次数"));
             _repeat.Minimum = 1;
             _repeat.Maximum = 100;
@@ -98,25 +104,12 @@ namespace Gmix.App.UI
             _endM.Width = 64;
             parameters.Controls.Add(_endM);
 
-            parameters.Controls.Add(MakeLabel("保护带 m"));
-            _guardM.Text = "0.1";
-            _guardM.Width = 48;
-            _guardM.ReadOnly = true;
-            _guardM.TabStop = false;
-            _guardM.BackColor = SystemColors.Control;
-            _guardM.TextAlign = HorizontalAlignment.Center;
-            parameters.Controls.Add(_guardM);
-
             parameters.Controls.Add(MakeLabel("回损模式"));
             _rlMode.DropDownStyle = ComboBoxStyle.DropDownList;
             _rlMode.Items.AddRange(new object[] { "仅峰值", "基线+峰值" });
             _rlMode.SelectedIndex = 0;
             _rlMode.Width = 150;
             parameters.Controls.Add(_rlMode);
-
-            _synthetic.Text = "合成数据（调试）";
-            _synthetic.AutoSize = true;
-            parameters.Controls.Add(_synthetic);
 
             _startButton.Text = "开始";
             _startButton.Width = 72;
@@ -179,7 +172,7 @@ namespace Gmix.App.UI
                 AppendLog("参数错误：终点必须大于起点");
                 return;
             }
-            if (!_synthetic.Checked && !_env.DeviceReady)
+            if (!SyntheticMode && !_env.DeviceReady)
             {
                 AppendLog("设备未就绪：缺少 qt_acq/ofdr/detect 或 runtime 目录");
                 return;
@@ -191,11 +184,16 @@ namespace Gmix.App.UI
             _cts = new CancellationTokenSource();
             _running = true;
             SetRunningState(true);
+            _commitsSinceRetention = 0;
 
             try
             {
+                if (loop) await RunRetentionAsync(null, true);
+
                 do
                 {
+                    if (!CheckFreeSpace()) break;
+
                     var request = new ScanRequest
                     {
                         Repeat = (int)_repeat.Value,
@@ -204,7 +202,7 @@ namespace Gmix.App.UI
                         RlMode = string.Equals(_rlMode.SelectedItem as string, "基线+峰值", StringComparison.Ordinal)
                             ? "baseline_plus_peak" : "peak_only",
                         CalibrationPath = _calibrationPath,
-                        Synthetic = _synthetic.Checked
+                        Synthetic = SyntheticMode
                     };
 
                     AcquisitionOutcome outcome = await _runner.AcquireAsync(request, _cts.Token);
@@ -220,6 +218,7 @@ namespace Gmix.App.UI
                         ShowGroup(commit.GroupDir);
                         if (!commit.Success) break;
                         RaiseGroupCommitted();
+                        await RunRetentionAsync(outcome.GroupId, false);
                         await Task.Delay(500, _cts.Token);
                     }
                     else
@@ -272,7 +271,61 @@ namespace Gmix.App.UI
             _pendingGroupId = null;
             CommitOutcome outcome = await _runner.CommitAsync(groupId, _calibrationPath);
             ShowGroup(outcome.GroupDir);
-            if (outcome.Success) RaiseGroupCommitted();
+            if (outcome.Success)
+            {
+                RaiseGroupCommitted();
+                await RunRetentionAsync(groupId, false);
+            }
+        }
+
+        /// <summary>
+        /// 数据根容量保护（SRS FR-HIS-06）：每提交若干组检查一次，超限删除最旧组。
+        /// force=true 用于循环开始前先清理一次，避免带着超限数据开跑。
+        /// </summary>
+        async Task RunRetentionAsync(string keepGroupId, bool force)
+        {
+            _commitsSinceRetention++;
+            if (!force && _commitsSinceRetention < AcquisitionDefaults.RetentionCheckGroups) return;
+            _commitsSinceRetention = 0;
+            try
+            {
+                var store = new GroupStore(_env.DataRoot);
+                long maxBytes = (long)SavingLimitGb * 1024L * 1024L * 1024L;
+                RetentionOutcome outcome = await Task.Run(delegate
+                {
+                    return store.EnforceRetention(maxBytes, keepGroupId);
+                });
+                if (outcome.DeletedGroups > 0)
+                {
+                    AppendLog("保留策略：删除最旧 " + outcome.DeletedGroups + " 组，释放 "
+                        + (outcome.FreedBytes / (1024 * 1024)) + " MB，当前数据根 "
+                        + (outcome.TotalBytes / (1024 * 1024)) + " MB（上限 "
+                        + SavingLimitGb + " GB）");
+                }
+            }
+            catch (Exception ex)
+            {
+                AppendLog("保留策略执行失败：" + ex.Message);
+            }
+        }
+
+        /// <summary>循环采集前检查可用磁盘空间，低于阈值即停采并说明原因。</summary>
+        bool CheckFreeSpace()
+        {
+            try
+            {
+                var drive = new DriveInfo(Path.GetPathRoot(_env.DataRoot));
+                long free = drive.AvailableFreeSpace;
+                if (free >= AcquisitionDefaults.MinFreeBytes) return true;
+                AppendLog("磁盘剩余 " + (free / (1024 * 1024)) + " MB，低于 "
+                    + (AcquisitionDefaults.MinFreeBytes / (1024 * 1024 * 1024)) + " GB，已停止采集");
+                return false;
+            }
+            catch (Exception ex)
+            {
+                AppendLog("读取磁盘剩余空间失败，跳过水位检查：" + ex.Message);
+                return true;
+            }
         }
 
         void ShowStaging(string scanDir, string groupId)
@@ -287,6 +340,7 @@ namespace Gmix.App.UI
                 MeasurementSnapshot snapshot = GroupReader.LoadScanDir(scanDir);
                 snapshot.GroupId = groupId;
                 snapshot.Status = "pending";
+                ApplyPreviewPrecision(snapshot, groupId);
                 _view.ShowSnapshot(snapshot);
                 RaiseSnapshotChanged();
             }
@@ -294,6 +348,35 @@ namespace Gmix.App.UI
             {
                 AppendLog("读取扫描失败：" + ex.Message);
             }
+        }
+
+        /// <summary>
+        /// 未提交时也能看精度：遍历 staging 内该组所有已就绪扫描的 summary.json，
+        /// 用与提交相同的口径（MetricsAggregator.CollectPrecision）计算并写入预览快照。
+        /// 结果只在内存中显示，不落盘；提交后以 AVG/summary.json 为准。
+        /// </summary>
+        void ApplyPreviewPrecision(MeasurementSnapshot snapshot, string groupId)
+        {
+            if (snapshot == null || snapshot.Summary == null) return;
+            string staging = new GroupStore(_env.DataRoot).StagingGroupDir(groupId);
+            if (!Directory.Exists(staging)) return;
+
+            var summaries = new List<SummaryDocument>();
+            foreach (string dir in Directory.GetDirectories(staging))
+            {
+                string path = Path.Combine(dir, "summary.json");
+                if (!File.Exists(path)) return;
+                summaries.Add(JsonStore.Read<SummaryDocument>(path));
+            }
+            if (summaries.Count < 2) return;
+
+            bool calibrated = _calibration != null && _calibration.HasIlCalibration() && _calibration.HasAbsoluteRl();
+            PrecisionSeries series = MetricsAggregator.CollectPrecision(summaries, calibrated);
+            snapshot.Summary.ilPrecisionDb = MetricsAggregator.SampleStd(series.Il);
+            snapshot.Summary.rlPrecisionDb = MetricsAggregator.SampleStd(series.Rl);
+            snapshot.Summary.precisionBasis = series.Basis;
+            snapshot.Summary.precisionMode = "sample_std";
+            snapshot.Summary.precisionCount = series.Il.Count;
         }
 
         void ShowGroup(string groupDir)
@@ -350,7 +433,6 @@ namespace Gmix.App.UI
             _rlMode.Enabled = !running;
             _startM.Enabled = !running;
             _endM.Enabled = !running;
-            _synthetic.Enabled = !running;
         }
 
         void OnRunnerLog(string message)

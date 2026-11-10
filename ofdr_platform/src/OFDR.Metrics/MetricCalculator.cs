@@ -19,22 +19,8 @@ public static class MetricCalculator
         if (scan.Count == 0)
             return MeasurementResult.Invalid(scan, MeasurementError.EmptyScan, "扫描数据为空", 0, configId);
 
-        double[] dbm;
-        switch (scan.ValueUnit.Trim().ToLowerInvariant())
-        {
-            case "dbm":
-                dbm = scan.Values;
-                break;
-            case "mw":
-                dbm = new double[scan.Values.Length];
-                for (int i = 0; i < dbm.Length; i++)
-                    dbm[i] = PowerUnits.MwToDbm(scan.Values[i]);
-                break;
-            default:
-                return MeasurementResult.Invalid(
-                    scan, MeasurementError.UnsupportedUnit,
-                    $"不支持的数值单位：{scan.ValueUnit}", 0, configId);
-        }
+        // 契约已统一数值域（dB 相对功率电平），不再按单位分发
+        double[] dbm = scan.Values;
 
         var swPeak = Stopwatch.StartNew();
         var detection = PeakDetector.FindByThreshold(dbm, config.PeakThresholdDbm, config.PeakMergeGap);

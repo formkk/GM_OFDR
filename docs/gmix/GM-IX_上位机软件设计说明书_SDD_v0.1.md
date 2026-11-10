@@ -6,7 +6,7 @@
 | 状态 | 可评审；标 `TBD` 处待实机或决策 |
 | 对应需求 | `GM-IX_上位机软件需求规格_SRS_v0.1.md`（无遗留待评审项） |
 | 对应契约 | `docs/contracts/GM-IX_数据与处理规范_v1.0.md`（ICD v1.0，唯一数据/行为契约） |
-| 实施状态 | `Gmix.Data` 数据层已落地（.NET Framework 4.0 直编，schemaVersion 0.2，回归 PASS 14/FAIL 0）；厂商 P/Invoke 声明已存在（`Qt2144Probe.cs`）；工程化、采集进程、UI 未开始 |
+| 实施状态 | `.NET 8` 工程化与 4 页 UI 已完成，实施明细见 §13；`Gmix.Data` 遗留数据层保留（schemaVersion 0.2） |
 | 设计范围 | 仅 P0：测量主页、事件表与结果、校准向导、历史检索与导出（4 页）+ 数据层 + 采集/处理编排 |
 
 > **文档定位**：本文件是软件设计说明书（SDD），回答"怎么实现"。需求与验收以 SRS v0.1 为准，字段/公式/错误契约以 ICD v1.0 为准，本文只引用编号不重复定义。§0.2 的决策记录是设计前提，变更须走 §0.3 纪律。
@@ -687,7 +687,7 @@ Gmix/
 | 项 | 状态 |
 |---|---|
 | `Gmix.Data` 模型/校验/指标/校准/存储 | 已实现，14 条断言全绿 |
-| `.NET 8` 工程化（`Gmix.sln`：Core/Vendor/Acquirer/Tests） | 已完成（2026-11-05），构建 0 警告 0 错误；`JavaScriptSerializer` → `System.Text.Json`，`object` → `JsonNode`，回归 PASS 33 |
+| `.NET 8` 工程化（`Gmix.sln`：Core/Vendor/Acquirer/Commit/Import/Tests/App） | 已完成（2026-11-05），构建 0 警告 0 错误；`JavaScriptSerializer` → `System.Text.Json`，`object` → `JsonNode`，回归 PASS 33 |
 | `Gmix.Vendor`（NativeApi/QtAcquisition/OfdrProcessor/Detector/VendorRuntime/错误映射） | 已完成，离线编译通过；句柄不外露、结果复制后即 free、NaN→null |
 | `Gmix.Core` 新增 `DisplayTransform`/`EnvelopeSampler`/`ConfigSnapshot`/`GroupStore`/`ReadyDocument` | 已完成，新增 19 条断言全绿（DS-01/02/04/05、抽稀保峰、configHash 键序与稳定性、`.ready` 校验与原子提交） |
 | `Gmix.Acquirer` 合成模式 | 已跑通（2026-11-05）：峰 418、61 ms、写出 10 个文件 + `.ready`；实机模式见下行 |

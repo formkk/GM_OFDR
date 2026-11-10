@@ -61,8 +61,8 @@ namespace Gmix.App.UI
             split.Dock = DockStyle.Fill;
             split.ColumnCount = 2;
             split.RowCount = 1;
-            split.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 62));
-            split.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 38));
+            split.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 68));
+            split.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 32));
             split.Controls.Add(_curve, 0, 0);
             split.Controls.Add(right, 1, 0);
 
@@ -80,8 +80,8 @@ namespace Gmix.App.UI
             grid.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
             grid.Columns.Add("name", "指标");
             grid.Columns.Add("value", "数值");
-            grid.Columns[0].FillWeight = 40;
-            grid.Columns[1].FillWeight = 60;
+            grid.Columns[0].FillWeight = 34;
+            grid.Columns[1].FillWeight = 66;
         }
 
         static void ConfigureEventsGrid(DataGridView grid)
@@ -93,14 +93,10 @@ namespace Gmix.App.UI
             grid.RowHeadersVisible = false;
             grid.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
             grid.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
-            AddColumn(grid, "peakNo", "峰号", 10);
-            AddColumn(grid, "distanceM", "距离(m)", 16);
-            AddColumn(grid, "rlDb", "回损(dB)", 14);
-            AddColumn(grid, "rlDbRel", "相对回损(dB)", 16);
-            AddColumn(grid, "stepLossDb", "台阶(dB)", 13);
-            AddColumn(grid, "baseBefore", "前基线(dB)", 14);
-            AddColumn(grid, "baseAfter", "后基线(dB)", 14);
-            AddColumn(grid, "zeroPeak", "零距", 8);
+            AddColumn(grid, "peakNo", "峰号", 12);
+            AddColumn(grid, "distanceM", "距离(m)", 24);
+            AddColumn(grid, "rlDb", "回损(dB)", 30);
+            AddColumn(grid, "stepLossDb", "台阶(dB)", 24);
         }
 
         static void AddColumn(DataGridView grid, string name, string header, int weight)
@@ -146,20 +142,31 @@ namespace Gmix.App.UI
             bool calibrated = snapshot.Calibrated;
             string il;
             if (summary.totalIlDb.HasValue) il = DisplayTransform.TotalIlText(summary.totalIlDb);
-            else if (summary.totalIlRawDb.HasValue) il = (-summary.totalIlRawDb.Value).ToString("0.00") + "（未标定）";
+            else if (summary.totalIlRawDb.HasValue) il = summary.totalIlRawDb.Value.ToString("0.00") + " dB（未标定）";
             else il = "—";
 
             _metrics.Rows.Add("插入损耗", il);
-            _metrics.Rows.Add("插损精度", DisplayTransform.PrecisionText(summary.ilPrecisionDb));
+            _metrics.Rows.Add("插损精度", PrecisionText(summary.ilPrecisionDb, snapshot));
             _metrics.Rows.Add("回波损耗", DisplayTransform.TotalRlText(summary.totalRlDb, summary.totalRlRawDb, snapshot.OffsetK, calibrated));
-            _metrics.Rows.Add("回损精度", DisplayTransform.PrecisionText(summary.rlPrecisionDb));
+            _metrics.Rows.Add("回损精度", PrecisionText(summary.rlPrecisionDb, snapshot));
 
             AnalysisRangeInfo range = snapshot.Range;
             _metrics.Rows.Add("平均次数", summary.averageCount.ToString());
             _metrics.Rows.Add("分析区间", range == null ? "—" : string.Format("{0:0.###} ~ {1:0.###} m，保护带 {2:0.###} m",
-                range.startM, range.endM, range.guardM > 0 ? range.guardM : 0.1));
+                range.startM, range.endM, range.guardM > 0 ? range.guardM : AcquisitionDefaults.GuardM));
             _metrics.Rows.Add("回损模式", summary.rlMode == "baseline_plus_peak" ? "基线+峰值" : "仅峰值");
             _metrics.Rows.Add("校准状态", calibrated ? "已标定" : "未标定（回损为预览值）");
+        }
+
+        /// <summary>
+        /// 精度只在提交生成的 AVG 上计算；N≥2 但尚未提交时显示「提交后计算」，
+        /// 避免与 N=1 的「—」混淆。
+        /// </summary>
+        static string PrecisionText(double? value, MeasurementSnapshot snapshot)
+        {
+            if (value.HasValue) return DisplayTransform.PrecisionText(value);
+            if (!snapshot.IsAverage && snapshot.AverageCount > 1) return "提交后计算";
+            return "—";
         }
 
         void FillEvents(MeasurementSnapshot snapshot)
@@ -181,12 +188,8 @@ namespace Gmix.App.UI
                 int index = _events.Rows.Add(
                     isZero ? "—" : displayNo.ToString(),
                     (peak != null && peak.distanceM.HasValue ? peak.distanceM.Value : item.locM).ToString("0.000"),
-                    item.rlDb.HasValue ? item.rlDb.Value.ToString("0.00") : "—",
-                    item.rlDbRel.HasValue ? DisplayTransform.Level(item.rlDbRel.Value, snapshot.OffsetK).ToString("0.00") : "—",
-                    DisplayTransform.StepLossText(item.stepLossDb),
-                    item.baseBeforeDbRel.HasValue ? DisplayTransform.Level(item.baseBeforeDbRel.Value, snapshot.OffsetK).ToString("0.00") : "—",
-                    item.baseAfterDbRel.HasValue ? DisplayTransform.Level(item.baseAfterDbRel.Value, snapshot.OffsetK).ToString("0.00") : "—",
-                    isZero ? "是" : "否");
+                    RlText(item, snapshot),
+                    DisplayTransform.StepLossText(item.stepLossDb));
                 _events.Rows[index].Tag = isZero ? null : (int?)displayNo;
             }
 
@@ -195,6 +198,18 @@ namespace Gmix.App.UI
                 _events.SelectionChanged -= OnEventSelectionChanged;
                 _events.SelectionChanged += OnEventSelectionChanged;
             }
+        }
+
+        /// <summary>
+        /// 逐峰回损：标定后直接取数据字段 rlDb；未标定（或旧数据缺失）回退 rlDbRel + 显示偏移，
+        /// 未标定时加「（未标定）」标注（SRS DS-02）。
+        /// </summary>
+        static string RlText(EventInfo item, MeasurementSnapshot snapshot)
+        {
+            if (item.rlDb.HasValue) return item.rlDb.Value.ToString("0.00");
+            if (!item.rlDbRel.HasValue) return "—";
+            string text = DisplayTransform.Level(item.rlDbRel.Value, snapshot.OffsetK).ToString("0.00");
+            return snapshot.Calibrated ? text : text + "（未标定）";
         }
 
         void OnEventSelectionChanged(object sender, EventArgs e)

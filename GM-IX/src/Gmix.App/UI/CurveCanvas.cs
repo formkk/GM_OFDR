@@ -50,6 +50,10 @@ namespace Gmix.App.UI
         static readonly Color GridLine = Color.FromArgb(214, 219, 198);
         static readonly Color AxisLine = Color.FromArgb(140, 140, 132);
         static readonly Color AxisText = Color.FromArgb(70, 70, 66);
+        static readonly Color CursorAColor = Color.FromArgb(192, 57, 43);
+        static readonly Color CursorBColor = Color.FromArgb(39, 124, 74);
+        // 基线与蓝曲线、浅米绿背景、橙色区间虚线都要区分开，用深紫
+        static readonly Color BaselineColor = Color.FromArgb(106, 27, 154);
 
         public CurveCanvas()
         {
@@ -125,13 +129,14 @@ namespace Gmix.App.UI
             }
 
             DrawAnalysisMask(g, plot);
-            DrawEnvelope(g, plot, _baseline, Color.SeaGreen, 1);
+            // 反射强度先画、基线后画：基线是平滑中线，后画且略粗才不会被密集的蓝色包络盖住
             DrawEnvelope(g, plot, _psDb, Color.RoyalBlue, 1);
+            DrawEnvelope(g, plot, _baseline, BaselineColor, 2f);
             DrawPeaks(g, plot);
             DrawCursors(g, plot);
-            DrawReadout(g, plot);
+            RectangleF readout = DrawReadout(g, plot);
             DrawCursor(g, plot);
-            DrawLegend(g, plot);
+            DrawLegend(g, plot, readout);
         }
 
         void DrawGrid(Graphics g, Rectangle plot)
@@ -221,11 +226,6 @@ namespace Gmix.App.UI
             {
                 g.DrawLine(pen, startX, plot.Top, startX, plot.Bottom);
                 g.DrawLine(pen, endX, plot.Top, endX, plot.Bottom);
-                double guard = _range.guardM > 0 ? _range.guardM : 0.1;
-                int guardIn = ToX(_range.startM + guard, plot);
-                int guardOut = ToX(_range.endM - guard, plot);
-                if (guardIn > startX) g.DrawLine(pen, guardIn, plot.Top, guardIn, plot.Bottom);
-                if (guardOut < endX) g.DrawLine(pen, guardOut, plot.Top, guardOut, plot.Bottom);
             }
         }
 
@@ -248,9 +248,10 @@ namespace Gmix.App.UI
 
         void DrawPeaks(Graphics g, Rectangle plot)
         {
-            using (var font = new Font("Segoe UI", 7.5f))
+            using (var font = new Font("Segoe UI", 8.5f))
             using (var brush = new SolidBrush(Color.Firebrick))
             using (var selected = new SolidBrush(Color.Red))
+            using (var textBrush = new SolidBrush(Color.Black))
             {
                 int displayNo = 0;
                 foreach (PeakInfo peak in _peaks)
@@ -277,22 +278,22 @@ namespace Gmix.App.UI
                     SizeF tailSize = g.MeasureString(tail, font);
                     float textX = x - Math.Max(headSize.Width, tailSize.Width) / 2;
                     textX = Math.Max(plot.Left + 1, Math.Min(textX, plot.Right - Math.Max(headSize.Width, tailSize.Width) - 1));
-                    float textY = Math.Max(plot.Top + 1, y - 34);
-                    g.DrawString(head, font, brush, textX, textY);
-                    g.DrawString(tail, font, brush, textX, textY + 11);
+                    float textY = Math.Max(plot.Top + 1, y - 36);
+                    g.DrawString(head, font, textBrush, textX, textY);
+                    g.DrawString(tail, font, textBrush, textX, textY + 13);
                 }
             }
         }
 
         void DrawCursors(Graphics g, Rectangle plot)
         {
-            using (var penA = new Pen(Color.FromArgb(192, 57, 43), 1.2f) { DashStyle = DashStyle.Dash })
-            using (var penB = new Pen(Color.FromArgb(39, 124, 74), 1.2f) { DashStyle = DashStyle.Dash })
+            using (var penA = new Pen(CursorAColor, 1.2f) { DashStyle = DashStyle.Dash })
+            using (var penB = new Pen(CursorBColor, 1.2f) { DashStyle = DashStyle.Dash })
             using (var font = new Font("Segoe UI", 7.5f))
             using (var white = new SolidBrush(Color.White))
             {
-                if (_cursorA.HasValue) DrawCursorLine(g, plot, penA, Color.FromArgb(192, 57, 43), white, font, _cursorA.Value, "A");
-                if (_cursorB.HasValue) DrawCursorLine(g, plot, penB, Color.FromArgb(39, 124, 74), white, font, _cursorB.Value, "B");
+                if (_cursorA.HasValue) DrawCursorLine(g, plot, penA, CursorAColor, white, font, _cursorA.Value, "A");
+                if (_cursorB.HasValue) DrawCursorLine(g, plot, penB, CursorBColor, white, font, _cursorB.Value, "B");
             }
         }
 
@@ -310,11 +311,13 @@ namespace Gmix.App.UI
             g.DrawString(label, font, white, chipX + 3, plot.Top + 1);
         }
 
-        void DrawReadout(Graphics g, Rectangle plot)
+        RectangleF DrawReadout(Graphics g, Rectangle plot)
         {
-            if (!_cursorA.HasValue && !_cursorB.HasValue) return;
-            using (var font = new Font("Segoe UI", 9.5f, FontStyle.Bold))
-            using (var brush = new SolidBrush(Color.FromArgb(32, 32, 32)))
+            if (!_cursorA.HasValue && !_cursorB.HasValue) return RectangleF.Empty;
+            using (var font = new Font("Segoe UI", 9f, FontStyle.Regular))
+            using (var dark = new SolidBrush(Color.FromArgb(32, 32, 32)))
+            using (var brushA = new SolidBrush(CursorAColor))
+            using (var brushB = new SolidBrush(CursorBColor))
             using (var background = new SolidBrush(Color.FromArgb(235, 255, 255, 255)))
             using (var border = new Pen(Color.FromArgb(200, 204, 188)))
             {
@@ -325,12 +328,33 @@ namespace Gmix.App.UI
                 string gap = _cursorA.HasValue && _cursorB.HasValue
                     ? Math.Abs(_cursorB.Value - _cursorA.Value).ToString("0.000") + " m" : "—";
                 string delta = double.IsNaN(aLevel) || double.IsNaN(bLevel) ? "—" : (bLevel - aLevel).ToString("0.00") + " dB";
-                string text = "A " + a + "     B " + b + "     Δ间距 " + gap + "     Δ电平 " + delta;
-                SizeF size = g.MeasureString(text, font);
-                var box = new RectangleF(plot.Left - 4, 1, size.Width + 10, size.Height + 4);
+
+                // A 用红色、B 用绿色，与两条游标虚线同色；Δ 部分保持深灰
+                string textA = "A " + a;
+                string textB = "B " + b;
+                const string gapText = "     ";
+                string textRest = "     Δ间距 " + gap + "     Δ电平 " + delta;
+
+                SizeF sizeA = g.MeasureString(textA, font);
+                SizeF sizeGap = g.MeasureString(gapText, font);
+                SizeF sizeB = g.MeasureString(textB, font);
+                SizeF sizeRest = g.MeasureString(textRest, font);
+                float width = sizeA.Width + sizeGap.Width + sizeB.Width + sizeRest.Width;
+
+                var box = new RectangleF(plot.Left - 4, 1, width + 10, sizeA.Height + 4);
                 g.FillRectangle(background, box);
                 g.DrawRectangle(border, box.X, box.Y, box.Width, box.Height);
-                g.DrawString(text, font, brush, box.X + 5, box.Y + 2);
+
+                float textX = box.X + 5;
+                float textY = box.Y + 2;
+                g.DrawString(textA, font, brushA, textX, textY);
+                textX += sizeA.Width;
+                g.DrawString(gapText, font, dark, textX, textY);
+                textX += sizeGap.Width;
+                g.DrawString(textB, font, brushB, textX, textY);
+                textX += sizeB.Width;
+                g.DrawString(textRest, font, dark, textX, textY);
+                return box;
             }
         }
 
@@ -372,14 +396,18 @@ namespace Gmix.App.UI
             }
         }
 
-        void DrawLegend(Graphics g, Rectangle plot)
+        /// <summary>图例默认右上角；与 A/B 读数条重叠时（窄窗口）自动下移一行。</summary>
+        void DrawLegend(Graphics g, Rectangle plot, RectangleF readout)
         {
             using (var font = new Font("Segoe UI", 8))
             using (var blue = new SolidBrush(Color.RoyalBlue))
-            using (var green = new SolidBrush(Color.SeaGreen))
+            using (var baseline = new SolidBrush(BaselineColor))
             {
-                g.DrawString("— 反射强度", font, blue, plot.Right - 164, 4);
-                g.DrawString("— 基线", font, green, plot.Right - 84, 4);
+                float y = 4;
+                if (!readout.IsEmpty && readout.Right > plot.Right - 170)
+                    y = Math.Min(readout.Bottom + 2, plot.Top - 14);
+                g.DrawString("— 反射强度", font, blue, plot.Right - 164, y);
+                g.DrawString("— 基线", font, baseline, plot.Right - 84, y);
             }
         }
 

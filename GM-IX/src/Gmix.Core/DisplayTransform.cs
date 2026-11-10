@@ -17,19 +17,19 @@ namespace Gmix.Data
             return dbRel + offsetK;
         }
 
-        /// <summary>DS-02：总回损。已标定显示标定值；未标定显示 raw + 偏移并标注。</summary>
+        /// <summary>DS-02：总回损（dB）。已标定显示标定值；未标定显示 raw + 偏移并标注。</summary>
         public static string TotalRlText(double? rlDb, double? rlRawDb, double offsetK, bool calibrated)
         {
             if (calibrated)
-                return rlDb.HasValue ? rlDb.Value.ToString("0.00") : "—";
+                return rlDb.HasValue ? rlDb.Value.ToString("0.00") + " dB" : "—";
             if (!rlRawDb.HasValue) return "—";
-            return (rlRawDb.Value + offsetK).ToString("0.00") + "（未标定）";
+            return (rlRawDb.Value + offsetK).ToString("0.00") + " dB（未标定）";
         }
 
-        /// <summary>DS-04：总插损取负显示；该规则只作用于 IL 域，严禁套用到任何 RL 字段。</summary>
+        /// <summary>DS-04：总插损按厂商口径以正值显示（损耗量），单位 dB；只作用于 IL 域，严禁套用到 RL。</summary>
         public static string TotalIlText(double? ilDb)
         {
-            return ilDb.HasValue ? (-ilDb.Value).ToString("0.00") : "—";
+            return ilDb.HasValue ? ilDb.Value.ToString("0.00") + " dB" : "—";
         }
 
         /// <summary>DS-03：台阶为正损耗，原样显示。</summary>
@@ -38,10 +38,10 @@ namespace Gmix.Data
             return stepLossDb.HasValue ? stepLossDb.Value.ToString("0.00") : "—";
         }
 
-        /// <summary>DS-05：精度恒为正，原样显示；null → "—"（不取绝对值，避免掩盖异常）。</summary>
+        /// <summary>DS-05：精度（dB）恒为正，原样显示；null → "—"（不取绝对值，避免掩盖异常）。</summary>
         public static string PrecisionText(double? precisionDb)
         {
-            return precisionDb.HasValue ? precisionDb.Value.ToString("0.00") : "—";
+            return precisionDb.HasValue ? precisionDb.Value.ToString("0.00") + " dB" : "—";
         }
 
         /// <summary>DS-06：未标定态是否必须显示"未标定"标注。</summary>

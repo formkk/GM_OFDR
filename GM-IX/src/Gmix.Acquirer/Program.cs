@@ -81,7 +81,7 @@ namespace Gmix.Acquirer
                         byte[] raw = null;
                         if (opt.Synthetic)
                         {
-                            Synthetic(acquisition, out p, out s, out aux);
+                            Synthetic(acquisition, repeat, out p, out s, out aux);
                         }
                         else
                         {
@@ -104,12 +104,13 @@ namespace Gmix.Acquirer
                         Detector.Output detect = Detector.Process(ofdr.Dist, ofdr.Ps);
                         long detectMs = seg.ElapsedMilliseconds; seg.Restart();
                         EventsDocument events = BuildEvents(scanId, detect, opt.StartM);
+                        if (calibration.CanApplyAbsoluteRl(config.Hash)) calibration.ApplyAbsoluteRl(events);
 
                         AnalysisRangeInfo range = new AnalysisRangeInfo
                         {
                             startM = opt.StartM,
                             endM = opt.EndM,
-                            guardM = 0.1
+                            guardM = AcquisitionDefaults.GuardM
                         };
                         var empty = new List<double>();
                         SummaryDocument summary = MetricsAggregator.Compute(scanId, events, ofdr.Dist, detect.BaselineDb,
@@ -169,20 +170,41 @@ namespace Gmix.Acquirer
             return exitCode;
         }
 
-        static void Synthetic(AcquisitionInfo acquisition, out double[] p, out double[] s, out double[] aux)
+        // 模板帧本身已含实机噪声；额外噪声只用于让每次重放的样本略有差异。
+        // 实测：远端弱信号仅数 count，叠加过大会把远端噪声底抬高（曾用 σ=100 使 IL 由 21.7 掉到 5.1 dB），故取小值。
+        const double NoiseSigmaP = 5;
+        const double NoiseSigmaS = 5;
+        const double NoiseSigmaAux = 5;
+
+        /// <summary>
+        /// 合成数据：回放代表帧（GR-20261106-1550-001/R004）并叠加帧间量级噪声，
+        /// 使 ofdr→detect 输出的峰位/电平与实机一致（旧版纯正弦无法产生真实峰位与正刻度）。
+        /// </summary>
+        static void Synthetic(AcquisitionInfo acquisition, int repeatIndex, out double[] p, out double[] s, out double[] aux)
         {
-            long frames = acquisition.expectedFrames;
-            int n = (int)frames;
-            p = new double[n];
-            s = new double[n];
-            aux = new double[n];
-            for (int i = 0; i < n; i++)
+            int expected = (int)acquisition.expectedFrames;
+            short[] frames = SyntheticTemplate.Samples();
+            if (frames.Length != expected * 4)
+                throw new InvalidOperationException("合成数据模板帧数不匹配：模板 " + (frames.Length / 4) + "，期望 " + expected);
+
+            var random = new Random(20261106 + repeatIndex);
+            p = new double[expected];
+            s = new double[expected];
+            aux = new double[expected];
+            for (int i = 0; i < expected; i++)
             {
-                double t = i;
-                p[i] = Math.Sin(2 * Math.PI * 0.03 * t);
-                s[i] = Math.Sin(2 * Math.PI * 0.03 * t + 0.5);
-                aux[i] = Math.Sin(2 * Math.PI * 0.02 * t);
+                p[i] = frames[i * 4 + AcquisitionDefaults.PChannel] + Gaussian(random) * NoiseSigmaP;
+                s[i] = frames[i * 4 + AcquisitionDefaults.SChannel] + Gaussian(random) * NoiseSigmaS;
+                aux[i] = frames[i * 4 + AcquisitionDefaults.AuxChannel] + Gaussian(random) * NoiseSigmaAux;
             }
+        }
+
+        /// <summary>Box-Muller 标准正态；u1 取 1-NextDouble 避免 Log(0)。</summary>
+        static double Gaussian(Random random)
+        {
+            double u1 = 1.0 - random.NextDouble();
+            double u2 = random.NextDouble();
+            return Math.Sqrt(-2.0 * Math.Log(u1)) * Math.Cos(2.0 * Math.PI * u2);
         }
 
         static EventsDocument BuildEvents(string scanId, Detector.Output detect, double analysisStartM)
@@ -260,7 +282,7 @@ namespace Gmix.Acquirer
                 model = "GM-IX",
                 sdkVersion = "0.1.0",
                 hostIp = "192.168.5.55",
-                deviceIp = "192.168.5.20"
+                deviceIp = AcquisitionDefaults.DeviceIp
             };
             scan.acquisition = acquisition;
             scan.configSnapshot = new ConfigSnapshotInfo
@@ -295,7 +317,7 @@ namespace Gmix.Acquirer
                 avgMode = "linear_ps",
                 averageCount = opt.Repeat,
                 runMode = "single",
-                analysisRange = new AnalysisRangeInfo { startM = opt.StartM, endM = opt.EndM, guardM = 0.1 },
+                analysisRange = new AnalysisRangeInfo { startM = opt.StartM, endM = opt.EndM, guardM = AcquisitionDefaults.GuardM },
                 rlMode = opt.RlMode,
                 zeroPeakExcluded = true
             };

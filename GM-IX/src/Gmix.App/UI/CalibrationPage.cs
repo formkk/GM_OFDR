@@ -18,10 +18,22 @@ namespace Gmix.App.UI
         readonly TextBox _triggerThreshold = new TextBox();
         readonly TextBox _rlOffsetK = new TextBox();
         readonly TextBox _distScale = new TextBox();
+        readonly TextBox _deviceIp = new TextBox();
+        readonly CheckBox _synthetic = new CheckBox();
+        readonly NumericUpDown _retentionGb = new NumericUpDown();
         readonly Label _status = new Label();
         readonly Label _banner = new Label();
 
         public event Action<CalibrationModel, string> CalibrationSaved;
+
+        /// <summary>合成数据（调试）开关变化，由主窗体转发给测量页。</summary>
+        public event Action<bool> SyntheticChanged;
+
+        /// <summary>数据根保存上限（GB）变化，由主窗体转发给测量页。</summary>
+        public event Action<decimal> RetentionChanged;
+
+        /// <summary>数据根保存上限（GB）。</summary>
+        public decimal RetentionGb { get { return _retentionGb.Value; } }
 
         public CalibrationPage(AppEnvironment env)
         {
@@ -39,15 +51,38 @@ namespace Gmix.App.UI
             table.ColumnCount = 2;
             table.Padding = new Padding(16, 12, 16, 12);
 
-            AddRow(table, "功率谱密度", _psdRef, "字段 psdRef；厂商校准页同名项，本机实测 -88，未标定可留空");
+            AddSection(table, "设备参数");
+            _deviceIp.Text = _env.DeviceIp;
+            _deviceIp.ReadOnly = true;
+            _deviceIp.TabStop = false;
+            _deviceIp.BackColor = SystemColors.Control;
+            _deviceIp.TextAlign = HorizontalAlignment.Center;
+            AddRow(table, "设备 IP", _deviceIp);
+            var spec = new Label();
+            spec.AutoSize = true;
+            spec.Padding = new Padding(0, 8, 0, 0);
+            spec.Text = AcquisitionDefaults.SampleRateMhz + " MHz · " + AcquisitionDefaults.AcqTimeMs + " ms · 软件触发（只读）";
+            AddRow(table, "采集规格", spec);
+            _synthetic.Text = "合成数据（调试）";
+            _synthetic.AutoSize = true;
+            _synthetic.Padding = new Padding(0, 8, 0, 0);
+            _synthetic.CheckedChanged += delegate
+            {
+                Action<bool> handler = SyntheticChanged;
+                if (handler != null) handler(_synthetic.Checked);
+            };
+            AddRow(table, "合成数据（调试）", _synthetic);
+
+            AddSection(table, "校准参数");
+            AddRow(table, "功率谱密度", _psdRef);
             _ilSlope.Text = "0.5361";
-            AddRow(table, "插损斜率", _ilSlope, "字段 ilSlope；厂商确认 0.5361，默认值 0.7373 不得使用");
+            AddRow(table, "插损斜率", _ilSlope);
             _ilIntercept.Text = "-0.1";
-            AddRow(table, "插损截距", _ilIntercept, "字段 ilIntercept；厂商要求改为 -0.1，只作用于总插损");
-            AddRow(table, "触发阈值", _triggerThreshold, "字段 triggerThresholdDb；厂商值 35，语义待确认（TBD-D06）");
-            AddRow(table, "回损偏移", _rlOffsetK, "字段 rlOffsetK；负偏移，绝对回损 = 相对回损 + 本值");
+            AddRow(table, "插损截距", _ilIntercept);
+            AddRow(table, "触发阈值", _triggerThreshold);
+            AddRow(table, "回损偏移", _rlOffsetK);
             _distScale.Text = "1";
-            AddRow(table, "距离比例", _distScale, "字段 distScale；只作用于距离轴，本机标定 0.9502");
+            AddRow(table, "距离比例", _distScale);
 
             var buttons = new FlowLayoutPanel();
             buttons.AutoSize = true;
@@ -66,6 +101,17 @@ namespace Gmix.App.UI
             int buttonRow = table.RowCount;
             table.RowCount = buttonRow + 1;
             table.Controls.Add(buttons, 1, buttonRow);
+
+            AddSection(table, "存储与维护");
+            _retentionGb.Minimum = 1;
+            _retentionGb.Maximum = 500;
+            _retentionGb.Value = AcquisitionDefaults.RetentionBytes / (1024L * 1024L * 1024L);
+            _retentionGb.ValueChanged += delegate
+            {
+                Action<decimal> handler = RetentionChanged;
+                if (handler != null) handler(_retentionGb.Value);
+            };
+            AddRow(table, "保存上限 GB", _retentionGb);
 
             _status.AutoSize = true;
             _status.ForeColor = Color.DimGray;
@@ -99,7 +145,21 @@ namespace Gmix.App.UI
                 + "完成下方『回损偏移』标定并保存后，自动切换为真实回损。";
         }
 
-        static void AddRow(TableLayoutPanel table, string label, TextBox box, string hint)
+        static void AddSection(TableLayoutPanel table, string title)
+        {
+            int row = table.RowCount;
+            table.RowCount = row + 1;
+            table.Controls.Add(new Label
+            {
+                Text = title,
+                AutoSize = true,
+                Font = new Font("Segoe UI", 9, FontStyle.Bold),
+                Padding = new Padding(0, 10, 0, 2)
+            }, 0, row);
+            table.SetColumnSpan(table.GetControlFromPosition(0, row), 2);
+        }
+
+        static void AddRow(TableLayoutPanel table, string label, Control box)
         {
             int row = table.RowCount;
             table.RowCount = row + 1;
@@ -107,9 +167,9 @@ namespace Gmix.App.UI
 
             var panel = new FlowLayoutPanel();
             panel.AutoSize = true;
-            box.Width = 120;
+            var text = box as TextBox;
+            if (text != null) text.Width = 120;
             panel.Controls.Add(box);
-            panel.Controls.Add(new Label { Text = hint, AutoSize = true, Padding = new Padding(8, 8, 0, 0), ForeColor = Color.DimGray });
             table.Controls.Add(panel, 1, row);
         }
 

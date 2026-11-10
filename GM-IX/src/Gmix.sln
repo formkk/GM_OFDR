@@ -15,6 +15,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gmix.Commit", "Gmix.Commit\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gmix.App", "Gmix.App\Gmix.App.csproj", "{53E0CAFE-6C3A-4DB5-B411-92404A8D5B14}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gmix.Import", "Gmix.Import\Gmix.Import.csproj", "{9C2E5A71-4B3D-4F68-9A11-6D8E7C2F5B03}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -48,5 +50,9 @@ Global
 		{53E0CAFE-6C3A-4DB5-B411-92404A8D5B14}.Debug|Any CPU.Build.0 = Debug|x64
 		{53E0CAFE-6C3A-4DB5-B411-92404A8D5B14}.Release|Any CPU.ActiveCfg = Release|x64
 		{53E0CAFE-6C3A-4DB5-B411-92404A8D5B14}.Release|Any CPU.Build.0 = Release|x64
+		{9C2E5A71-4B3D-4F68-9A11-6D8E7C2F5B03}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9C2E5A71-4B3D-4F68-9A11-6D8E7C2F5B03}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9C2E5A71-4B3D-4F68-9A11-6D8E7C2F5B03}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9C2E5A71-4B3D-4F68-9A11-6D8E7C2F5B03}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

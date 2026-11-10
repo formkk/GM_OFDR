@@ -159,5 +159,86 @@ namespace Gmix.Data
             }
             return removed;
         }
+
+        /// <summary>
+        /// 容量保护：组目录总量超过 maxBytes 时，按组 ID（含时间戳，可排序）从最旧开始删除。
+        /// 只处理含 group.json 的 `GR-` 顶层目录；`_calibration`、`_staging` 与 keepGroupId 不受影响。
+        /// 删除失败只跳过该组，不中断采集。
+        /// </summary>
+        public RetentionOutcome EnforceRetention(long maxBytes, string keepGroupId)
+        {
+            var result = new RetentionOutcome();
+            if (maxBytes <= 0 || !Directory.Exists(DataRoot)) return result;
+
+            var groups = new List<KeyValuePair<string, long>>();
+            foreach (string dir in Directory.GetDirectories(DataRoot))
+            {
+                string name = Path.GetFileName(dir);
+                if (!name.StartsWith("GR-", StringComparison.Ordinal)) continue;
+                if (!File.Exists(Path.Combine(dir, "group.json"))) continue;
+                long bytes = DirectorySize(dir);
+                result.TotalBytes += bytes;
+                if (string.Equals(name, keepGroupId, StringComparison.Ordinal)) continue;
+                groups.Add(new KeyValuePair<string, long>(name, bytes));
+            }
+
+            if (result.TotalBytes <= maxBytes) return result;
+
+            groups.Sort(delegate (KeyValuePair<string, long> a, KeyValuePair<string, long> b)
+            {
+                return string.CompareOrdinal(a.Key, b.Key);
+            });
+
+            foreach (KeyValuePair<string, long> group in groups)
+            {
+                if (result.TotalBytes <= maxBytes) break;
+                try
+                {
+                    Directory.Delete(Path.Combine(DataRoot, group.Key), true);
+                    result.DeletedGroups++;
+                    result.FreedBytes += group.Value;
+                    result.TotalBytes -= group.Value;
+                }
+                catch (IOException)
+                {
+                    // 文件被占用（例如正在查看）：跳过，下次提交再删
+                }
+                catch (UnauthorizedAccessException)
+                {
+                    // 权限不足：跳过，下次提交再删
+                }
+            }
+
+            return result;
+        }
+
+        static long DirectorySize(string dir)
+        {
+            long total = 0;
+            foreach (string file in Directory.GetFiles(dir, "*", SearchOption.AllDirectories))
+            {
+                try
+                {
+                    total += new FileInfo(file).Length;
+                }
+                catch (IOException)
+                {
+                    // 统计期间文件被移走：忽略该文件
+                }
+                catch (UnauthorizedAccessException)
+                {
+                    // 无法读取：按 0 计入，不中断统计
+                }
+            }
+            return total;
+        }
+    }
+
+    /// <summary>保留策略执行结果（`SRS FR-HIS-06`）。</summary>
+    public sealed class RetentionOutcome
+    {
+        public int DeletedGroups;
+        public long FreedBytes;
+        public long TotalBytes;
     }
 }

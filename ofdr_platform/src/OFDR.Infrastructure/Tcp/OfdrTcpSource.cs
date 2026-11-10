@@ -190,13 +190,13 @@ public sealed class OfdrTcpSource : IScanSource
     {
         var values = ParseValues(raw.Bytes);
         long seq = Interlocked.Increment(ref _sequence);
-        var axis = new ScanAxis(AxisKind.Distance, 0, _options.RowSpacingM, "m", values.Length);
+        var axis = new ScanAxis(0, _options.RowSpacingM, values.Length);
         var metadata = new ScanMetadata(
-            _options.DeviceId, _options.SdkVersion, raw.InCh, raw.OutCh, raw.Epoch,
+            SourceType.Lianxun, _options.DeviceId, _options.SdkVersion, raw.InCh, raw.OutCh, raw.Epoch,
             DateTimeOffset.Now, RequestId: null, SegmentIndex: 0,
             TriggerDelayMs: _options.DelayMs);
         return new StandardScan(
-            $"{_options.Host}:{_options.Port}#{seq}", seq, axis, values, "dBm", metadata);
+            $"{_options.Host}:{_options.Port}#{seq}", seq, axis, values, metadata);
     }
 
     /// <summary>整帧一次 ASCII 解码，逐行按 InvariantCulture 解析为 dBm；空行/非法行跳过。</summary>

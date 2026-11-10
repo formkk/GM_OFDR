@@ -7,6 +7,7 @@ namespace OFDR.Contracts;
 /// <summary>
 /// StandardScan 的序列化与校验和。schema 版本随扫描记录携带，便于日后演进与追溯。
 /// 校验和只覆盖轴 + 数值，不覆盖时间戳等易变元数据。
+/// 轴派生值（End/IsValid）已标记不参与序列化，落盘即数据本体。
 /// </summary>
 public static class StandardScanCodec
 {
@@ -20,11 +21,9 @@ public static class StandardScanCodec
     public static string ComputeChecksum(StandardScan scan)
     {
         var sb = new StringBuilder(scan.Values.Length * 18);
-        sb.Append(scan.Axis.Kind).Append('|')
-          .Append(scan.Axis.Start.ToString("R", System.Globalization.CultureInfo.InvariantCulture)).Append('|')
+        sb.Append(scan.Axis.Start.ToString("R", System.Globalization.CultureInfo.InvariantCulture)).Append('|')
           .Append(scan.Axis.Step.ToString("R", System.Globalization.CultureInfo.InvariantCulture)).Append('|')
-          .Append(scan.Axis.Count).Append('|')
-          .Append(scan.ValueUnit).Append('|');
+          .Append(scan.Axis.Count).Append('|');
         foreach (var v in scan.Values)
             sb.Append(v.ToString("R", System.Globalization.CultureInfo.InvariantCulture)).Append(',');
         var hash = SHA256.HashData(Encoding.ASCII.GetBytes(sb.ToString()));

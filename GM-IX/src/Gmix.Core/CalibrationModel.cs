@@ -68,6 +68,25 @@ namespace Gmix.Data
             return rawRlDb + rlOffsetK.Value;
         }
 
+        /// <summary>标定后为每个事件写绝对回损 rlDb = rlDbRel + rlOffsetK；未标定保持 null（ICD §2.2）。</summary>
+        public void ApplyAbsoluteRl(EventsDocument events)
+        {
+            if (events == null || events.events == null || !HasAbsoluteRl()) return;
+            foreach (EventInfo item in events.events)
+            {
+                if (item != null && item.rlDbRel.HasValue)
+                    item.rlDb = item.rlDbRel.Value + rlOffsetK.Value;
+            }
+        }
+
+        /// <summary>绝对标定是否适用于当前配置：配置哈希缺失视为可应用，双方都有但不一致则拒绝（ICD §3.5）。</summary>
+        public bool CanApplyAbsoluteRl(string currentConfigHash)
+        {
+            if (!HasAbsoluteRl()) return false;
+            if (string.IsNullOrEmpty(configHash) || string.IsNullOrEmpty(currentConfigHash)) return true;
+            return MatchesConfig(currentConfigHash);
+        }
+
         /// <summary>总插损 = 斜率 × 原始插损 + 截距；截距只加一次。</summary>
         public double? ApplyIlTotal(double rawIlDb)
         {

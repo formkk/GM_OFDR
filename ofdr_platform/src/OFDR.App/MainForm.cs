@@ -46,8 +46,10 @@ public sealed class MainForm : Form
     private readonly TextBox _windowBox = new() { Text = "80" };
     private readonly TextBox _saveDirBox = new() { Text = string.Empty };
     private readonly TextBox _configPathBox = new() { Text = string.Empty };
+    private readonly TextBox _replayPathBox = new() { Text = string.Empty };
 
     private readonly Button _browseBtn = new() { Text = "浏览…", AutoSize = true };
+    private readonly Button _replayBrowseBtn = new() { Text = "选择抓包…", AutoSize = true };
     private readonly Button _startBtn = new() { Text = "开始测试", AutoSize = true };
     private readonly Button _stopBtn = new() { Text = "停止", AutoSize = true, Enabled = false };
 
@@ -80,6 +82,7 @@ public sealed class MainForm : Form
         _startBtn.Click += (_, _) => StartTest();
         _stopBtn.Click += (_, _) => StopTest();
         _browseBtn.Click += (_, _) => BrowseSaveDir();
+        _replayBrowseBtn.Click += (_, _) => BrowseReplayFile();
         _eventGrid.CellDoubleClick += (_, e) =>
         {
             if (e.RowIndex < 0 || e.RowIndex >= _eventGrid.Rows.Count) return;
@@ -87,7 +90,7 @@ public sealed class MainForm : Form
         };
         FormClosing += (_, _) => Shutdown();
 
-        AppendLog("就绪。默认离线合成源，可直接点击【开始测试】跑通闭环；切换“在线 TCP 整机”后需填写设备地址。");
+        AppendLog("就绪。默认离线合成源，可直接点击【开始测试】跑通闭环；切换“在线 TCP 整机”后需填写设备地址；选择“离线回放（昊衡抓包）”需指定抓包文件。");
         AppendLog("提示：一期未接入真实串口开关，通道切换为模拟；整机 TCP 数据路径为真实实现。");
         RefreshStatus();
     }
@@ -108,6 +111,7 @@ public sealed class MainForm : Form
 
         _sourceBox.Items.Add("离线合成（无硬件）");
         _sourceBox.Items.Add("在线 TCP 整机");
+        _sourceBox.Items.Add("离线回放（昊衡抓包）");
         _sourceBox.SelectedIndex = 0;
         _sourceBox.DropDownStyle = ComboBoxStyle.DropDownList;
 
@@ -125,6 +129,8 @@ public sealed class MainForm : Form
         AddField(settings, "保存目录", _saveDirBox, 230);
         settings.Controls.Add(_browseBtn);
         AddField(settings, "参考配置(config.txt)", _configPathBox, 300);
+        AddField(settings, "昊衡抓包文件", _replayPathBox, 300);
+        settings.Controls.Add(_replayBrowseBtn);
         settings.Controls.Add(_startBtn);
         settings.Controls.Add(_stopBtn);
 
@@ -292,6 +298,8 @@ public sealed class MainForm : Form
         else if (!TryParseInt(_samplesBox.Text, out samples) || samples < 1) error = "采样数必须 ≥ 1";
         else if (!TryParseInt(_timeoutBox.Text, out timeout) || timeout < 0) error = "通道超时非法";
         else if (aM < 0 || dM < 0 || aM > dM) error = "A/D 位置非法（须 0 ≤ A ≤ D）";
+        else if (_sourceBox.SelectedIndex == 2 && !File.Exists(_replayPathBox.Text.Trim()))
+            error = "昊衡抓包文件不存在";
 
         ParseRange(_inRangeBox.Text, out int inFrom, out int inTo);
         ParseRange(_outRangeBox.Text, out int outFrom, out int outTo);
@@ -366,6 +374,13 @@ public sealed class MainForm : Form
             source = new OfdrTcpSource(
                 new TcpScanOptions(Host: _hostBox.Text.Trim(), Port: port),
                 msg => AppendLog(msg));
+        }
+        else if (_sourceBox.SelectedIndex == 2)
+        {
+            source = new HengCaptureReplaySource(
+                new HengCaptureOptions { FilePath = _replayPathBox.Text.Trim() },
+                msg => AppendLog(msg));
+            AppendLog("提示：昊衡回放点距 185 µm，指标页 8 峰判定不适用；距离域曲线与事件表有效。");
         }
         else
         {
@@ -498,9 +513,8 @@ public sealed class MainForm : Form
     private void ApplyScan(StandardScan scan)
     {
         if (_config is null || scan.Count == 0) return;
-        if (!EventExtractor.TryToDbm(scan, out var dbm)) return;
 
-        _plot.SetTrace(scan.Axis, dbm);
+        _plot.SetTrace(scan.Axis, scan.Values);
         var events = EventExtractor.Extract(scan, _config);
         _plot.SetEvents(events);
         FillEventGrid(events);
@@ -650,5 +664,16 @@ public sealed class MainForm : Form
         using var dialog = new FolderBrowserDialog { Description = "选择数据保存目录" };
         if (dialog.ShowDialog() == DialogResult.OK)
             _saveDirBox.Text = dialog.SelectedPath;
+    }
+
+    private void BrowseReplayFile()
+    {
+        using var dialog = new OpenFileDialog
+        {
+            Title = "选择昊衡 LGA50-D 抓包文件",
+            Filter = "抓包文件 (*.bin;*.txt)|*.bin;*.txt|所有文件 (*.*)|*.*",
+        };
+        if (dialog.ShowDialog() == DialogResult.OK)
+            _replayPathBox.Text = dialog.FileName;
     }
 }

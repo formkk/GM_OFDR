@@ -1,6 +1,8 @@
 using System;
 using System.IO;
 
+using Gmix.Data;
+
 namespace Gmix.App
 {
     /// <summary>运行路径解析：数据根、SDK 运行时目录、采集进程位置（SDD §11）。</summary>
@@ -10,6 +12,9 @@ namespace Gmix.App
         public string RuntimeDir { get; private set; }
         public string AcquirerExe { get; private set; }
         public string CalibrationRoot { get { return Path.Combine(DataRoot, "_calibration"); } }
+
+        /// <summary>设备目标地址（SDK 内置，不可在界面修改）。</summary>
+        public string DeviceIp { get { return AcquisitionDefaults.DeviceIp; } }
 
         public bool DeviceReady
         {

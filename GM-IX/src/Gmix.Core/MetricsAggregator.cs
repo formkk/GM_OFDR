@@ -53,7 +53,7 @@ namespace Gmix.Data
             if (range.endM <= range.startM)
                 throw new ArgumentException("分析区间 endM 必须大于 startM");
 
-            double guard = range.guardM > 0 ? range.guardM : 0.1;
+            double guard = range.guardM > 0 ? range.guardM : AcquisitionDefaults.GuardM;
 
             // 峰过滤：零距峰按 display 开关处理
             bool excludeZero = events.display != null && events.display.zeroPeakExcluded;
@@ -181,7 +181,40 @@ namespace Gmix.Data
             return vals[mid];
         }
 
-        static double? SampleStd(IList<double> values)
+        /// <summary>
+        /// 精度口径（SRS FR-TBL-01）：收集 N 次扫描的总 IL/RL，全部已标定用标定值，否则用 raw 值。
+        /// 预览与提交共用本方法，避免两处口径漂移。
+        /// </summary>
+        public static PrecisionSeries CollectPrecision(IEnumerable<SummaryDocument> summaries, bool hasCalibration)
+        {
+            var series = new PrecisionSeries();
+            bool calibrated = hasCalibration;
+            var list = new List<SummaryDocument>();
+            foreach (SummaryDocument summary in summaries)
+            {
+                if (summary == null) { calibrated = false; continue; }
+                list.Add(summary);
+                if (!summary.totalIlDb.HasValue || !summary.totalRlDb.HasValue) calibrated = false;
+            }
+
+            series.Basis = calibrated ? "calibrated" : "raw";
+            foreach (SummaryDocument summary in list)
+            {
+                if (calibrated)
+                {
+                    if (summary.totalIlDb.HasValue) series.Il.Add(summary.totalIlDb.Value);
+                    if (summary.totalRlDb.HasValue) series.Rl.Add(summary.totalRlDb.Value);
+                }
+                else
+                {
+                    if (summary.totalIlRawDb.HasValue) series.Il.Add(summary.totalIlRawDb.Value);
+                    if (summary.totalRlRawDb.HasValue) series.Rl.Add(summary.totalRlRawDb.Value);
+                }
+            }
+            return series;
+        }
+
+        public static double? SampleStd(IList<double> values)
         {
             if (values == null || values.Count < 2) return null;
             double sum = 0, sumSq = 0;
@@ -191,5 +224,13 @@ namespace Gmix.Data
             if (var < 0) var = 0;
             return Math.Sqrt(var);
         }
+    }
+
+    /// <summary>一组扫描的精度序列（`SRS FR-TBL-01`）。</summary>
+    public sealed class PrecisionSeries
+    {
+        public string Basis;
+        public readonly List<double> Il = new List<double>();
+        public readonly List<double> Rl = new List<double>();
     }
 }

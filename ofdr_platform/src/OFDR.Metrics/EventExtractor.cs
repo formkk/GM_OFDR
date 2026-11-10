@@ -26,7 +26,8 @@ public static class EventExtractor
     public static IReadOnlyList<DistanceEvent> Extract(StandardScan scan, MetricsConfig config)
     {
         if (scan.Count == 0 || !scan.Axis.IsValid) return Array.Empty<DistanceEvent>();
-        if (!TryToDbm(scan, out var dbm)) return Array.Empty<DistanceEvent>();
+
+        double[] dbm = scan.Values;
 
         var peaks = PeakDetector.FindByThreshold(dbm, config.PeakThresholdDbm, config.PeakMergeGap).Peaks;
         if (peaks.Count == 0) return Array.Empty<DistanceEvent>();
@@ -92,23 +93,5 @@ public static class EventExtractor
         double sum = 0;
         for (int i = i0; i <= i1; i++) sum += mws[i];
         return PowerUnits.MwToDbm(sum / (i1 - i0 + 1));
-    }
-
-    /// <summary>把扫描数值统一转为 dBm（支持 dBm / mW）；其他单位返回 false（不静默按 dBm 解释）。</summary>
-    public static bool TryToDbm(StandardScan scan, out double[] dbm)
-    {
-        switch (scan.ValueUnit.Trim().ToLowerInvariant())
-        {
-            case "dbm":
-                dbm = scan.Values;
-                return true;
-            case "mw":
-                dbm = new double[scan.Values.Length];
-                for (int i = 0; i < dbm.Length; i++) dbm[i] = PowerUnits.MwToDbm(scan.Values[i]);
-                return true;
-            default:
-                dbm = Array.Empty<double>();
-                return false;
-        }
     }
 }

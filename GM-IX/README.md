@@ -27,7 +27,7 @@ GM-IX/
 ├─ runtime/                 # 测试运行时：SDK DLL（含 ofdr/detect）、config 文本副本、log/
 ├─ src/Qt2144Probe.cs       # C# P/Invoke 测试探针（.NET Framework 4.x / x64）
 ├─ src/Gmix.App/            # WinForms 上位机：测量/结果/校准/历史 4 页 + 编排
-├─ src/Gmix.Core/ Gmix.Vendor/ Gmix.Acquirer/ Gmix.Commit/ Gmix.Tests/  # .NET 8 主线
+├─ src/Gmix.Core/ Gmix.Vendor/ Gmix.Acquirer/ Gmix.Commit/ Gmix.Import/ Gmix.Tests/  # .NET 8 主线
 ├─ src/Gmix.Data/           # Schema v0.2 模型、读写、校准、汇总、校验与测试（.NET Framework 遗留）
 ├─ bin/Qt2144Probe.exe      # 由 run-tests.ps1 编译
 ├─ results/                 # JSON 结果、原始 bin、峰值/事件 CSV、控制台日志
