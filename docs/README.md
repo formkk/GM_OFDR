@@ -85,6 +85,7 @@
 | `ofdr_platform.png` | 四层架构图（原在 `references/`） |
 | `光脉OFDR演示系统.pptx` | 项目演示稿（原在 `references/`） |
 | `OFDR平台软件设计总结_一期_7页.pptx` | 一期设计总结 |
+| `gmix/厂商UI截图.jpg`、`gmix/厂商UI截图_N4.jpg`、`gmix/校准值.jpg` | GM-IX 实机证据截图（原散落在 `GM-IX/` 根目录） |
 
 ### 3.8 `docs/archive/gmix/` — 历史版本（只读）
 
@@ -155,4 +156,3 @@
 **仍待处理**
 1. `SourceType` 取值：L1 契约只有 `Lianxun | HengLga50`；预研 SDD 仍为三值含 `Replay`。预研字段不得回流产品。
 2. `LGA50/capture/` 与 `GM-IX/results/` 的原始数据按体积与版权边界不入库，只保留哈希清单；CNN 复现需先恢复数据。
-3. `GM-IX/` 根目录的截图与 PPT（实机证据）尚未归类，建议归 `docs/assets/gmix/`。
