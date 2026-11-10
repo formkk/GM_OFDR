@@ -1,5 +1,7 @@
 # GM-IX 数据与处理规范 v1.0
 
+> **【过期快照 · 学习用】** 本文件是 2026-11-06 之前的旧副本，已与正本分叉（缺少 `ps_db`、`zeroPeak`、`distScale=0.9502` 等章节）。现行唯一契约见 `docs/contracts/GM-IX_数据与处理规范_v1.0.md`；本文件保留在知识库中供学习与追溯，不再更新。文档地图见 `docs/README.md` §4。
+
 **English title**：GM-IX Data & Processing Interface Control Document (ICD) v1.0
 
 > **定位：规范即契约。**
@@ -64,8 +66,8 @@
 > 目的：在 v0.2 基础上增加测量组、重复采集与平均结果的组织方式，并保持单次测量可兼容。
 > 关系：v1.0 **向后兼容** v0.2/v0.1；旧数据缺少组字段时，按“单次组 N=1”处理。
 > 版本：文档 v1.0；新数据 JSON `schemaVersion = "1.0"`；读取兼容 `"0.2"` / `"0.1"`。
-> 关联：[Schema v0.1](./上位机数据Schema_v0.1.md)、[上位机数据协议调研与讨论](./上位机数据协议调研与讨论.md)
-> 基础字段：device/acquisition/quality/checksums/ofdr/peaks 等本文未重复列出的字段，以 [Schema v0.2 字段表](./archive/上位机数据Schema_v0.2.md) 为准；本文只定义 v1.0 变更与新增。
+> 关联：[Schema v0.1](../docs/archive/gmix/上位机数据Schema_v0.1.md)、[上位机数据协议调研与讨论](../docs/gmix/上位机数据协议调研与讨论.md)
+> 基础字段：device/acquisition/quality/checksums/ofdr/peaks 等本文未重复列出的字段，以 [Schema v0.2 字段表](../docs/archive/gmix/上位机数据Schema_v0.2.md) 为准；本文只定义 v1.0 变更与新增。
 
 ---
 
@@ -595,7 +597,7 @@ PASS 精度 sample std
 PASS schema v0.2
 ```
 
-样例数据生成在 `GM-IX/tests/fixtures/schema_v02_sample/`（50 MHz / 8 ms，含 raw、数组、JSON）。
+样例数据生成在 `tests/fixtures/gmix/schema_v02_sample/`（50 MHz / 8 ms，含 raw、数组、JSON）。
 
 ---
 

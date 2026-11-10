@@ -29,11 +29,14 @@ internal static class Tests
         var badChannel = MakeScan(values, inCh: 0, outCh: 3);
         Check.True(badChannel.Validate().Any(e => e.Contains("ChannelIn")), "IN 通道越界应报错");
 
-        var back = StandardScanCodec.FromJson(StandardScanCodec.ToJson(scan));
+        var json = StandardScanCodec.ToJson(scan);
+        var back = StandardScanCodec.FromJson(json);
         Check.Equal(scan.Count, back.Count, "JSON 往返点数");
         Check.Equal(scan.Values[42], back.Values[42], "JSON 往返数值");
         Check.Equal(scan.Metadata.ChannelIn, back.Metadata.ChannelIn, "JSON 往返通道");
-        Check.Equal(scan.ValueUnit, back.ValueUnit, "JSON 往返单位");
+        Check.Equal(scan.Metadata.SourceType, back.Metadata.SourceType, "JSON 往返来源类型");
+        Check.True(!json.Contains("\"End\"", StringComparison.Ordinal), "轴派生值 End 不应落盘");
+        Check.True(!json.Contains("\"IsValid\"", StringComparison.Ordinal), "轴派生值 IsValid 不应落盘");
         Check.True(
             StandardScanCodec.ComputeChecksum(scan) == StandardScanCodec.ComputeChecksum(back),
             "JSON 往返后校验和应一致");
@@ -261,7 +264,7 @@ internal static class Tests
         foreach (var f in frames)
         {
             Check.Equal(64, f.Count, "帧点数");
-            Check.Equal("dBm", f.ValueUnit, "数值单位");
+            Check.Equal(SourceType.Lianxun, f.Metadata.SourceType, "来源类型");
             Check.Equal(2, f.Metadata.ChannelIn, "通道 IN 快照");
             Check.Equal(3, f.Metadata.ChannelOut, "通道 OUT 快照");
             Check.Equal(epoch, f.Metadata.Epoch, "代次与 BeginChannel 一致");
@@ -352,7 +355,7 @@ internal static class Tests
 
     public static void LegacyMetricsBaseline()
     {
-        var fixtures = Path.Combine(FindProductDirectory() ?? "", "tests", "fixtures");
+        var fixtures = Path.Combine(FindProductDirectory() ?? "", "tests", "fixtures", "platform");
         if (!Directory.Exists(fixtures))
             throw new DirectoryNotFoundException($"缺少测试夹具目录：{fixtures}");
 
@@ -376,16 +379,50 @@ internal static class Tests
         Check.Equal(history18, platform18, "历史 CSV 前 18 列表头应与平台一致");
     }
 
+    // ---------------- 昊衡抓包回放 ----------------
+
+    /// <summary>
+    /// 夹具为昊衡 LGA50-D 抓包前 200 行（首行含 OSISETOK 控制字与首个数值同行）。
+    /// 验证点：前缀剥离、点距 185 µm、SourceType=Replay、帧可通过契约校验。
+    /// </summary>
+    public static void HengCaptureReplay()
+    {
+        string? path = FindFixture(Path.Combine("lga50", "heng_capture_head.txt"));
+        Check.True(path != null && File.Exists(path), "缺少夹具 tests/fixtures/lga50/heng_capture_head.txt");
+        if (path == null || !File.Exists(path)) return;
+
+        using var source = new HengCaptureReplaySource(
+            new HengCaptureOptions { FilePath = path, PointsPerFrame = 100, FrameIntervalMs = 1 });
+        source.Open();
+        source.StartStream();
+        source.BeginChannel(1, 1);
+
+        Check.True(source.TryTake(TimeSpan.FromSeconds(2), out var first) && first != null, "应取到第 1 帧");
+        if (first == null) return;
+
+        Check.Equal(100, first.Count, "帧点数");
+        Check.Close(0.000185, first.Axis.Step, 1e-12, "轴步距 = 185 µm");
+        Check.Equal(0.0, first.Axis.Start, "轴起点");
+        Check.Equal(SourceType.Replay, first.Metadata.SourceType, "回放帧来源为 Replay");
+        Check.Close(-75.59, first.Values[0], 1e-9, "首点数值（控制字前缀已剥离）");
+        Check.Equal(0, first.Validate().Count, "回放帧应通过契约校验");
+
+        Check.True(source.TryTake(TimeSpan.FromSeconds(2), out var second) && second != null, "应取到第 2 帧");
+        Check.Equal(100, second?.Count ?? 0, "第 2 帧点数");
+
+        source.Stop();
+    }
+
     // ---------------- 辅助 ----------------
 
-    private static StandardScan MakeScan(double[] values, int inCh = 1, int outCh = 1, string unit = "dBm") =>
+    private static StandardScan MakeScan(double[] values, int inCh = 1, int outCh = 1,
+        SourceType source = SourceType.Lianxun) =>
         new(
             ScanId: "TEST#1",
             Sequence: 1,
-            Axis: new ScanAxis(AxisKind.Distance, 0, RowSpacingM, "m", values.Length),
+            Axis: new ScanAxis(0, RowSpacingM, values.Length),
             Values: values,
-            ValueUnit: unit,
-            Metadata: new ScanMetadata("TEST", "TEST", inCh, outCh, 1, DateTimeOffset.Now));
+            Metadata: new ScanMetadata(source, "TEST", "TEST", inCh, outCh, 1, DateTimeOffset.Now));
 
     /// <summary>按定义独立重算 RL（闭区间、线性域求和），用于手算基准对照。</summary>
     private static double SumDbm(double[] dbm, int from, int to)
@@ -393,6 +430,13 @@ internal static class Tests
         double sum = 0;
         for (int i = from; i <= to; i++) sum += Math.Pow(10, dbm[i] / 10.0);
         return 10 * Math.Log10(sum);
+    }
+
+    /// <summary>夹具路径：tests/fixtures（夹具缺失按 FAIL 计，不降级为 SKIP）。</summary>
+    private static string? FindFixture(string name)
+    {
+        var root = FindProductDirectory();
+        return root == null ? null : Path.Combine(root, "tests", "fixtures", name);
     }
 
     private static string? FindDemoDirectory()

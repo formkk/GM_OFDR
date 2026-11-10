@@ -9,7 +9,7 @@ namespace Gmix.Data.Test
     {
         static int Main(string[] args)
         {
-            string root = args.Length > 0 ? args[0] : @"C:\Mycode\GM-OFDR\GM-IX\tests\fixtures\schema_v02_sample";
+            string root = args.Length > 0 ? args[0] : DefaultFixtureRoot();
             int failures = 0;
             try
             {
@@ -23,6 +23,18 @@ namespace Gmix.Data.Test
             }
             Console.WriteLine(failures == 0 ? "PASS schema v0.2" : "FAIL schema v0.2: " + failures);
             return failures == 0 ? 0 : 1;
+        }
+
+        static string DefaultFixtureRoot()
+        {
+            var dir = new DirectoryInfo(AppContext.BaseDirectory);
+            while (dir != null)
+            {
+                var candidate = Path.Combine(dir.FullName, "tests", "fixtures", "gmix", "schema_v02_sample");
+                if (Directory.Exists(candidate)) return candidate;
+                dir = dir.Parent;
+            }
+            return Path.Combine(AppContext.BaseDirectory, "fixtures", "gmix", "schema_v02_sample");
         }
 
         static void RunFileRoundTrip(string root, ref int failures)

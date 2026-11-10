@@ -20,6 +20,7 @@ namespace Gmix.Data.Test
                 RunDisplayAndSampler(ref failures);
                 RunConfigHash(ref failures);
                 RunGroupStore(ref failures);
+                RunRetention(ref failures);
                 RunGroupAssembly(ref failures);
                 RunLegacyCompatibility(ref failures);
             }
@@ -38,11 +39,12 @@ namespace Gmix.Data.Test
             var dir = new DirectoryInfo(AppContext.BaseDirectory);
             while (dir != null)
             {
-                if (string.Equals(dir.Name, "GM-IX", StringComparison.OrdinalIgnoreCase))
-                    return Path.Combine(dir.FullName, "tests", "fixtures", "schema_v02_sample");
+                var candidate = Path.Combine(dir.FullName, "tests", "fixtures", "gmix", "schema_v02_sample");
+                if (Directory.Exists(candidate))
+                    return candidate;
                 dir = dir.Parent;
             }
-            return Path.Combine(AppContext.BaseDirectory, "fixtures", "schema_v02_sample");
+            return Path.Combine(AppContext.BaseDirectory, "fixtures", "gmix", "schema_v02_sample");
         }
 
         static void RunFileRoundTrip(string root, ref int failures)
@@ -183,6 +185,17 @@ namespace Gmix.Data.Test
             calDoc.validationPoints = new ValidationPoint[0];
 
             var cal = CalibrationModel.FromDocument(calDoc);
+            cal.ApplyAbsoluteRl(events);
+            Check(events.events[0].rlDb.HasValue
+                && Math.Abs(events.events[0].rlDb.Value - (heights[0] - 192.0)) < 1e-9,
+                "标定后逐事件补 rlDb（相对 + 偏移）", ref failures);
+            Check(cal.CanApplyAbsoluteRl(calDoc.configHash) && !cal.CanApplyAbsoluteRl("sha256:other"),
+                "绝对标定按 configHash 校验", ref failures);
+
+            var noCalProbe = new EventsDocument();
+            noCalProbe.events = new[] { new EventInfo { rlDbRel = 100.0 } };
+            new CalibrationModel().ApplyAbsoluteRl(noCalProbe);
+            Check(!noCalProbe.events[0].rlDb.HasValue, "未标定不写 rlDb", ref failures);
             var range = scan.session.analysisRange;
             var summary = MetricsAggregator.Compute(scan.scanId, events, dist, baseline, range,
                 "peak_only", 1, cal, null, null);
@@ -268,6 +281,12 @@ namespace Gmix.Data.Test
             Check(withPrecision.ilPrecisionDb.HasValue && Math.Abs(withPrecision.ilPrecisionDb.Value - 0.2) < 1e-9,
                 "精度 sample std", ref failures);
 
+            var rlRepeats = new List<double> { 100.0, 102.0, 98.0 };
+            var distinct = MetricsAggregator.Compute("S3", events, dist, baseline, range, "peak_only", 3, cal, rlRepeats, repeats);
+            Check(distinct.ilPrecisionDb.HasValue && Math.Abs(distinct.ilPrecisionDb.Value - 0.2) < 1e-9
+                && distinct.rlPrecisionDb.HasValue && Math.Abs(distinct.rlPrecisionDb.Value - 2.0) < 1e-9,
+                "精度：IL/RL 序列不串位", ref failures);
+
             Console.WriteLine(string.Format("aggregation: peakOnlyRaw={0:F4} peakOnlyAbs={1:F4} basePlusRaw={2:F4} ILraw={3:F4} IL={4:F4}",
                 peakOnly.totalRlRawDb, peakOnly.totalRlDb, basePlus.totalRlRawDb, peakOnly.totalIlRawDb, peakOnly.totalIlDb));
         }
@@ -276,12 +295,14 @@ namespace Gmix.Data.Test
         {
             Check(Math.Abs(DisplayTransform.Level(147.0, DisplayTransform.DefaultOffsetK) - (-45.0)) < 1e-9,
                 "DS-01：+147 加偏移 -192 → -45", ref failures);
-            Check(DisplayTransform.TotalIlText(12.0) == "-12.00",
-                "DS-04：总 IL 取负显示（+12 → -12）", ref failures);
+            Check(DisplayTransform.TotalIlText(12.0) == "12.00 dB",
+                "DS-04：总 IL 以正值显示（+12 → 12.00 dB）", ref failures);
             Check(DisplayTransform.TotalIlText(null) == "—",
                 "DS-04：null 显示 —", ref failures);
             Check(DisplayTransform.PrecisionText(null) == "—",
                 "DS-05：精度 null 显示 —", ref failures);
+            Check(DisplayTransform.PrecisionText(0.16) == "0.16 dB",
+                "DS-05：精度带 dB 后缀", ref failures);
 
             string rl = DisplayTransform.TotalRlText(null, 142.7747, DisplayTransform.DefaultOffsetK, false);
             Check(rl.EndsWith("（未标定）", StringComparison.Ordinal),
@@ -405,6 +426,38 @@ namespace Gmix.Data.Test
 
                 int removed = store.CleanupStaging();
                 Check(removed >= 1, "T-IPC-02：无 .ready 的 staging 残留被清理", ref failures);
+            }
+            finally
+            {
+                if (Directory.Exists(root)) Directory.Delete(root, true);
+            }
+        }
+
+        static void RunRetention(ref int failures)
+        {
+            string root = Path.Combine(Path.GetTempPath(), "gmix_retention_" + Guid.NewGuid().ToString("N"));
+            try
+            {
+                var store = new GroupStore(root);
+                for (int i = 1; i <= 3; i++)
+                {
+                    string dir = Path.Combine(root, "GR-20260101-0000-00" + i);
+                    Directory.CreateDirectory(dir);
+                    File.WriteAllBytes(Path.Combine(dir, "group.json"), new byte[10]);
+                    File.WriteAllBytes(Path.Combine(dir, "ps.f64"), new byte[990]);
+                }
+                Directory.CreateDirectory(Path.Combine(root, "_calibration"));
+                File.WriteAllBytes(Path.Combine(root, "_calibration", "calibration.json"), new byte[5000]);
+
+                // 3 组 × 1000 B，上限 1500 B → 删除最旧两组，保留 keepGroupId
+                RetentionOutcome outcome = store.EnforceRetention(1500, "GR-20260101-0000-003");
+                Check(outcome.DeletedGroups == 2, "保留策略：超限删除最旧组", ref failures);
+                Check(!Directory.Exists(Path.Combine(root, "GR-20260101-0000-001")), "保留策略：最旧组被删除", ref failures);
+                Check(Directory.Exists(Path.Combine(root, "GR-20260101-0000-003")), "保留策略：keepGroupId 不删除", ref failures);
+                Check(Directory.Exists(Path.Combine(root, "_calibration")), "保留策略：_calibration 不受影响", ref failures);
+
+                RetentionOutcome none = store.EnforceRetention(long.MaxValue, null);
+                Check(none.DeletedGroups == 0 && none.TotalBytes > 0, "保留策略：未超限不删除", ref failures);
             }
             finally
             {

@@ -15,6 +15,9 @@ dist/
 GM-IX/results/
 GM-IX/runtime/
 
+# LGA50 抓包原始数据（体积大，不入库；清单与哈希见 docs/data-assets.md）
+LGA50/capture/*.bin
+
 # Python 缓存
 __pycache__/
 *.pyc
@@ -37,3 +40,9 @@ GM-IX/investigations/signal-drift/ch0_raw_20frames.csv
 
 # 临时实验目录
 .tmp/
+
+# CNN 评估：虚拟环境、派生数据与训练产物不入库（脚本、文档、配置入库）
+CNN/.venv/
+CNN/data/
+CNN/runs/
+CNN/pip-*.log

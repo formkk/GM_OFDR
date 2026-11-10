@@ -1,0 +1,3 @@
+numpy>=2.0
+# 固定 2.6.0：2.15 的 CPU wheel 依赖 VCRUNTIME140_THREADS.dll，本机 64 位运行库缺失
+torch==2.6.0

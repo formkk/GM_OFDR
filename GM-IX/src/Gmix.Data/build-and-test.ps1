@@ -2,14 +2,15 @@
 # ASCII-only source. Outputs:
 #   GM-IX\bin\Gmix.Data.dll
 #   GM-IX\bin\Gmix.Data.Test.exe
-#   GM-IX\tests\fixtures\schema_v02_sample\
+#   tests\fixtures\gmix\schema_v02_sample\
 
 $ErrorActionPreference = 'Stop'
 $root = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
+$repo = Split-Path -Parent $root
 $src  = $PSScriptRoot
 $bin  = Join-Path $root 'bin'
 $csc  = 'C:\Windows\Microsoft.NET\Framework64\v4.0.30319\csc.exe'
-$sampleDir = Join-Path $root 'tests\fixtures\schema_v02_sample'
+$sampleDir = Join-Path $repo 'tests\fixtures\gmix\schema_v02_sample'
 $libOut = Join-Path $bin 'Gmix.Data.dll'
 $testOut = Join-Path $bin 'Gmix.Data.Test.exe'
 

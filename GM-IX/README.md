@@ -1,8 +1,8 @@
-# GM-IX 硬件子项目
+# GM-IX 产品线
 
-面向 `references/qt2144-rs`（采集）、`references/ofdr-0.1.1-release`（处理）、`references/detect_1.0`（事件检测）的实机验证工程，服务于 OFDR.Platform 二期的硬件接入评估。
+面向 `references/qt2144-rs`（采集）、`references/ofdr-0.1.1-release`（处理）、`references/detect_1.0`（事件检测）的整机上位机产品线；同时作为 LGA50 多适配器接入的继承基线。
 
-**被测整机正式命名 GM-IX**：联讯完整单路 OFDR 设备，对外只有 1 个千兆 RJ45 采集网口和 1 个接 DUT 的光口；内部使用 QT2144 采集板 + `qt_acq` + `ofdr` + `detect` 三级软件链路。三级链路的数据格式、公式与实测值见 [GM-IX 三级数据处理链路数据报告](docs/GM-IX_三级数据处理链路数据报告.md)。
+**被测整机正式命名 GM-IX**：联讯完整单路 OFDR 设备，对外只有 1 个千兆 RJ45 采集网口和 1 个接 DUT 的光口；内部使用 QT2144 采集板 + `qt_acq` + `ofdr` + `detect` 三级软件链路。三级链路的数据格式、公式与实测值见 [GM-IX 三级数据处理链路数据报告](../docs/gmix/GM-IX_三级数据处理链路数据报告.md)。
 
 上位机 MVP 边界：单次扫频、相对测量、事件表；不做多段、外触发、直连协议；绝对 RL 留到第二阶段。详见报告 §8.2。
 
@@ -32,11 +32,10 @@ GM-IX/
 ├─ bin/Qt2144Probe.exe      # 由 run-tests.ps1 编译
 ├─ results/                 # JSON 结果、原始 bin、峰值/事件 CSV、控制台日志
 ├─ run-tests.ps1            # 构建 + 已验证用例的一键执行
-├─ docs/测试报告.md          # 测试结果、差异、TBD 回填建议
-├─ docs/GM-IX_数据与处理规范_v1.0.md  # Part A 数据协议 + Part B 处理契约
-├─ docs/GM-IX_三级数据处理链路数据报告.md
 └─ README.md
 ```
+
+文档已收口到仓库 `docs/`：L2 契约见 `docs/contracts/`，SRS/SDD/测试报告见 `docs/gmix/`。
 
 `runtime/` 中的厂商二进制是从 `references/` 复制的测试运行时副本，**不进入 OFDR.Platform 源码树，也不作为发行产物**。项目规则默认禁止复制；本目录的复制行为已由用户明确豁免。
 
