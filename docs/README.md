@@ -155,4 +155,4 @@
 **仍待处理**
 1. `SourceType` 取值：L1 契约只有 `Lianxun | HengLga50`；预研 SDD 仍为三值含 `Replay`。预研字段不得回流产品。
 2. `LGA50/capture/` 与 `GM-IX/results/` 的原始数据按体积与版权边界不入库，只保留哈希清单；CNN 复现需先恢复数据。
-3. `GM-IX/resources/`（代码无引用，来源待确认）与 `GM-IX/` 根目录的截图与 PPT 尚未归类。
+3. `GM-IX/` 根目录的截图与 PPT（实机证据）尚未归类，建议归 `docs/assets/gmix/`。
