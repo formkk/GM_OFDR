@@ -149,8 +149,10 @@
 6. 数据资产清单已建立：[data-assets.md](data-assets.md)。
 7. CI 已覆盖 GM-IX 构建、`Gmix.Tests`、预研平台验证与 L1 契约检查。
 8. `.trae/rules` 已按"GM-IX 产品主线 / ofdr_platform 预研"重写。
+9. `LGA50/README.md` 入口已建立，指向契约、协议分析与数据清单。
+10. `add-scan-source` 技能已补产品线归口（`Gmix.Acquirer`/`Gmix.Import`），与规则 30 对齐。
 
 **仍待处理**
 1. `SourceType` 取值：L1 契约只有 `Lianxun | HengLga50`；预研 SDD 仍为三值含 `Replay`。预研字段不得回流产品。
 2. `LGA50/capture/` 与 `GM-IX/results/` 的原始数据按体积与版权边界不入库，只保留哈希清单；CNN 复现需先恢复数据。
-3. `GM-IX/resources/`、`GM-IX/` 根目录的截图与 PPT 尚未归类（不属于本轮 P2 范围）。
+3. `GM-IX/resources/`（代码无引用，来源待确认）与 `GM-IX/` 根目录的截图与 PPT 尚未归类。
