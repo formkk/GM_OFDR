@@ -1,11 +1,11 @@
 ---
 name: run-verify
-description: 执行本项目的构建与验证（GM-IX 产品主线 + ofdr_platform 预研平台 + L1 契约检查），判定通过标准并排查失败、夹具缺失与干净克隆复现
+description: 执行本项目的构建与验证（GM-IX 产品主线 + 检测平台 + ofdr_platform 预研平台 + L1 契约检查），判定通过标准并排查失败、夹具缺失与干净克隆复现
 ---
 
 # 构建与验证
 
-产品主线的质量证据是 **GM-IX 构建 + Gmix.Tests**；预研平台是 **OFDR.Verify**；契约是 **check_contract.ps1**。按改动范围执行，不要用预研结果替代产品线验证。
+产品主线的质量证据是 **GM-IX 构建 + Gmix.Tests**；检测平台是 **Detection 构建 + Detection.Tests**；预研平台是 **OFDR.Verify**；契约是 **check_contract.ps1**。按改动范围执行，不要用预研结果替代产品线验证。
 
 ## 使用场景
 
@@ -21,12 +21,18 @@ description: 执行本项目的构建与验证（GM-IX 产品主线 + ofdr_platf
    `dotnet run --project products/gmix/src/Gmix.Tests`
    期望：PASS，退出码 0。
    OCS 核验域（`Gmix.OcsVerify`）的契约测试与 mock 串口用例并入 `Gmix.Tests`，随本命令一并验证。
-2. **预研平台**（仅改动 `research/platform/src` 时）：
+2. **检测平台**（改动 `products/detection/src` 时必跑）：
+   `dotnet build products/detection/Detection.sln`
+   期望：`0 个警告`、`0 个错误`。
+   `dotnet run --project products/detection/src/Detection.Tests`
+   期望：`PASS detection vendor`，退出码 0。
+   依赖 `System.IO.Ports`（ADR-001），首次需联网还原一次。
+3. **预研平台**（仅改动 `research/platform/src` 时）：
    `dotnet build research/platform/src/OFDR.Platform.sln`
    期望：`0 个警告`、`0 个错误`。
    `dotnet run --project research/platform/src/OFDR.Verify`
    期望：`PASS 11+，FAIL 0，SKIP 0`，退出码 0。Release 下可加 `-c Release --no-build`（先 Release 构建）。
-3. **L1 契约**（改动 `docs/contracts/统一数据契约_v*.md` 时）：
+4. **L1 契约**（改动 `docs/contracts/统一数据契约_v*.md` 时）：
    `powershell -File devices/lga50/tools/check_contract.ps1`
    期望：`PASS 7，FAIL 0`，退出码 0。
 
@@ -34,11 +40,12 @@ description: 执行本项目的构建与验证（GM-IX 产品主线 + ofdr_platf
 
 1. **编译错误**：先看是否 `global.json` 要求的 8.0.x SDK 缺失（`dotnet --list-sdks`）。
 2. **GM-IX 夹具缺失**：检查 `tests/fixtures/gmix/schema_v02_sample/`；缺失应 FAIL，不得改成 SKIP。
-3. **[FAIL] 契约/算法用例**：按断言消息中的"期望/实际"定位；先确认最近改动是否触碰 ICD 字段、组结构或 `configHash`。
-4. **[FAIL] 历史基准数据**：检查 `tests/fixtures/platform/` 是否存在 `ofdr_metrics_*.csv`。该用例在夹具缺失时**故意失败**（不得回退为 SKIP），这是防止 CI 假通过的约束。
-5. **[SKIP]**：基线应为 0 SKIP。出现 SKIP 说明有人把缺失资产降级处理，应改为 FAIL 或补夹具。
-6. **TCP 用例失败**：`FakeOfdrServer` 使用回环随机端口（`IPAddress.Loopback, 0`），一般不涉及端口冲突；优先检查握手/切帧逻辑与本机防火墙策略。
-7. **超时类失败**：`EngineOfflineLoop` 与 TCP 用例含真实等待，杀毒软件/低性能机器可能超时；先重跑一次，仍失败再查代码。
+3. **检测平台夹具缺失**：检查 `tests/fixtures/ocs/protocol_frames.txt`；缺失应 FAIL，不得跳过夹具回放。
+4. **[FAIL] 契约/算法用例**：按断言消息中的"期望/实际"定位；先确认最近改动是否触碰 ICD 字段、组结构或 `configHash`。
+5. **[FAIL] 历史基准数据**：检查 `tests/fixtures/platform/` 是否存在 `ofdr_metrics_*.csv`。该用例在夹具缺失时**故意失败**（不得回退为 SKIP），这是防止 CI 假通过的约束。
+6. **[SKIP]**：基线应为 0 SKIP。出现 SKIP 说明有人把缺失资产降级处理，应改为 FAIL 或补夹具。
+7. **TCP 用例失败**：`FakeOfdrServer` 使用回环随机端口（`IPAddress.Loopback, 0`），一般不涉及端口冲突；优先检查握手/切帧逻辑与本机防火墙策略。
+8. **超时类失败**：`EngineOfflineLoop` 与 TCP 用例含真实等待，杀毒软件/低性能机器可能超时；先重跑一次，仍失败再查代码。
 
 ## 干净克隆复现（模拟 CI）
 
@@ -48,6 +55,8 @@ if (Test-Path $tmp) { Remove-Item -Recurse -Force $tmp }
 git clone --quiet . $tmp
 dotnet build "$tmp\products\gmix\src\Gmix.sln" -c Release
 dotnet run --project "$tmp\products\gmix\src\Gmix.Tests" -c Release --no-build
+dotnet build "$tmp\products\detection\Detection.sln" -c Release
+dotnet run --project "$tmp\products\detection\src\Detection.Tests" -c Release --no-build
 dotnet build "$tmp\research\platform\src\OFDR.Platform.sln" -c Release
 dotnet run --project "$tmp\research\platform\src\OFDR.Verify" -c Release --no-build
 powershell -ExecutionPolicy Bypass -File "$tmp\devices\lga50\tools\check_contract.ps1"
