@@ -72,6 +72,7 @@
 | 文件 | 性质 |
 |---|---|
 | `README.md` | 骨架：系统边界、检测流程、文档规划、已知事实、TBD-D01~D08 |
+| `OCS_控制协议分析.md` | 正本：1×8 / 8×8 协议提取、状态模型、实现约束、TBD-O01~O10 与测试获取方法 |
 
 规划中：检测系统上位机（OCS 光开关 1×8 前级路由 + 8×8 DUT 与 OFDR 组成）的 SRS/SDD、通道编排与时序、接线核验与基线管理设计落此目录。工程占位骨架：`products/gmix/src/Gmix.OcsVerify`（核验域纯逻辑）、`Gmix.OcsCheck`（编排进程）、`Gmix.OcsCheck.App`（UI，不引 Vendor）。厂商协议文档在 `references/ocs/`，夹具在 `tests/fixtures/ocs/`。
 
