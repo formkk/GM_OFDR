@@ -28,8 +28,8 @@
 | `references/detect_1.0/detect.h` | 检测库 C 接口（4 个函数 + `DetectConfig` 8 参数） | §6.1、§6.4 NaN→null |
 | `references/qt2144-rs/config/` | `Interface.json` 与板卡配置 | §9.1 配置快照的实际来源 |
 | `references/HRAS9000/ui_*.png` | 厂商界面截图 | §8 页面形态参照（布局自主设计，不复刻） |
-| `GM-IX/src/Gmix.Data/*` | 现有 6 个模块实现 | §5.1 复用边界、§12.4 迁移 |
-| `GM-IX/src/Qt2144Probe.cs` | 现有 P/Invoke 声明与探针 | §5.2、§6.1 抽取来源 |
+| `products/gmix/src/Gmix.Data/*` | 现有 6 个模块实现 | §5.1 复用边界、§12.4 迁移 |
+| `products/gmix/src/Qt2144Probe.cs` | 现有 P/Invoke 声明与探针 | §5.2、§6.1 抽取来源 |
 | `docs/platform/SDD_OFDR_Platform_v0.9.md` | 一期 SDD | 章节结构与 ADR 体例参照（不沿用其 7 程序集划分） |
 
 ### 0.2 设计决策记录（ADR）
@@ -120,7 +120,7 @@
 ### 2.3 解决方案布局
 
 ```text
-GM-IX/
+products/gmix/
 ├─ src/
 │  ├─ Gmix.sln
 │  ├─ Gmix.Core/            Gmix.Core.csproj
@@ -131,7 +131,7 @@ GM-IX/
 （测试夹具在仓库 tests/fixtures/gmix/；文档在仓库 docs/gmix/）
 ```
 
-> 测试保持"控制台断言 + 退出码"形态，不引入 xunit（NuGet）。`dotnet run --project GM-IX/src/Gmix.Tests` 即回归入口，沿用现有 14 条断言。
+> 测试保持"控制台断言 + 退出码"形态，不引入 xunit（NuGet）。`dotnet run --project products/gmix/src/Gmix.Tests` 即回归入口，沿用现有 14 条断言。
 
 ### 2.4 目录与命名空间
 
@@ -751,7 +751,7 @@ Gmix/
 
 | 项 | 内容 | 影响 | 处置 |
 |---|---|---|---|
-| 采集信号漂移（`TBD-D11`） | 同一 `open`-`close` 周期内连续 20 帧，`dist` 末值波动 16~17%、`ps` 最大值波动约 3 倍；已排除 ofdr 随机性、触发相位、AFE 自动增益，根因为硬件输入信号本身漂移（`GM-IX/investigations/signal-drift`） | 超出 ICD §2.2 的 5% 轴容差时 `GroupAssembler` 判 `invalid`，N>1 平均在实机上暂不可用（2026-11-06 实机 N=3 复现：R002/R003 超出容差，组判 failed） | 容差暂按 5% 保留；UI 与历史页须能展示组 `failed/invalid` 原因，不得静默降级；N=1 单次测量不受影响 |
+| 采集信号漂移（`TBD-D11`） | 同一 `open`-`close` 周期内连续 20 帧，`dist` 末值波动 16~17%、`ps` 最大值波动约 3 倍；已排除 ofdr 随机性、触发相位、AFE 自动增益，根因为硬件输入信号本身漂移（`products/gmix/investigations/signal-drift`） | 超出 ICD §2.2 的 5% 轴容差时 `GroupAssembler` 判 `invalid`，N>1 平均在实机上暂不可用（2026-11-06 实机 N=3 复现：R002/R003 超出容差，组判 failed） | 容差暂按 5% 保留；UI 与历史页须能展示组 `failed/invalid` 原因，不得静默降级；N=1 单次测量不受影响 |
 | 伪峰（零距峰）判定（`TBD-D04`，已裁定 2026-11-06） | `detect.dll` 无零距峰标志位；现按「峰位置 < 分析起点 `startM`」判定伪峰，置 `zeroPeak=true`、`peakNo=null`，其余峰重新从 1 编号 | 实机 0.042 m 峰已隐藏，编号变为 P1~P4，与厂商一致；`startM` 设为 0 时伪峰将不再被过滤 | 规则只依赖分析起点、不引入绝对距离阈值；`TBD-S10` 若给出厂商零距定义，再切换判定口径 |
 
 ---

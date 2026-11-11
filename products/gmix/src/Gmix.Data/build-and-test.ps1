@@ -1,12 +1,12 @@
-# Build and test Gmix.Data (Schema v0.2) with .NET Framework csc.
+﻿# Build and test Gmix.Data (Schema v0.2) with .NET Framework csc.
 # ASCII-only source. Outputs:
-#   GM-IX\bin\Gmix.Data.dll
-#   GM-IX\bin\Gmix.Data.Test.exe
+#   products\gmix\bin\Gmix.Data.dll
+#   products\gmix\bin\Gmix.Data.Test.exe
 #   tests\fixtures\gmix\schema_v02_sample\
 
 $ErrorActionPreference = 'Stop'
 $root = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
-$repo = Split-Path -Parent $root
+$repo = Split-Path -Parent (Split-Path -Parent $root)
 $src  = $PSScriptRoot
 $bin  = Join-Path $root 'bin'
 $csc  = 'C:\Windows\Microsoft.NET\Framework64\v4.0.30319\csc.exe'

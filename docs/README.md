@@ -1,13 +1,25 @@
 # 文档地图
 
 > 本文件是仓库治理文档的唯一入口，只回答三件事：**哪份是正本、哪份是证据、哪份已过期**。
-> 最后核对：2026-11-10（P1 物理收口已完成）。定位口径：`ofdr_platform` 为未接入硬件的预研平台，`GM-IX` 为产品主线；`Study/` 为学习、研究及相关知识库。产品方向：OCS 光开关与 OFDR 设备组成检测系统，其上位机软件是 LGA50 自研上位机的后续版本（继承链 GM-IX → LGA50 → 检测系统）。
+> 最后核对：2026-11-11（目录按生命周期重排）。定位口径：`research/platform`（原 `ofdr_platform`）为未接入硬件的预研平台；`products/gmix`（原 `GM-IX`）为产品主线；`Study/` 为学习、研究及相关知识库。产品方向：OCS 光开关与 OFDR 设备组成检测系统，其上位机软件是 LGA50 自研上位机的后续版本（继承链 GM-IX → LGA50 → 检测平台）。
 
 ## 1. 三条规则
 
 1. **正本唯一**：同一主题只有一个"现行正本"，其余要么是证据，要么是归档；副本不得与正本同名同版本号。
 2. **契约分层**：L1 帧契约与 L2 记录/处理契约同放 `docs/contracts/`；两者是**层不同**，不是新旧关系。
 3. **证据不改**：预研分析、测试报告、调研记录只追加勘误，不覆盖历史结论；结论变化时改正本，证据保留。
+
+### 1.1 开发历史与目录对应
+
+| 阶段 | 历史产物 | 当前承载目录 | 性质 |
+|---|---|---|---|
+| 0 | 昊衡 LGA-50 演示（未接硬件） | `research/demo-lga50/` | 行为基线，只读 |
+| 1 | 演示分析后的试做上位机 | `research/platform/` | 预研，已冻结 |
+| 2 | 映讯 HRAS 9000 接入 + GMIX 上位机 | `products/gmix/`、`references/HRAS9000/`、`references/联讯/` | 产品第 1 代 |
+| 3 | 昊衡 LGA50 适配器 | `products/gmix/src/Gmix.Import/`、`devices/lga50/`、`docs/lga50/`、`references/lga50/` | 产品第 2 代 |
+| 4 | OCS 1×8 + 8×8 DUT 检测平台 | `docs/detection/`、`products/detection/`、`products/gmix/src/Gmix.Ocs*`（骨架） | 下一代，规划中 |
+
+目录角色：`products/` 放产品代码，`research/` 放预研与演示，`devices/` 放设备线抓包与实验工具，`references/` 放厂商资料，`docs/` 放治理文档。
 
 ## 2. 权威矩阵（按主题）
 
@@ -23,6 +35,7 @@
 | 预研平台评审 | [platform/REVIEW_OFDR_Platform_v0.1.0.md](platform/REVIEW_OFDR_Platform_v0.1.0.md) | 预研，冻结 | 一期 v0.1.0 |
 | CNN 评估 | [cnn/评估方案.md](cnn/评估方案.md) / [评估报告.md](cnn/评估报告.md) / [落地评估.md](cnn/落地评估.md) | 独立评估线 | 不改产品线，不改契约 |
 | 培训与研究 | [Study/OFDR检测全流程培训_上位机开发者版.md](../Study/OFDR检测全流程培训_上位机开发者版.md) | 知识库 | 与契约冲突时以 `docs/contracts/` 为准 |
+| 检测系统（OCS + OFDR） | [detection/README.md](detection/README.md) | 规划中，SRS/SDD 待建 | 上位机为 LGA50 后续版本；TBD-D01~D08 |
 
 ## 3. 文档清单（按目录）
 
@@ -44,7 +57,7 @@
 | `测试报告_1000M.md` | 证据：千兆链路补测章节 |
 | `上位机数据协议调研与讨论.md` | 证据：协议选型过程记录 |
 
-代码侧可执行证据仍在 `GM-IX/investigations/signal-drift/`（脚本、原始数据、报告），结论以 `docs/gmix/` 正本为准。
+代码侧可执行证据仍在 `products/gmix/investigations/signal-drift/`（脚本、原始数据、报告），结论以 `docs/gmix/` 正本为准。
 
 ### 3.3 `docs/lga50/` — 第二设备线
 
@@ -52,9 +65,17 @@
 |---|---|
 | `LGA50-D_远程控制协议分析.md` | 正本：该设备协议与实测口径 |
 
-抓包与工具仍在 `LGA50/capture/`、`LGA50/tools/`；厂商 PDF 已归 `references/lga50/`。
+抓包与工具仍在 `devices/lga50/capture/`、`devices/lga50/tools/`；厂商 PDF 已归 `references/lga50/`。
 
-### 3.4 `docs/platform/` — 预研平台（冻结）
+### 3.4 `docs/detection/` — 检测系统（OCS + OFDR）
+
+| 文件 | 性质 |
+|---|---|
+| `README.md` | 骨架：系统边界、检测流程、文档规划、已知事实、TBD-D01~D08 |
+
+规划中：检测系统上位机（OCS 光开关 1×8 前级路由 + 8×8 DUT 与 OFDR 组成）的 SRS/SDD、通道编排与时序、接线核验与基线管理设计落此目录。工程占位骨架：`products/gmix/src/Gmix.OcsVerify`（核验域纯逻辑）、`Gmix.OcsCheck`（编排进程）、`Gmix.OcsCheck.App`（UI，不引 Vendor）。厂商协议文档在 `references/ocs/`，夹具在 `tests/fixtures/ocs/`。
+
+### 3.5 `docs/platform/` — 预研平台（冻结）
 
 | 文件 | 性质 |
 |---|---|
@@ -62,7 +83,7 @@
 | `SDD_OFDR_Platform_v0.9.md` | 正本：预研设计 + 一期实施记录 |
 | `REVIEW_OFDR_Platform_v0.1.0.md` | 正本：一期评审摘要 |
 
-### 3.5 `docs/evidence/` — 预研取证（非治理）
+### 3.6 `docs/evidence/` — 预研取证（非治理）
 
 | 文件 | 性质 |
 |---|---|
@@ -70,7 +91,7 @@
 | `映讯QT2144_SDK接入说明书.md` | 证据：接入设计与调用示例 |
 | `HRAS9000_上位机与QT2144_SDK_核实报告.md` | 证据：厂商上位机与 SDK 同一性核实 |
 
-### 3.6 `docs/cnn/` — 研究分支
+### 3.7 `docs/cnn/` — 研究分支
 
 | 文件 | 性质 |
 |---|---|
@@ -78,17 +99,17 @@
 | `评估报告.md` | 正本：评估结论 |
 | `落地评估.md` | 正本：落地架构、阈值与阶段路线 |
 
-### 3.7 `docs/assets/` — 项目自有资产
+### 3.8 `docs/assets/` — 项目自有资产
 
 | 文件 | 说明 |
 |---|---|
 | `ofdr_platform.png` | 四层架构图（原在 `references/`） |
 | `光脉OFDR演示系统.pptx` | 项目演示稿（原在 `references/`） |
 | `OFDR平台软件设计总结_一期_7页.pptx` | 一期设计总结 |
-| `gmix/厂商UI截图.jpg`、`gmix/厂商UI截图_N4.jpg`、`gmix/校准值.jpg` | GM-IX 实机证据截图（原散落在 `GM-IX/` 根目录） |
+| `gmix/厂商UI截图.jpg`、`gmix/厂商UI截图_N4.jpg`、`gmix/校准值.jpg` | GM-IX 实机证据截图（原散落在 GM-IX 根目录） |
 | `ocs/` | OCS 光开关（1×8 / 8×8）实物照片（厂商协议文档在 `references/ocs/`） |
 
-### 3.8 `docs/archive/gmix/` — 历史版本（只读）
+### 3.9 `docs/archive/gmix/` — 历史版本（只读）
 
 | 文件 | 说明 |
 |---|---|
@@ -96,7 +117,7 @@
 | `上位机数据Schema_v0.2.md` | 被 ICD v1.0 取代 |
 | `数据处理契约_v0.1.md` | Part B 已并入 ICD v1.0 |
 
-### 3.9 `Study/` — 学习、研究及相关知识库
+### 3.10 `Study/` — 学习、研究及相关知识库
 
 | 文件 | 性质 |
 |---|---|
@@ -117,10 +138,10 @@
 
 | 数据 | 位置 | 当前状态 |
 |---|---|---|
-| LGA50 抓包 | `LGA50/capture/`（约 101 MB） | 未入库 |
-| GM-IX 实机结果 | `GM-IX/results/` | 被 `.gitignore` 忽略 |
-| GM-IX 运行时 | `GM-IX/runtime/` | 被 `.gitignore` 忽略 |
-| 漂移验证原始帧 | `GM-IX/investigations/signal-drift/raw*` | 被 `.gitignore` 忽略 |
+| LGA50 抓包 | `devices/lga50/capture/`（约 101 MB） | 未入库 |
+| GM-IX 实机结果 | `products/gmix/results/` | 被 `.gitignore` 忽略 |
+| GM-IX 运行时 | `products/gmix/runtime/` | 被 `.gitignore` 忽略 |
+| 漂移验证原始帧 | `products/gmix/investigations/signal-drift/raw*` | 被 `.gitignore` 忽略 |
 | CNN 派生数据 | `CNN/data/`、`CNN/runs/` | 被 `.gitignore` 忽略 |
 
 **已建立**：[data-assets.md](data-assets.md) 记录 LGA50 抓包、GM-IX 结果与漂移数据的字节数、SHA256 和采集参数；干净克隆可验证什么、不能复现什么，见该文 §6。
@@ -131,6 +152,7 @@
 |---|---|
 | L1 / L2 契约 | `docs/contracts/` |
 | 产品需求、设计、测试报告 | `docs/gmix/` |
+| 检测系统需求、设计、基线管理设计 | `docs/detection/` |
 | 预研平台文档 | `docs/platform/` |
 | 预研取证、SDK 分析 | `docs/evidence/` |
 | CNN 评估 | `docs/cnn/` |
@@ -143,17 +165,17 @@
 ## 7. 已解决与仍待处理
 
 **已解决（2026-11-10）**
-1. 物理收口：`GM-IX/docs`、`LGA50/docs`、`CNN/docs` 已并入 `docs/`；`docs/` 根不再混放厂商 SDK 取证。
+1. 物理收口：原 `GM-IX/docs`、`LGA50/docs`、`CNN/docs` 已并入 `docs/`；`docs/` 根不再混放厂商 SDK 取证。
 2. 版本倒挂：`上位机数据Schema_v0.1.md` 与 v0.2 一并移入 `docs/archive/gmix/`。
 3. 参考目录：LGA50 厂商 PDF 已归 `references/lga50/`；项目自有图与 PPT 已移出 `references/`。
 4. `Study/` 定位为学习、研究及相关知识库，不并入治理文档根。
-5. 夹具统一到 `tests/fixtures/{platform,gmix,lga50}/`，代码与文档路径已同步。
+5. 夹具统一到 `tests/fixtures/{platform,gmix,lga50,ocs}/`，代码与文档路径已同步。
 6. 数据资产清单已建立：[data-assets.md](data-assets.md)。
 7. CI 已覆盖 GM-IX 构建、`Gmix.Tests`、预研平台验证与 L1 契约检查。
-8. `.trae/rules` 已按"GM-IX 产品主线 / ofdr_platform 预研"重写。
-9. `LGA50/README.md` 入口已建立，指向契约、协议分析与数据清单。
+8. `.trae/rules` 已按"products/gmix 产品主线 / research/platform 预研"重写。
+9. `devices/lga50/README.md` 入口已建立，指向契约、协议分析与数据清单。
 10. `add-scan-source` 技能已补产品线归口（`Gmix.Acquirer`/`Gmix.Import`），与规则 30 对齐。
 
 **仍待处理**
 1. `SourceType` 取值：L1 契约只有 `Lianxun | HengLga50`；预研 SDD 仍为三值含 `Replay`。预研字段不得回流产品。
-2. `LGA50/capture/` 与 `GM-IX/results/` 的原始数据按体积与版权边界不入库，只保留哈希清单；CNN 复现需先恢复数据。
+2. `devices/lga50/capture/` 与 `products/gmix/results/` 的原始数据按体积与版权边界不入库，只保留哈希清单；CNN 复现需先恢复数据。

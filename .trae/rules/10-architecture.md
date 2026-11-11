@@ -1,6 +1,6 @@
 # 分层与依赖不变量
 
-## 产品主线 GM-IX（`GM-IX/src`）
+## 产品主线 GM-IX（`products/gmix/src`）
 
 - 依赖方向不可逆：`Gmix.Core` 只依赖 BCL；`Gmix.Vendor` 可依赖 Core；`Gmix.Acquirer` 依赖 Vendor + Core；`Gmix.Commit` 依赖 Core；`Gmix.Import` 依赖 Core；`Gmix.App` 依赖 Core + WinForms，**不得引用 `Gmix.Vendor`**。
 - **厂商类型、`DllImport`、原生句柄、协议字节结构只允许出现在 `Gmix.Vendor/`**（`NativeApi`、`QtAcquisition`、`OfdrProcessor`、`Detector`）。`Gmix.App` / `Gmix.Core` 中出现即视为违规。

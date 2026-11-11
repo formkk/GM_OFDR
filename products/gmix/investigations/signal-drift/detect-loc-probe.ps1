@@ -1,4 +1,4 @@
-$ErrorActionPreference = 'Stop'
+﻿$ErrorActionPreference = 'Stop'
 $sdkDir = 'C:\Mycode\GM-OFDR\.tmp\probe_run'
 [Environment]::CurrentDirectory = $sdkDir
 $env:PATH = $sdkDir + ';' + $env:PATH
@@ -159,6 +159,6 @@ public static class LocProbe
 
 if (-not [LocProbe]::SetDllDirectory($sdkDir)) { throw 'SetDllDirectory failed' }
 
-$raw = 'C:\Mycode\GM-OFDR\GM-IX\investigations\signal-drift\raw_batch1\frame_01.bin'
+$raw = 'C:\Mycode\GM-OFDR\products\gmix\investigations\signal-drift\raw_batch1\frame_01.bin'
 Write-Host ("raw: " + $raw)
 foreach ($line in [LocProbe]::Run($raw, 50e6, 1.0, 8)) { Write-Host $line }

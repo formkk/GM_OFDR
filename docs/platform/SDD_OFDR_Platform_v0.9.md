@@ -31,7 +31,7 @@
 
 | 资料 | 内容 | 在本设计中的用途 |
 | --- | --- | --- |
-| `OFDRDataReceiver _demo` | 旧 WinForms 实现 + `config.txt` + 历史 run | 行为基线：公式、协议、默认值、CSV 列序；对应 §2.3 映射与 §10 迁移用例 |
+| `research/demo-lga50` | 旧 WinForms 实现 + `config.txt` + 历史 run | 行为基线：公式、协议、默认值、CSV 列序；对应 §2.3 映射与 §10 迁移用例 |
 | `references/qt2144-rs` | 旧采集卡 SDK 与数据格式说明 | 仅作帧格式/通道交织参考；采集板形态未定，不作为二期既定适配器（SRS TBD-15） |
 | `references/ofdr-0.1.1-release` | 处理库（P/S/A → 轴/功率谱）与头文件 | 二期 `OfdrProcessor` 适配器设计参考（§3、§5、§9） |
 | `references/detect_1.0` | 结果库（峰值/IL/RL 参考实现）与头文件 | 二期交叉验证实现参考（§5、§10） |
@@ -288,7 +288,7 @@ Luna 资料明细（`references/luna/`，不参与构建、不参与算法）：
 
 ## 5. 接口设计
 
-> 下列为**契约签名示意**，以 `ofdr_platform/src` 源码为准；本节只保留跨层契约，Engine/App 的内部实现形状不在文档中复写。
+> 下列为**契约签名示意**，以 `research/platform/src` 源码为准；本节只保留跨层契约，Engine/App 的内部实现形状不在文档中复写。
 
 ```csharp
 public interface IScanSource : IDisposable
@@ -549,7 +549,7 @@ PC 侧发行包必须包含：
 
 > 本节记录构建、验证与需求覆盖情况；评审结论见 `REVIEW_OFDR_Platform_v0.1.0.md`。
 
-工作目录：`ofdr_platform/src`；解决方案 `OFDR.Platform.sln`；7 个程序集（Contracts / Metrics / Engine / Infrastructure / Replay / App / Verify）。
+工作目录：`research/platform/src`；解决方案 `OFDR.Platform.sln`；7 个程序集（Contracts / Metrics / Engine / Infrastructure / Replay / App / Verify）。
 
 ### 13.1 构建
 

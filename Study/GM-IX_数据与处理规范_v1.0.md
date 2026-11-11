@@ -570,13 +570,13 @@ configHash = "sha256:" + lowercaseHex(SHA256(UTF-8(canonical)))
 
 | 文件 | 作用 |
 |---|---|
-| `GM-IX/src/Gmix.Data/SchemaModels.cs` | v0.2 全部 JSON 模型（scan/ofdr/events/summary/calibration/view） |
-| `GM-IX/src/Gmix.Data/CalibrationModel.cs` | 距离比例、绝对 RL、IL 斜率/截距、configHash 校验 |
-| `GM-IX/src/Gmix.Data/MetricsAggregator.cs` | 总 IL/RL、仅峰值/基线+峰值、精度、区间统计 |
-| `GM-IX/src/Gmix.Data/JsonAndFileStore.cs` | JSON、`.f64`、`raw.bin` 读写与哈希 |
-| `GM-IX/src/Gmix.Data/SchemaValidator.cs` | 长度、单调性、通道、计数等校验 |
-| `GM-IX/src/Gmix.Data/Program.cs` | 合成样例 + 公式回归测试 |
-| `GM-IX/src/Gmix.Data/build-and-test.ps1` | 一键编译 `Gmix.Data.dll` + 测试 |
+| `products/gmix/src/Gmix.Data/SchemaModels.cs` | v0.2 全部 JSON 模型（scan/ofdr/events/summary/calibration/view） |
+| `products/gmix/src/Gmix.Data/CalibrationModel.cs` | 距离比例、绝对 RL、IL 斜率/截距、configHash 校验 |
+| `products/gmix/src/Gmix.Data/MetricsAggregator.cs` | 总 IL/RL、仅峰值/基线+峰值、精度、区间统计 |
+| `products/gmix/src/Gmix.Data/JsonAndFileStore.cs` | JSON、`.f64`、`raw.bin` 读写与哈希 |
+| `products/gmix/src/Gmix.Data/SchemaValidator.cs` | 长度、单调性、通道、计数等校验 |
+| `products/gmix/src/Gmix.Data/Program.cs` | 合成样例 + 公式回归测试 |
+| `products/gmix/src/Gmix.Data/build-and-test.ps1` | 一键编译 `Gmix.Data.dll` + 测试 |
 
 测试输出（14 项断言全绿，2026-11-05）：
 

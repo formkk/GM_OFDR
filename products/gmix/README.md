@@ -1,8 +1,8 @@
-# GM-IX 产品线
+# GMIX 产品线（GM-IX / LGA50）
 
-面向 `references/qt2144-rs`（采集）、`references/ofdr-0.1.1-release`（处理）、`references/detect_1.0`（事件检测）的整机上位机产品线；同时作为 LGA50 多适配器接入的继承基线。
+面向 `references/qt2144-rs`（采集）、`references/ofdr-0.1.1-release`（处理）、`references/detect_1.0`（事件检测）的整机上位机产品线；当前支持联讯 GM-IX 整机与昊衡 LGA50-D 两类设备，并作为 OCS + OFDR 检测平台的继承基线。
 
-**被测整机正式命名 GM-IX**：联讯完整单路 OFDR 设备，对外只有 1 个千兆 RJ45 采集网口和 1 个接 DUT 的光口；内部使用 QT2144 采集板 + `qt_acq` + `ofdr` + `detect` 三级软件链路。三级链路的数据格式、公式与实测值见 [GM-IX 三级数据处理链路数据报告](../docs/gmix/GM-IX_三级数据处理链路数据报告.md)。
+**被测整机正式命名 GM-IX**：联讯完整单路 OFDR 设备，对外只有 1 个千兆 RJ45 采集网口和 1 个接 DUT 的光口；内部使用 QT2144 采集板 + `qt_acq` + `ofdr` + `detect` 三级软件链路。三级链路的数据格式、公式与实测值见 [GM-IX 三级数据处理链路数据报告](../../docs/gmix/GM-IX_三级数据处理链路数据报告.md)。
 
 上位机 MVP 边界：单次扫频、相对测量、事件表；不做多段、外触发、直连协议；绝对 RL 留到第二阶段。详见报告 §8.2。
 
@@ -23,7 +23,7 @@
 ## 目录结构
 
 ```
-GM-IX/
+products/gmix/
 ├─ runtime/                 # 测试运行时：SDK DLL（含 ofdr/detect）、config 文本副本、log/
 ├─ src/Qt2144Probe.cs       # C# P/Invoke 测试探针（.NET Framework 4.x / x64）
 ├─ src/Gmix.App/            # WinForms 上位机：测量/结果/校准/历史 4 页 + 编排
@@ -39,7 +39,7 @@ GM-IX/
 
 `runtime/` 中的厂商二进制是从 `references/` 复制的测试运行时副本，**不进入 OFDR.Platform 源码树，也不作为发行产物**。项目规则默认禁止复制；本目录的复制行为已由用户明确豁免。
 
-`results/` 中 JSON 与日志里的绝对路径是改名前（`QT2144/`）的历史快照，数据本身未改动；当前目录名为 `GM-IX/`。
+`results/` 中 JSON 与日志里的绝对路径是改名前（`QT2144/`）的历史快照，数据本身未改动；当前目录名为 `products/gmix/`。
 
 ## 运行前提
 
@@ -52,7 +52,7 @@ GM-IX/
 ## 运行
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File .\GM-IX\run-tests.ps1
+powershell -ExecutionPolicy Bypass -File .\products\gmix\run-tests.ps1
 ```
 
 脚本依次执行：编译 → stage0（离线加载/公式/参数校验）→ 10/50/125/250 MHz 单段采集 → 50 MHz 的 `ofdr` + `detect`。

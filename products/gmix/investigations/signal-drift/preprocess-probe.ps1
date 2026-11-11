@@ -1,4 +1,4 @@
-$ErrorActionPreference = 'Stop'
+﻿$ErrorActionPreference = 'Stop'
 $sdkDir = 'C:\Mycode\GM-OFDR\.tmp\probe_run'
 [Environment]::CurrentDirectory = $sdkDir
 $env:PATH = $sdkDir + ';' + $env:PATH
@@ -90,7 +90,7 @@ public static class PreprocessProbe
 
 if (-not [PreprocessProbe]::SetDllDirectory($sdkDir)) { throw 'SetDllDirectory failed' }
 
-$rawDir = 'C:\Mycode\GM-OFDR\GM-IX\investigations\signal-drift\raw_batch1'
+$rawDir = 'C:\Mycode\GM-OFDR\products\gmix\investigations\signal-drift\raw_batch1'
 $modes = @(
     @{ Id = 0; Name = 'raw 400000' },
     @{ Id = 1; Name = 'demean 400000' },

@@ -444,7 +444,7 @@ internal static class Tests
         var productDir = FindProductDirectory();
         return productDir == null
             ? null
-            : Path.Combine(productDir, "OFDRDataReceiver _demo", "OFDRDataReceiver _demo");
+            : Path.Combine(productDir, "research", "demo-lga50");
     }
 
     private static string? FindProductDirectory()
@@ -452,8 +452,8 @@ internal static class Tests
         var dir = Path.TrimEndingDirectorySeparator(AppContext.BaseDirectory);
         while (dir.Length > 0)
         {
-            if (string.Equals(Path.GetFileName(dir), "ofdr_platform", StringComparison.OrdinalIgnoreCase))
-                return Path.GetDirectoryName(dir);
+            if (File.Exists(Path.Combine(dir, "global.json")))
+                return dir;
             var parent = Path.GetDirectoryName(dir);
             if (parent == null || parent == dir) break;
             dir = parent;

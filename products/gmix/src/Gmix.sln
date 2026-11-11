@@ -17,6 +17,12 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gmix.App", "Gmix.App\Gmix.A
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gmix.Import", "Gmix.Import\Gmix.Import.csproj", "{9C2E5A71-4B3D-4F68-9A11-6D8E7C2F5B03}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gmix.OcsVerify", "Gmix.OcsVerify\Gmix.OcsVerify.csproj", "{6598D519-C602-42CC-9F33-17B736DF565C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gmix.OcsCheck", "Gmix.OcsCheck\Gmix.OcsCheck.csproj", "{032205AB-91C3-4AB6-8D1E-EDC8B34413AA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gmix.OcsCheck.App", "Gmix.OcsCheck.App\Gmix.OcsCheck.App.csproj", "{07CF10D3-B203-4F63-9CA8-C727407BDF02}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -54,5 +60,17 @@ Global
 		{9C2E5A71-4B3D-4F68-9A11-6D8E7C2F5B03}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9C2E5A71-4B3D-4F68-9A11-6D8E7C2F5B03}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9C2E5A71-4B3D-4F68-9A11-6D8E7C2F5B03}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6598D519-C602-42CC-9F33-17B736DF565C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6598D519-C602-42CC-9F33-17B736DF565C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6598D519-C602-42CC-9F33-17B736DF565C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6598D519-C602-42CC-9F33-17B736DF565C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{032205AB-91C3-4AB6-8D1E-EDC8B34413AA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{032205AB-91C3-4AB6-8D1E-EDC8B34413AA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{032205AB-91C3-4AB6-8D1E-EDC8B34413AA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{032205AB-91C3-4AB6-8D1E-EDC8B34413AA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{07CF10D3-B203-4F63-9CA8-C727407BDF02}.Debug|Any CPU.ActiveCfg = Debug|x64
+		{07CF10D3-B203-4F63-9CA8-C727407BDF02}.Debug|Any CPU.Build.0 = Debug|x64
+		{07CF10D3-B203-4F63-9CA8-C727407BDF02}.Release|Any CPU.ActiveCfg = Release|x64
+		{07CF10D3-B203-4F63-9CA8-C727407BDF02}.Release|Any CPU.Build.0 = Release|x64
 	EndGlobalSection
 EndGlobal

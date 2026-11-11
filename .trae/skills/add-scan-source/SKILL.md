@@ -11,10 +11,10 @@ description: 按项目规范新增或替换采集适配器（产品线 Gmix.Acqu
 
 | 目标 | 归口 | 契约依据 |
 |---|---|---|
-| **产品主线**（GM-IX → 新设备） | 在线采集：`GM-IX/src/Gmix.Acquirer/`；离线导入：`GM-IX/src/Gmix.Import/`；厂商调用只经 `Gmix.Vendor` | [`docs/contracts/统一数据契约_v0.7.md`](../../../docs/contracts/统一数据契约_v0.7.md)（L1 帧）+ ICD（L2 记录） |
-| **预研平台**（ofdr_platform，冻结） | 实现 `OFDR.Contracts.IScanSource`，代码放 `ofdr_platform/src/OFDR.Infrastructure/<Adapter>/` | `docs/platform/SDD_OFDR_Platform_v0.9.md` §4.3（`StandardScan`） |
+| **产品主线**（GM-IX → 新设备） | 在线采集：`products/gmix/src/Gmix.Acquirer/`；离线导入：`products/gmix/src/Gmix.Import/`；厂商调用只经 `Gmix.Vendor` | [`docs/contracts/统一数据契约_v0.7.md`](../../../docs/contracts/统一数据契约_v0.7.md)（L1 帧）+ ICD（L2 记录） |
+| **预研平台**（ofdr_platform，冻结） | 实现 `OFDR.Contracts.IScanSource`，代码放 `research/platform/src/OFDR.Infrastructure/<Adapter>/` | `docs/platform/SDD_OFDR_Platform_v0.9.md` §4.3（`StandardScan`） |
 
-**判断规则**：为 GM-IX/LGA50 产品线接入设备走产品主线归口；只有预研验证才动 `ofdr_platform`。两条线的适配器不得互相引用，上层不得感知适配器存在。
+**判断规则**：为 products/gmix/LGA50 产品线接入设备走产品主线归口；只有预研验证才动 `ofdr_platform`。两条线的适配器不得互相引用，上层不得感知适配器存在。
 
 ## 产品主线路径（GM-IX）
 
@@ -23,17 +23,17 @@ description: 按项目规范新增或替换采集适配器（产品线 Gmix.Acqu
 3. **协议常量化**：协议常量集中到适配器目录下的单个协议文件（如 `Qt2144Protocol.cs`）：magic、帧尾/长度、字节序、通道交织、命令字、超时默认值。其它文件不得出现字节偏移魔法数。
 4. **帧构造纪律**：适配器只构造有效帧（点数=数组长度、无非有限值、轴参数合法），失败走错误通道分类上报；下游不得重算轴、不得插值、不得就地修改帧；`SourceType` 只允许 `Lianxun | HengLga50`。
 5. **生命周期**：采集进程 `open → configure → start → read → stop → close` 成对释放；`seg_count >= 2` 已知会挂起，禁止启用。
-6. **补测试**：`GM-IX/src/Gmix.Tests/` 增加用例；夹具放 `tests/fixtures/gmix/` 或 `tests/fixtures/lga50/`，缺失应 FAIL，不得 SKIP。
-7. **验证与回填**：`dotnet build GM-IX/src/Gmix.sln` → 0 警告 0 错误；`dotnet run --project GM-IX/src/Gmix.Tests` → PASS。回填 SDD §13 与 ICD §10 实现清单；触及 L1 契约时先升版契约并跑 `LGA50/tools/check_contract.ps1`。
+6. **补测试**：`products/gmix/src/Gmix.Tests/` 增加用例；夹具放 `tests/fixtures/gmix/` 或 `tests/fixtures/lga50/`，缺失应 FAIL，不得 SKIP。
+7. **验证与回填**：`dotnet build products/gmix/src/Gmix.sln` → 0 警告 0 错误；`dotnet run --project products/gmix/src/Gmix.Tests` → PASS。回填 SDD §13 与 ICD §10 实现清单；触及 L1 契约时先升版契约并跑 `devices/lga50/tools/check_contract.ps1`。
 8. **接入顺序固定**：mock 服务端 → 契约测试 → 真机冒烟。真机联调的不确定行为（时序、粘包、断连）必须回写 SDD 与 SRS 风险登记。
 
 ## 预研平台路径（ofdr_platform，冻结，仅缺陷修复）
 
 1. **先读文档**：`docs/platform/SRS_OFDR_Platform_v0.9.md` §4.1（ACQ 需求）、§5（IF-HW 接口）；`docs/platform/SDD_OFDR_Platform_v0.9.md` §5（接口）、§6（线程与生命周期）、§4.3。
-2. **放置位置**：只放 `ofdr_platform/src/OFDR.Infrastructure/<Adapter>/`，实现 `OFDR.Contracts.IScanSource`。禁止在 `Contracts`/`Metrics`/`Engine`/`App` 中出现协议字节、网络类型或厂商句柄。
+2. **放置位置**：只放 `research/platform/src/OFDR.Infrastructure/<Adapter>/`，实现 `OFDR.Contracts.IScanSource`。禁止在 `Contracts`/`Metrics`/`Engine`/`App` 中出现协议字节、网络类型或厂商句柄。
 3. **契约语义**：`Open` 建会话；`StartStream` 开始；`BeginChannel` 递增代次并丢弃旧代次帧；`TryTake(timeout)` 超时返回 false；`Stop` 幂等；`DroppedFrames` 计数。有界队列背压。
-4. **补契约测试**：`ofdr_platform/src/OFDR.Verify/Tests.cs` 增加用例并在 `Program.cs` 的 `Run(...)` 登记。至少覆盖：握手成功、失败可读错误、分片/粘包切帧、代次丢弃、超时、Stop 幂等。协议测试复用 mock 服务端模式（参考 `FakeOfdrServer`）。
-5. **验证与回填**：`dotnet build ofdr_platform/src/OFDR.Platform.sln` → 0 警告 0 错误；`dotnet run --project ofdr_platform/src/OFDR.Verify` → 全 PASS、0 SKIP。回填 SDD §5 映射表与 §13.4。
+4. **补契约测试**：`research/platform/src/OFDR.Verify/Tests.cs` 增加用例并在 `Program.cs` 的 `Run(...)` 登记。至少覆盖：握手成功、失败可读错误、分片/粘包切帧、代次丢弃、超时、Stop 幂等。协议测试复用 mock 服务端模式（参考 `FakeOfdrServer`）。
+5. **验证与回填**：`dotnet build research/platform/src/OFDR.Platform.sln` → 0 警告 0 错误；`dotnet run --project research/platform/src/OFDR.Verify` → 全 PASS、0 SKIP。回填 SDD §5 映射表与 §13.4。
 
 ## 通用红线
 

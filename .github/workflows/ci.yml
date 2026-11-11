@@ -19,19 +19,19 @@ jobs:
 
       # 产品主线：GM-IX
       - name: Build GM-IX
-        run: dotnet build GM-IX/src/Gmix.sln -c Release
+        run: dotnet build products/gmix/src/Gmix.sln -c Release
 
       - name: Test GM-IX
-        run: dotnet run --project GM-IX/src/Gmix.Tests -c Release --no-build
+        run: dotnet run --project products/gmix/src/Gmix.Tests -c Release --no-build
 
       # 预研平台：ofdr_platform（未接硬件，冻结）
       - name: Build platform
-        run: dotnet build ofdr_platform/src/OFDR.Platform.sln -c Release
+        run: dotnet build research/platform/src/OFDR.Platform.sln -c Release
 
       - name: Verify platform
-        run: dotnet run --project ofdr_platform/src/OFDR.Verify -c Release --no-build
+        run: dotnet run --project research/platform/src/OFDR.Verify -c Release --no-build
 
       # L1 数据契约机械检查
       - name: Check data contract
         shell: pwsh
-        run: ./LGA50/tools/check_contract.ps1
+        run: ./devices/lga50/tools/check_contract.ps1

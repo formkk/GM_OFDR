@@ -7,7 +7,7 @@
             "type": "process",
             "args": [
                 "build",
-                "${workspaceFolder}/ofdr_platform/src/OFDR.App/OFDR.App.csproj",
+                "${workspaceFolder}/research/platform/src/OFDR.App/OFDR.App.csproj",
                 "/property:GenerateFullPaths=true",
                 "/consoleloggerparameters:NoSummary;ForceNoAlign"
             ],
@@ -19,7 +19,7 @@
             "type": "process",
             "args": [
                 "publish",
-                "${workspaceFolder}/ofdr_platform/src/OFDR.App/OFDR.App.csproj",
+                "${workspaceFolder}/research/platform/src/OFDR.App/OFDR.App.csproj",
                 "/property:GenerateFullPaths=true",
                 "/consoleloggerparameters:NoSummary;ForceNoAlign"
             ],
@@ -33,7 +33,7 @@
                 "watch",
                 "run",
                 "--project",
-                "${workspaceFolder}/ofdr_platform/src/OFDR.App/OFDR.App.csproj"
+                "${workspaceFolder}/research/platform/src/OFDR.App/OFDR.App.csproj"
             ],
             "problemMatcher": "$msCompile"
         }

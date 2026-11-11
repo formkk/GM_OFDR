@@ -1286,7 +1286,7 @@ A = np.sin(2 * np.pi * 0.02 * t)
 实现位置必须是：
 
 ```text
-ofdr_platform/src/OFDR.Infrastructure/<Adapter>/
+research/platform/src/OFDR.Infrastructure/<Adapter>/
 ```
 
 厂商类型、`DllImport`、原生句柄、协议字节结构只允许出现在该目录。

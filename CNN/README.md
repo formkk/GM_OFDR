@@ -5,8 +5,8 @@
 - 评估方案：[docs/cnn/评估方案.md](../docs/cnn/评估方案.md)
 - 评估结论：[docs/cnn/评估报告.md](../docs/cnn/评估报告.md)
 - 落地评估：[docs/cnn/落地评估.md](../docs/cnn/落地评估.md)（低频 PSD、多帧平均、阈值与阶段路线）
-- 数据来源：`../LGA50/capture/raw_1m.bin`、`../LGA50/capture/raw_stream_01.bin`（只读，不复制、不修改）
-- 联讯数据：`../GM-IX/results/raw-50mhz-8ms-1seg.bin` 等 raw（int16 4 通道交织），经 `GM-IX/runtime/ofdr.dll` 离线转距离域曲线（只引用，不复制）
+- 数据来源：`../devices/lga50/capture/raw_1m.bin`、`../devices/lga50/capture/raw_stream_01.bin`（只读，不复制、不修改）
+- 联讯数据：`../products/gmix/results/raw-50mhz-8ms-1seg.bin` 等 raw（int16 4 通道交织），经 `products/gmix/runtime/ofdr.dll` 离线转距离域曲线（只引用，不复制）
 
 ## 环境
 
@@ -22,7 +22,7 @@ $py = "C:\Users\<user>\AppData\Local\Programs\Python\Python312\python.exe"
 
 ```powershell
 # 数据集体检
-.\.venv\Scripts\python.exe src\inspect_frames.py ..\LGA50\capture\raw_1m.bin ..\LGA50\capture\raw_stream_01.bin
+.\.venv\Scripts\python.exe src\inspect_frames.py ..\devices\lga50\capture\raw_1m.bin ..\devices\lga50\capture\raw_stream_01.bin
 
 # E1：全量程（含末端反射/长度线索）
 .\.venv\Scripts\python.exe src\train_eval.py --name full --crop-start 0.05 --crop-end 3.0
@@ -35,36 +35,36 @@ $py = "C:\Users\<user>\AppData\Local\Programs\Python\Python312\python.exe"
 
 # 两段抓包的指纹码比对（需先跑 E1 或 E2 生成 model.pt）
 .\.venv\Scripts\python.exe src\compare.py --model runs\full\model.pt `
-    --a ..\LGA50\capture\raw_1m.bin --b ..\LGA50\capture\raw_stream_01.bin
+    --a ..\devices\lga50\capture\raw_1m.bin --b ..\devices\lga50\capture\raw_stream_01.bin
 
 # 联讯：5 峰切 4 段，评估每段信噪比与跨会话可重复性
-.\.venv\Scripts\python.exe src\analyze_gmix.py ..\GM-IX\results\raw-50mhz-8ms-1seg.bin
+.\.venv\Scripts\python.exe src\analyze_gmix.py ..\products\gmix\results\raw-50mhz-8ms-1seg.bin
 .\.venv\Scripts\python.exe src\segment_gmix.py `
-    ..\GM-IX\results\raw-50mhz-8ms-1seg.bin ..\GM-IX\results\repeat_50mhz.bin
+    ..\products\gmix\results\raw-50mhz-8ms-1seg.bin ..\products\gmix\results\repeat_50mhz.bin
 
 # 联讯：同一末段在 20 帧/多配置下的稳定性
 .\.venv\Scripts\python.exe src\last_segment_compare.py `
-    --dir ..\GM-IX\investigations\signal-drift\raw_batch1 --rate-mhz 50
+    --dir ..\products\gmix\investigations\signal-drift\raw_batch1 --rate-mhz 50
 .\.venv\Scripts\python.exe src\last_segment_compare.py --rate-from-name --files `
-    ..\GM-IX\results\raw-10mhz-1ms-1seg.bin ..\GM-IX\results\raw-50mhz-8ms-1seg.bin `
-    ..\GM-IX\results\raw-125mhz-10ms-1seg.bin ..\GM-IX\results\raw-250mhz-10ms-1seg.bin
+    ..\products\gmix\results\raw-10mhz-1ms-1seg.bin ..\products\gmix\results\raw-50mhz-8ms-1seg.bin `
+    ..\products\gmix\results\raw-125mhz-10ms-1seg.bin ..\products\gmix\results\raw-250mhz-10ms-1seg.bin
 
 # 联讯：相对坐标 + 对齐 + 特征值可行性（只用 50MHz/8ms）
 .\.venv\Scripts\python.exe src\relative_features.py `
-    --dir ..\GM-IX\investigations\signal-drift\raw_batch1 `
-    --extra ..\GM-IX\results\raw-50mhz-8ms-1seg.bin ..\GM-IX\results\repeat_50mhz.bin `
+    --dir ..\products\gmix\investigations\signal-drift\raw_batch1 `
+    --extra ..\products\gmix\results\raw-50mhz-8ms-1seg.bin ..\products\gmix\results\repeat_50mhz.bin `
     --per-curve-norm
 
 # 分箱统计 vs 低频 PSD（网格鲁棒特征复评）
 .\.venv\Scripts\python.exe src\feature_eval.py `
-    --dir ..\GM-IX\investigations\signal-drift\raw_batch1 `
-    --extra ..\GM-IX\results\raw-50mhz-8ms-1seg.bin ..\GM-IX\results\repeat_50mhz.bin `
+    --dir ..\products\gmix\investigations\signal-drift\raw_batch1 `
+    --extra ..\products\gmix\results\raw-50mhz-8ms-1seg.bin ..\products\gmix\results\repeat_50mhz.bin `
     --per-curve-norm --kinds bins,low_psd --grid-mm 20
 
 # 对齐尝试：用 aux 通道相位做等光频重采样（阴性结果，留作证据）
 .\.venv\Scripts\python.exe src\kclock_probe.py `
-    ..\GM-IX\investigations\signal-drift\raw_batch1\frame_01.bin `
-    ..\GM-IX\investigations\signal-drift\raw_batch1\frame_02.bin --ppf 16
+    ..\products\gmix\investigations\signal-drift\raw_batch1\frame_01.bin `
+    ..\products\gmix\investigations\signal-drift\raw_batch1\frame_02.bin --ppf 16
 
 # 落地评估：多帧平均、扰动、阈值、耗时
 .\.venv\Scripts\python.exe src\deploy_eval.py

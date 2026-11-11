@@ -529,7 +529,7 @@ IL  = 后一段噪声顶 - 前一段噪声顶                → 事件插损（
 
 #### 做什么
 
-`MetricsAggregator`（已实现，`GM-IX/src/Gmix.Data/MetricsAggregator.cs`）把事件表压缩成整条链路的最终指标。公式为**自有口径**（规范 §5.1；与厂商 UI 数值不保证一致，厂商公式仍是 TBD-S1~S6）：
+`MetricsAggregator`（已实现，`products/gmix/src/Gmix.Data/MetricsAggregator.cs`）把事件表压缩成整条链路的最终指标。公式为**自有口径**（规范 §5.1；与厂商 UI 数值不保证一致，厂商公式仍是 TBD-S1~S6）：
 
 ```text
 设电平 L = 20log10(ps)，功率 P = 10^(L/10)
@@ -805,7 +805,7 @@ precisionMode = "sample_std"，precisionCount = valid.Count
 2. [GM-IX_数据与处理规范_v1.0.md](./GM-IX_数据与处理规范_v1.0.md)（学习副本；正本见 `docs/contracts/GM-IX_数据与处理规范_v1.0.md`。唯一契约：§0 契约视图 + Part A 数据契约 + Part B 处理与生命周期契约；先读 §0 边界/角色/不变量，再按需查字段）
 3. `docs/gmix/GM-IX_三级数据处理链路数据报告.md`（SDK 实测：C ABI、字节格式、数值验证）
 4. `docs/archive/gmix/上位机数据Schema_v0.1.md`（scan/ofdr/events 的基础字段定义）
-5. `GM-IX/src/Gmix.Data/`（已有实现：模型、聚合、存储、校验器与回归测试）
+5. `products/gmix/src/Gmix.Data/`（已有实现：模型、聚合、存储、校验器与回归测试）
 
 **自查清单**（能独立回答 = 培训达标）：
 

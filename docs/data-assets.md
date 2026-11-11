@@ -15,7 +15,7 @@ Get-FileHash -Algorithm SHA256 <文件> | Format-List
 
 4. 哈希不一致时，先确认文件是否被重新采集或截断，不得直接覆盖历史结论。
 
-## 2. LGA50-D 抓包（`LGA50/capture/`）
+## 2. LGA50-D 抓包（`devices/lga50/capture/`）
 
 采集口径：`RAW_DATA_ON` 原始曲线流；82153 点/帧；185.0 µm/点；单帧 821531 字节；基线帧率 17~19 fps；X 轴为物理距离。协议依据见 [LGA50-D_远程控制协议分析.md](lga50/LGA50-D_远程控制协议分析.md)。
 
@@ -29,7 +29,7 @@ Get-FileHash -Algorithm SHA256 <文件> | Format-List
 | `mode2_start1.bin` | 1,963 | `A8B96351B414D206AF9F9A9CFD8D4DA476EAE293D30747E2D2DC9B923AFB2F80` | `MODE_2` + 起点 1.000 结果帧 |
 | `session_1m_raw.bin` | 0 | `E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855` | 空文件（会话未产出），保留为失败证据 |
 
-## 3. GM-IX 实机原始帧（`GM-IX/results/`）
+## 3. GM-IX 实机原始帧（`products/gmix/results/`）
 
 格式：int16 小端、4 通道交织 `[ch0=P, ch1=S, ch2=A, ch3 忽略]`；单帧字节数 = `采样率(MHz) × 时长(ms) × 8000`；软件触发，`trigger_delay = 1 ms`（文件名另有标注除外）。
 
@@ -43,7 +43,7 @@ Get-FileHash -Algorithm SHA256 <文件> | Format-List
 | `raw-250mhz-10ms-1seg.bin` | 20,000,000 | `84A6778B0FFC58326E9821889E534DA127694A268EE4D693A06218B7825C79EB` | 250 MHz / 10 ms |
 | `repeat_50mhz.bin` | 3,200,000 | `C2B68E5C43DE3C3EF590081FF5E368EA09F8E95CE2DF1CD392622F17B9A84D18` | 50 MHz / 8 ms 重复采集 |
 
-### 3.2 千兆链路复测（`GM-IX/results/gigabit/`）
+### 3.2 千兆链路复测（`products/gmix/results/gigabit/`）
 
 | 文件 | 字节 | SHA256 | 参数 |
 |---|---:|---|---|
@@ -57,7 +57,7 @@ Get-FileHash -Algorithm SHA256 <文件> | Format-List
 | `raw-g250_50ms.bin` | 100,000,000 | `51CD9F0B82330A5643D9FE3F268500F286A75D004086A0E7CD7BD78CBAA5CC31` | 250 MHz / 50 ms |
 | `repeat_g250.bin` | 20,000,000 | `BD36FE39F22066FE966B693EAD1FB4EF341D5A9327F60EA63469D3266C8EBDD8` | 250 MHz / 10 ms 重复采集 |
 
-## 4. 信号漂移验证（`GM-IX/investigations/signal-drift/`）
+## 4. 信号漂移验证（`products/gmix/investigations/signal-drift/`）
 
 | 数据 | 规模 | 参数 |
 |---|---|---|
@@ -68,13 +68,13 @@ Get-FileHash -Algorithm SHA256 <文件> | Format-List
 ## 5. CNN 派生数据（`CNN/data/`、`CNN/runs/`）
 
 - `.npy` 解析缓存、模型权重、训练指标均由脚本从上述原始数据生成，不入库。
-- 复现前提：先恢复 `LGA50/capture/` 与 `GM-IX/results/` 的 raw，并按本表校验 SHA256；否则只能复跑代码，不能复现评估数值。
+- 复现前提：先恢复 `devices/lga50/capture/` 与 `products/gmix/results/` 的 raw，并按本表校验 SHA256；否则只能复跑代码，不能复现评估数值。
 
 ## 6. 干净克隆的验证边界
 
 | 能力 | 干净克隆可用性 | 依赖 |
 |---|---|---|
-| GM-IX 构建与 `Gmix.Tests` | 可用 | `tests/fixtures/gmix/schema_v02_sample/`（已入库） |
-| `ofdr_platform` 构建与 `OFDR.Verify` | 可用 | `tests/fixtures/platform/`、`tests/fixtures/lga50/`（已入库） |
+| GMIX 构建与 `Gmix.Tests` | 可用 | `tests/fixtures/gmix/schema_v02_sample/`（已入库） |
+| 预研平台构建与 `OFDR.Verify` | 可用 | `tests/fixtures/platform/`、`tests/fixtures/lga50/`（已入库） |
 | LGA50 契约机械检查 | 可用 | `docs/contracts/`（已入库） |
 | LGA50 抓包解析 / CNN 评估 | **不可用** | 需恢复本节原始数据并校验哈希 |

@@ -3,7 +3,7 @@
 > 设备：GM-IX，联讯完整单路 OFDR 整机；对外只有 **1 个千兆 RJ45 采集网口** 和 **1 个接 DUT 的光口**。
 > 内部链路：QT2144 采集板 → `qt_acq` → `ofdr` → `detect`。
 > 测试日期：2026-11-03　链路：1 Gbps / 全双工　主机：`192.168.5.55/24`　设备：`192.168.5.20`
-> 数据与日志：`GM-IX/results/gigabit/`；本报告所有数值均来自该目录实测结果。
+> 数据与日志：`products/gmix/results/gigabit/`；本报告所有数值均来自该目录实测结果。
 
 ---
 
@@ -543,8 +543,8 @@ MVP 必须落实的四件事：
 
 | 内容 | 路径 |
 |---|---|
-| 采集与处理主结果 | `GM-IX/results/gigabit/stage1_g*.json`、`stage2_g50.json`、`stage2_g250.json` |
-| 详细峰/事件/段 | `GM-IX/results/gigabit/analysis/g50_peaks.csv`、`g50_events.csv`、`g250_peaks.csv`、`g250_events.csv` |
-| dist_scale / fs 实验 | `GM-IX/results/gigabit/analysis/g50_scale2.json`、`g50_fs25.json` |
-| 原始数据 | `GM-IX/results/gigabit/raw-g50_retry.bin`、`raw-g250.bin`、`raw-g250_50ms.bin` |
+| 采集与处理主结果 | `products/gmix/results/gigabit/stage1_g*.json`、`stage2_g50.json`、`stage2_g250.json` |
+| 详细峰/事件/段 | `products/gmix/results/gigabit/analysis/g50_peaks.csv`、`g50_events.csv`、`g250_peaks.csv`、`g250_events.csv` |
+| dist_scale / fs 实验 | `products/gmix/results/gigabit/analysis/g50_scale2.json`、`g50_fs25.json` |
+| 原始数据 | `products/gmix/results/gigabit/raw-g50_retry.bin`、`raw-g250.bin`、`raw-g250_50ms.bin` |
 | 千兆测试报告 | `docs/gmix/测试报告_1000M.md` |

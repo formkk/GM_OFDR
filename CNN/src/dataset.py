@@ -1,8 +1,8 @@
 """数据集装配：抓包 → 帧数组缓存 → 分块划分。
 
 当前可用的两条真实链路（不同物理尾纤）：
-  link_1m  LGA50/capture/raw_1m.bin         34 帧，末端峰 1.0177 m
-  link_2m  LGA50/capture/raw_stream_01.bin  93 帧，末端峰 2.1042 m
+  link_1m  devices/lga50/capture/raw_1m.bin         34 帧，末端峰 1.0177 m
+  link_2m  devices/lga50/capture/raw_stream_01.bin  93 帧，末端峰 2.1042 m
 
 同一抓包内的连续帧存在时间相关性，划分必须按连续块，不能随机打散。
 """

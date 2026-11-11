@@ -15,18 +15,19 @@ description: 执行本项目的构建与验证（GM-IX 产品主线 + ofdr_platf
 
 ## 指令
 
-1. **产品主线 GM-IX**（改动 `GM-IX/src` 时必跑）：
-   `dotnet build GM-IX/src/Gmix.sln`
+1. **产品主线 GM-IX**（改动 `products/gmix/src` 时必跑）：
+   `dotnet build products/gmix/src/Gmix.sln`
    期望：`0 个警告`、`0 个错误`（`TreatWarningsAsErrors` 已开启）。
-   `dotnet run --project GM-IX/src/Gmix.Tests`
+   `dotnet run --project products/gmix/src/Gmix.Tests`
    期望：PASS，退出码 0。
-2. **预研平台**（仅改动 `ofdr_platform/src` 时）：
-   `dotnet build ofdr_platform/src/OFDR.Platform.sln`
+   OCS 核验域（`Gmix.OcsVerify`）的契约测试与 mock 串口用例并入 `Gmix.Tests`，随本命令一并验证。
+2. **预研平台**（仅改动 `research/platform/src` 时）：
+   `dotnet build research/platform/src/OFDR.Platform.sln`
    期望：`0 个警告`、`0 个错误`。
-   `dotnet run --project ofdr_platform/src/OFDR.Verify`
+   `dotnet run --project research/platform/src/OFDR.Verify`
    期望：`PASS 11+，FAIL 0，SKIP 0`，退出码 0。Release 下可加 `-c Release --no-build`（先 Release 构建）。
 3. **L1 契约**（改动 `docs/contracts/统一数据契约_v*.md` 时）：
-   `powershell -File LGA50/tools/check_contract.ps1`
+   `powershell -File devices/lga50/tools/check_contract.ps1`
    期望：`PASS 7，FAIL 0`，退出码 0。
 
 ## 失败排查顺序
@@ -45,19 +46,19 @@ description: 执行本项目的构建与验证（GM-IX 产品主线 + ofdr_platf
 $tmp = Join-Path $env:TEMP "gm_ofdr_ci_check"
 if (Test-Path $tmp) { Remove-Item -Recurse -Force $tmp }
 git clone --quiet . $tmp
-dotnet build "$tmp\GM-IX\src\Gmix.sln" -c Release
-dotnet run --project "$tmp\GM-IX\src\Gmix.Tests" -c Release --no-build
-dotnet build "$tmp\ofdr_platform\src\OFDR.Platform.sln" -c Release
-dotnet run --project "$tmp\ofdr_platform\src\OFDR.Verify" -c Release --no-build
-powershell -ExecutionPolicy Bypass -File "$tmp\LGA50\tools\check_contract.ps1"
+dotnet build "$tmp\products\gmix\src\Gmix.sln" -c Release
+dotnet run --project "$tmp\products\gmix\src\Gmix.Tests" -c Release --no-build
+dotnet build "$tmp\research\platform\src\OFDR.Platform.sln" -c Release
+dotnet run --project "$tmp\research\platform\src\OFDR.Verify" -c Release --no-build
+powershell -ExecutionPolicy Bypass -File "$tmp\devices\lga50\tools\check_contract.ps1"
 "exit=$LASTEXITCODE"
 Remove-Item -Recurse -Force $tmp
 ```
 
-若本机通过而干净克隆失败，通常是新增文件未提交、夹具未入库，或依赖了 `bin/`、`GM-IX/results/` 下的未跟踪数据。
+若本机通过而干净克隆失败，通常是新增文件未提交、夹具未入库，或依赖了 `bin/`、`products/gmix/results/` 下的未跟踪数据。
 
 ## 新增夹具规范
 
-- 放在 `tests/fixtures/` 对应子目录（`platform/`、`gmix/`、`lga50/`），文件名保持可被 `ofdr_metrics_*.csv` 之类的既有模式匹配。
+- 放在 `tests/fixtures/` 对应子目录（`platform/`、`gmix/`、`lga50/`、`ocs/`），文件名保持可被 `ofdr_metrics_*.csv` 之类的既有模式匹配。
 - 只放测试必需的最小样本，不放大体积日志；二进制与历史结果数据需在提交说明中注明来源与日期。
 - 原始抓包与实机结果不入库，统一登记到 `docs/data-assets.md`。

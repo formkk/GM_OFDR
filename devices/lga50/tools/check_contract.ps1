@@ -8,7 +8,7 @@ $ErrorActionPreference = 'Stop'
 $here = Split-Path -Parent $MyInvocation.MyCommand.Path
 
 if ([string]::IsNullOrEmpty($Path)) {
-    $docs = Join-Path (Split-Path -Parent (Split-Path -Parent $here)) 'docs\contracts'
+    $docs = Join-Path (Split-Path -Parent (Split-Path -Parent (Split-Path -Parent $here))) 'docs\contracts'
     $candidate = Get-ChildItem -Path $docs -Filter '统一数据契约_v*.md' |
         Sort-Object Name -Descending | Select-Object -First 1
     if ($null -eq $candidate) { Write-Host 'FAIL 未找到契约文档'; exit 2 }

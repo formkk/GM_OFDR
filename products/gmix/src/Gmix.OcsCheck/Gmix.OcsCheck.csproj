@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <OutputType>Exe</OutputType>
+    <AssemblyName>Gmix.OcsCheck</AssemblyName>
+    <RootNamespace>Gmix.OcsCheck</RootNamespace>
+    <LangVersion>latest</LangVersion>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Gmix.Core\Gmix.Core.csproj" />
+    <ProjectReference Include="..\Gmix.Vendor\Gmix.Vendor.csproj" />
+    <ProjectReference Include="..\Gmix.OcsVerify\Gmix.OcsVerify.csproj" />
+  </ItemGroup>
+
+</Project>

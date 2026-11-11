@@ -154,10 +154,10 @@ def evaluate(X: np.ndarray, steps: np.ndarray, n_scan: int, n_extra: int) -> dic
 
 def main() -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--dir", default=r"..\..\GM-IX\investigations\signal-drift\raw_batch1")
+    ap.add_argument("--dir", default=r"..\..\products\gmix\investigations\signal-drift\raw_batch1")
     ap.add_argument("--extra", nargs="*", default=[
-        r"..\..\GM-IX\results\raw-50mhz-8ms-1seg.bin",
-        r"..\..\GM-IX\results\repeat_50mhz.bin",
+        r"..\..\products\gmix\results\raw-50mhz-8ms-1seg.bin",
+        r"..\..\products\gmix\results\repeat_50mhz.bin",
     ])
     ap.add_argument("--bins", nargs="*", type=int, default=[16, 32, 64])
     ap.add_argument("--kinds", default="bins,low_psd")

@@ -11,12 +11,12 @@ obj/
 dist/
 *.zip
 
-# GM-IX 原始采集数据与运行时（体积大，不入库）
-GM-IX/results/
-GM-IX/runtime/
+# GMIX 原始采集数据与运行时（体积大，不入库）
+products/gmix/results/
+products/gmix/runtime/
 
 # LGA50 抓包原始数据（体积大，不入库；清单与哈希见 docs/data-assets.md）
-LGA50/capture/*.bin
+devices/lga50/capture/*.bin
 
 # Python 缓存
 __pycache__/
@@ -31,12 +31,12 @@ Desktop.ini
 # Office 临时锁文件
 ~$*
 
-# GM-IX 漂移验证：原始帧、原始采样与压缩包体积大，不入库（脚本与结论入库）
-GM-IX/investigations/**/raw/
-GM-IX/investigations/**/raw_batch1/
-GM-IX/investigations/**/*.zip
-GM-IX/investigations/**/*.rar
-GM-IX/investigations/signal-drift/ch0_raw_20frames.csv
+# GMIX 漂移验证：原始帧、原始采样与压缩包体积大，不入库（脚本与结论入库）
+products/gmix/investigations/**/raw/
+products/gmix/investigations/**/raw_batch1/
+products/gmix/investigations/**/*.zip
+products/gmix/investigations/**/*.rar
+products/gmix/investigations/signal-drift/ch0_raw_20frames.csv
 
 # 临时实验目录
 .tmp/
@@ -46,3 +46,7 @@ CNN/.venv/
 CNN/data/
 CNN/runs/
 CNN/pip-*.log
+
+# 本地发行产物与截图（不入库）
+releases/
+.screenshots/

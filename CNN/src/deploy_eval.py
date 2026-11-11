@@ -60,9 +60,9 @@ def rank1_groups(x: np.ndarray, n: int) -> float:
 
 
 def main() -> int:
-    files = (sorted(globmod.glob(str(Path(r"c:\Mycode\GM-OFDR\GM-IX\investigations\signal-drift\raw_batch1") / "frame_*.bin")))
-             + [r"c:\Mycode\GM-OFDR\GM-IX\results\raw-50mhz-8ms-1seg.bin",
-                r"c:\Mycode\GM-OFDR\GM-IX\results\repeat_50mhz.bin"])
+    files = (sorted(globmod.glob(str(Path(r"c:\Mycode\GM-OFDR\products\gmix\investigations\signal-drift\raw_batch1") / "frame_*.bin")))
+             + [r"c:\Mycode\GM-OFDR\products\gmix\results\raw-50mhz-8ms-1seg.bin",
+                r"c:\Mycode\GM-OFDR\products\gmix\results\repeat_50mhz.bin"])
     curves, steps = fe.load_scans(files, Path(r"c:\Mycode\GM-OFDR\CNN\data\scans_50mhz_4seg.npz"))
     print(f"采集 {len(files)} 次（20 连续 + 2 独立）")
 

@@ -2,8 +2,8 @@
 
 ## 代码归口
 
-- 产品线设备接入：`GM-IX/src/Gmix.Acquirer/`（在线采集）与 `GM-IX/src/Gmix.Import/`（离线导入）；厂商调用只经 `Gmix.Vendor`。
-- 预研平台适配器：实现 `OFDR.Contracts.IScanSource`，代码放 `ofdr_platform/src/OFDR.Infrastructure/<Adapter>/`；仅用于预研验证。
+- 产品线设备接入：`products/gmix/src/Gmix.Acquirer/`（在线采集）与 `products/gmix/src/Gmix.Import/`（离线导入）；厂商调用只经 `Gmix.Vendor`。
+- 预研平台适配器：实现 `OFDR.Contracts.IScanSource`，代码放 `research/platform/src/OFDR.Infrastructure/<Adapter>/`；仅用于预研验证。
 - 上层不得感知适配器存在；产品线与预研平台的适配器不得互相引用。
 
 ## 协议常量
