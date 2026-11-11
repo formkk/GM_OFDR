@@ -15,10 +15,19 @@ namespace Gmix.Import
     /// 也不冒充 detect.dll 的结果：数据源只有 dB 曲线，没有 P/S/A 原始样本。
     /// 产物直接落在数据根目录下，GM-IX「结果与历史」页可打开。
     /// </summary>
-    internal static class Program
+    public static class Program
     {
-        const string SchemaVersion = "0.2";
+        // 输出含 v1.0 会话组字段（session.groupId/repeatIndex/isAverage）与 group.json 组结构，按 ICD Part A §1 标 1.0
+        const string SchemaVersion = "1.0";
         const string AppVersion = "0.1.0-import";
+
+        /// <summary>供契约测试与自动化调用：解析参数并执行导入；参数错误抛 <see cref="ArgumentException"/>。</summary>
+        public static void Import(string[] args)
+        {
+            Options opt = Options.Parse(args);
+            if (opt == null) throw new ArgumentException("缺少 --capture 参数", nameof(args));
+            Run(opt);
+        }
 
         static int Main(string[] args)
         {
@@ -60,7 +69,7 @@ namespace Gmix.Import
             List<double[]> available = ParseFrames(File.ReadAllText(opt.CapturePath, Encoding.ASCII),
                 opt.PointsPerFrame, out int skipped);
             if (available.Count == 0)
-                throw new InvalidDataException("抓包文件中未解析到完整帧");
+                throw new InvalidDataException("L-01: 抓包文件中未解析到完整帧（单帧点数不足）");
 
             int frames = opt.Frames > 0 ? Math.Min(opt.Frames, available.Count) : available.Count;
 
@@ -283,6 +292,7 @@ namespace Gmix.Import
             List<string> scanIds, int frames, Options opt)
         {
             var group = new GroupDocument();
+            group.contractVersion = GroupDocument.ContractVersion;
             group.schemaVersion = SchemaVersion;
             group.groupId = groupId;
             group.createdAtUtc = createdAt;

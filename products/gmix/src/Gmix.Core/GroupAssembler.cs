@@ -191,6 +191,7 @@ namespace Gmix.Data
 
             return new GroupDocument
             {
+                contractVersion = GroupDocument.ContractVersion,
                 schemaVersion = "1.0",
                 groupId = groupId,
                 createdAtUtc = createdAtUtc,

@@ -23,6 +23,7 @@ namespace Gmix.Data.Test
                 RunRetention(ref failures);
                 RunGroupAssembly(ref failures);
                 RunLegacyCompatibility(ref failures);
+                RunContractL1(ref failures);
             }
             catch (Exception ex)
             {
@@ -537,6 +538,96 @@ namespace Gmix.Data.Test
                     GroupAssembler.AlignmentInvalid, null);
                 Check(failed.status == "failed" && failed.validCount == 0, "group.json：全失败 → failed", ref failures);
                 Check(failed.schemaVersion == "1.0", "group.json：schemaVersion 1.0", ref failures);
+                Check(failed.contractVersion == GroupDocument.ContractVersion,
+                    "group.json：contractVersion 随记录落盘（R-05）", ref failures);
+
+                var legacyGroup = JsonStore.ReadText<GroupDocument>(
+                    "{\"schemaVersion\":\"0.2\",\"groupId\":\"GR-OLD\",\"status\":\"complete\"}");
+                Check(legacyGroup != null && legacyGroup.contractVersion == null && legacyGroup.groupId == "GR-OLD",
+                    "兼容：旧 group.json 无 contractVersion 可读", ref failures);
+            }
+            finally
+            {
+                if (Directory.Exists(root)) Directory.Delete(root, true);
+            }
+        }
+
+        /// <summary>夹具路径按仓库相对位置解析，不依赖本机绝对路径。</summary>
+        static string FixturePath(string line, string name)
+        {
+            var dir = new DirectoryInfo(AppContext.BaseDirectory);
+            while (dir != null)
+            {
+                var candidate = Path.Combine(dir.FullName, "tests", "fixtures", line, name);
+                if (File.Exists(candidate)) return candidate;
+                dir = dir.Parent;
+            }
+            return Path.Combine(AppContext.BaseDirectory, "fixtures", line, name);
+        }
+
+        /// <summary>L1 契约测试：用真实抓包走导入链路，核对可判定的条款。</summary>
+        static void RunContractL1(ref int failures)
+        {
+            string fixture = FixturePath("lga50", "heng_capture_head.txt");
+            if (!File.Exists(fixture))
+            {
+                Check(false, "L1 契约：夹具缺失 " + fixture, ref failures);
+                return;
+            }
+
+            string root = Path.Combine(Path.GetTempPath(), "gmix_l1_" + Guid.NewGuid().ToString("N"));
+            try
+            {
+                Gmix.Import.Program.Import(new[] { "--capture", fixture, "--root", root, "--frames", "1" });
+
+                string[] groups = Directory.GetDirectories(root, "GR-*");
+                Check(groups.Length == 1, "L1 契约：导入产出一个组目录", ref failures);
+                if (groups.Length != 1) return;
+
+                string[] scans = Directory.GetDirectories(groups[0], "R*");
+                Check(scans.Length == 1, "L1 契约：组内含一次扫描", ref failures);
+                if (scans.Length != 1) return;
+
+                double[] dist = ArrayStore.ReadDoubles(Path.Combine(scans[0], "dist.f64"), 0);
+                double[] ps = ArrayStore.ReadDoubles(Path.Combine(scans[0], "ps.f64"), 0);
+                double[] db = ArrayStore.ReadDoubles(Path.Combine(scans[0], "ps_db.f64"), 0);
+
+                Check(dist.Length > 1 && ps.Length == dist.Length && db.Length == dist.Length,
+                    "L-01：轴点数等于数组长度", ref failures);
+                Check(dist[1] - dist[0] > 0, "L-02：步距为正", ref failures);
+
+                bool finite = true;
+                for (int i = 0; i < db.Length; i++)
+                {
+                    if (!double.IsFinite(dist[i]) || !double.IsFinite(ps[i]) || !double.IsFinite(db[i]))
+                    {
+                        finite = false;
+                        break;
+                    }
+                }
+                Check(finite, "L-03：数组无 NaN/Inf", ref failures);
+
+                Check(Math.Abs(dist[0]) < 1e-12, "C-10：距离轴零点已折进起点", ref failures);
+                Check(db.Length > 0 && Math.Abs(db[0] + 75.59) < 1e-9,
+                    "C-02：首个 dB 值等于抓包原值（未再换算）", ref failures);
+
+                bool consistent = true;
+                for (int i = 0; i < db.Length; i++)
+                {
+                    if (Math.Abs(20.0 * Math.Log10(ps[i]) - db[i]) > 1e-9)
+                    {
+                        consistent = false;
+                        break;
+                    }
+                }
+                Check(consistent, "C-02：ps_db = 20log10(ps)，未重复乘/除 2", ref failures);
+
+                GroupDocument group = JsonStore.ReadText<GroupDocument>(
+                    File.ReadAllText(Path.Combine(groups[0], "group.json")));
+                Check(group != null && group.contractVersion == GroupDocument.ContractVersion,
+                    "R-05：导入记录携带 contractVersion", ref failures);
+                Check(group != null && group.schemaVersion == "1.0",
+                    "ICD §1：导入组结构标 schemaVersion 1.0", ref failures);
             }
             finally
             {

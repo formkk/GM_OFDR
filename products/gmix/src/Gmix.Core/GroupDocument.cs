@@ -5,6 +5,11 @@ namespace Gmix.Data
     /// <summary>group.json（ICD Part A §2.2）：组元数据，由编排进程在提交前写入。</summary>
     public sealed class GroupDocument
     {
+        /// <summary>归一依据的 L1 契约版本（《统一数据契约》），记录生成时定型（R-05）。</summary>
+        public const string ContractVersion = "0.7";
+
+        /// <summary>L1 契约版本；旧数据缺失时为 null，表示早于该字段引入。</summary>
+        public string contractVersion { get; set; }
         public string schemaVersion { get; set; }
         public string groupId { get; set; }
         public string createdAtUtc { get; set; }

@@ -16,7 +16,7 @@ namespace Gmix.Data
             if (events == null) errors.Add("events.json 为空");
 
             if (scan.schemaVersion != "0.2" && scan.schemaVersion != "1.0")
-                errors.Add("scan.schemaVersion 应为 0.2（兼容 1.0）");
+                errors.Add("scan.schemaVersion 应为 0.2 或 1.0");
             if (string.IsNullOrEmpty(scan.scanId)) errors.Add("scan.scanId 为空");
             if (scan.acquisition == null) errors.Add("scan.acquisition 为空");
             if (scan.data == null) errors.Add("scan.data 为空");
@@ -95,12 +95,12 @@ namespace Gmix.Data
         {
             if (info == null || string.IsNullOrEmpty(info.file)) return;
             string path = Path.Combine(folder, info.file);
-            if (!File.Exists(path)) { errors.Add("缺少数组文件: " + info.file); return; }
+            if (!File.Exists(path)) { errors.Add("D-01: 缺少数组文件: " + info.file); return; }
             try
             {
                 var a = ArrayStore.ReadDoubles(path, expectedCount);
                 if (info.count > 0 && a.Length != info.count)
-                    errors.Add("数组点数与元数据不符: " + info.file);
+                    errors.Add("L-01: 数组点数与元数据不符: " + info.file);
             }
             catch (Exception ex) { errors.Add(ex.Message); }
         }
