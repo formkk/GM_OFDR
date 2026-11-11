@@ -35,7 +35,7 @@
 | 预研平台评审 | [platform/REVIEW_OFDR_Platform_v0.1.0.md](platform/REVIEW_OFDR_Platform_v0.1.0.md) | 预研，冻结 | 一期 v0.1.0 |
 | CNN 评估 | [cnn/评估方案.md](cnn/评估方案.md) / [评估报告.md](cnn/评估报告.md) / [落地评估.md](cnn/落地评估.md) | 独立评估线 | 不改产品线，不改契约 |
 | 培训与研究 | [Study/OFDR检测全流程培训_上位机开发者版.md](../Study/OFDR检测全流程培训_上位机开发者版.md) | 知识库 | 与契约冲突时以 `docs/contracts/` 为准 |
-| 检测系统（OCS + OFDR） | [detection/README.md](detection/README.md) | SRS v0.2 评审稿，SDD 待建 | 上位机为 LGA50 后续版本；TBD-D01~D10 |
+| 检测系统（OCS + OFDR） | [detection/README.md](detection/README.md) | SRS v0.4 评审稿，SDD 待建 | 上位机为 LGA50 后续版本；1 路径 = 1 L2 组，批次 = 64 组 |
 
 ## 3. 文档清单（按目录）
 
@@ -71,11 +71,11 @@
 
 | 文件 | 性质 |
 |---|---|
-| `README.md` | 骨架：系统边界、检测流程、文档规划、已知事实、TBD-D01~D10 |
-| `SRS_检测平台_v0.2.md` | 评审稿：范围、64 路径、测量口径、关注提示、基线、批次状态机、验收标准、TBD |
+| `README.md` | 骨架：系统边界、检测流程、文档规划、已知事实、TBD-D01~D12 |
+| `SRS_检测平台_v0.4.md` | 评审稿：范围、64 路径、测量口径、关注提示、基线、批次状态机、错误分类、目录结构、验收用例、TBD |
 | `OCS_控制协议分析.md` | 正本：1×8 / 8×8 协议提取、状态模型、实现约束、TBD-O01~O10 与测试获取方法 |
 
-SRS v0.2 已建；SDD、通道编排与时序、接线核验与基线管理设计待建。工程占位骨架：`products/gmix/src/Gmix.OcsVerify`（核验域纯逻辑）、`Gmix.OcsCheck`（编排进程）、`Gmix.OcsCheck.App`（UI，不引 Vendor）。厂商协议文档在 `references/ocs/`，夹具在 `tests/fixtures/ocs/`。
+SRS v0.4 已建；SDD、通道编排与时序、接线核验与基线管理设计待建。工程占位骨架：`products/gmix/src/Gmix.OcsVerify`（核验域纯逻辑）、`Gmix.OcsCheck`（编排进程）、`Gmix.OcsCheck.App`（UI，不引 Vendor）。厂商协议文档在 `references/ocs/`，夹具在 `tests/fixtures/ocs/`。
 
 ### 3.5 `docs/platform/` — 预研平台（冻结）
 
