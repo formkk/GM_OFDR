@@ -1,7 +1,7 @@
 # 检测平台上位机 SRS v0.4
 
 > **文档编号**：SRS-DET-001
-> **版本**：v0.4（评审稿，替代 v0.3）
+> **版本**：v0.4（定稿）
 > **日期**：2026-11-11
 > **适用产品**：OCS + OFDR 检测系统上位机（8×8 OCS 为 DUT）
 > **继承基线**：LGA50 自研上位机（GMIX）
@@ -90,7 +90,7 @@ OFDR DUT 光口 → 1×8 COM
 |---|---|
 | Path（路径） | 一条 `IN i → OUT j` 的 8×8 光路，共 64 条 |
 | Batch（批次） | 一次完整检测：64 条路径的测量与汇总。对应一个批次目录 |
-| Group（组） | **一条路径的一次完整测量**，对应 L2 `GMIX_DATA/<groupId>/` 结构；含 `group.json`、`Rxxx/`（N 次采集）、`AVG/`（N>1） |
+| Group（组） | **一条路径的一次完整测量**，对应 L2 组结构（`<groupId>/` 目录，含 `group.json`、`Rxxx/`、`AVG/`）；检测平台中组位于批次目录下（见 §6.6） |
 | Repeat（采集） | 该路径的第 k 次扫描，对应组内 `Rxxx/`，`repeatIndex = 1..N` |
 | Scan（扫描） | 与 Repeat 同义；一次扫描对应一个 `ScanId` 与一个 `Rxxx/` 目录 |
 | Baseline（基线） | 外部提供、经审批发布的参考范围文件，带 `baselineId` 与版本 |
@@ -583,6 +583,7 @@ DETECTION_DATA/                              # 检测层数据根（与 GMIX_DAT
 | TC-26 | AC-015 | 安装路径含中文与空格 | 构建 → 运行 → 写数据 | 全部通过 |
 | TC-27 | AC-016、FR-029、FR-096 | 单路径计划 N=3 | 执行该路径 | 生成 `R001..R003` + `AVG/`；OCS 在 3 次扫描期间不变；指标取 `AVG/summary.json` |
 | TC-28 | AC-016、FR-038 | N=3 时第 2 次扫描失败 | 执行该路径 | `validCount=2`；生成 `AVG/`；`status=incomplete`；`avg_incomplete` 标记 |
+| TC-29 | AC-013 | 同一 DUT、同一基线、配置不变、三设备就绪 | 连续执行 3 个完整批次 | 3 批连通性取值完全一致；IL/RL 波动在 TBD-D05a 容差内（容差定稿前记录波动范围供基线评审） |
 
 ## 8. TBD 与风险
 
@@ -681,3 +682,4 @@ DETECTION_DATA/                              # 检测层数据根（与 GMIX_DAT
 | v0.2 | 2026-11-11 | 修 P0：IL/RL 口径对齐 L2、距离单位统一为米、连通性四值定义、关注提示枚举化、批次状态机、基线生命周期、LGA50 标定校验；收紧 `detection.json` schema、引用 L1 `ScanId`、指标复用 `MetricsAggregator` |
 | v0.3 | 2026-11-11 | 修 P1/P2：检测 CSV 列、验收用例 TC-01~TC-26、NFR 可测指标、配置管理、数据维护、错误分类、批次↔组↔scan 映射、报告内容、提示呈现、来源映射 |
 | v0.4 | 2026-11-11 | 按实际检测流程重定数据组织：**一条路径 = 一个 L2 组**（N 次扫描 = 组内 `Rxxx`，N>1 生成 `AVG/`）；批次 = 64 个组的批次目录，数据根改为 `DETECTION_DATA/`；新增 §6.6 目录结构与命名规则；关闭 TBD-D06a；`detection.json` 增加 `groupId`/`averageCount`/`validCount`/`avgScanId`/`scanIds`；新增 FR-029/038/096/102~105、FR-120~125、AC-016 与 TC-27/28 |
+| v0.4-r1 | 2026-11-11 | 落盘前终审修复：① 术语表 Group 定义去除 `GMIX_DATA` 引用，与 `DETECTION_DATA` 数据根对齐；② 补 AC-013 验收用例 TC-29（重复性）。P2 七项登记至 `docs/detection/README.md` SDD 待明确项 |
