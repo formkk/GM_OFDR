@@ -18,6 +18,9 @@ products/gmix/runtime/
 # LGA50 抓包原始数据（体积大，不入库；清单与哈希见 docs/data-assets.md）
 devices/lga50/capture/*.bin
 
+# OCS 串口实测原始日志（不入库；清单与哈希见 docs/data-assets.md）
+devices/ocs/capture/
+
 # Python 缓存
 __pycache__/
 *.pyc

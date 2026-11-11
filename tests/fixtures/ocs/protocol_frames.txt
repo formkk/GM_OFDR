@@ -1,0 +1,43 @@
+# OCS serial frame samples (captured 2026-11-11)
+# Source run: devices/ocs/capture/ocs-20261111-145325 (raw.jsonl)
+# Tool: devices/ocs/tools/ocs_measure.ps1
+# Format: label | device | request | response
+# Terminator is optional on both units; samples were sent with CRLF.
+
+identity | 1x8 | <IDN?> | <GK,GK-OSW-1X8-SM-1315-FU-R-01,2026-08-16,VERSION1.0>
+identity | 8x8 | <IDN?> | <GK,GK-OSW-8x8-SM-1315-FU-R-01,2026-08-15,VERSION1.0>
+serial   | 1x8 | <SN?> | <26081501>
+serial   | 8x8 | <SN?> | <26081502>
+
+state_1x8_disconnected | 1x8 | <QURSW?> | <SW1-00>
+state_1x8_channel3     | 1x8 | <QURSW?> | <SW1-03>
+state_8x8_identity     | 8x8 | <QURSW?> | <SW01_02_03_04_05_06_07_08>
+state_8x8_single       | 8x8 | <QURSW4?> | <SW4-02>
+
+set_1x8_channel3   | 1x8 | <SETSW1-03> | <1-03>
+set_1x8_disconnect | 1x8 | <SETSW1-00> | <1-00>
+set_8x8_single     | 8x8 | <SETSW1-02> | <1-02>
+set_8x8_disconnect | 8x8 | <SETSW8-00> | <8-00>
+set_8x8_matrix     | 8x8 | <SETSW12345678> | <OK>
+
+error_unknown_command | 8x8 | <FOO?> | <ERROR>
+error_empty_frame     | 8x8 | <> | <ERROR>
+error_lowercase       | 8x8 | <idn?> | <ERROR>
+error_missing_question| 8x8 | <IDN> | <ERROR>
+error_inner_space     | 8x8 | <SETSW1-01 > | <ERROR>
+error_input_range     | 8x8 | <SETSW9-01> | <ERROR>
+error_output_range    | 8x8 | <SETSW1-9> | <ERROR>
+error_one_digit       | 8x8 | <SETSW1-1> | <ERROR>
+error_extra_field     | 8x8 | <SETSW1-01-02> | <ERROR>
+error_matrix_duplicate| 8x8 | <SETSW11234567> | <ER_SetValue>
+error_matrix_range    | 8x8 | <SETSW90000000> | <ERROR>
+error_1x8_input_range | 1x8 | <SETSW2-01> | <ERROR>
+error_1x8_matrix      | 1x8 | <SETSW11234567> | <ERROR>
+
+# Single-route duplicate is accepted: IN1 already pointed to OUT1.
+# Read-back after <SETSW2-01>: <SW00_01_03_04_05_06_07_08>
+single_route_duplicate | 8x8 | <SETSW2-01> | <2-01>
+
+# A frame without '>' is buffered; sending '>' completes and executes it.
+missing_close_part1 | 8x8 | <IDN? | (no response within 400 ms)
+missing_close_part2 | 8x8 | > | <GK,GK-OSW-8x8-SM-1315-FU-R-01,2026-08-15,VERSION1.0>
