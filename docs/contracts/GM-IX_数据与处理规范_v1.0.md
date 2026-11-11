@@ -22,13 +22,15 @@
 | 数据边界：落盘 ⇄ 长期读取 | `schemaVersion`、兼容规则、字段语义冻结 | Part A §1 | 旧数据不可读 |
 | 协作边界：模块 ⇄ 模块 | 字段锚定（校准/精度/审计/UI/测试共用一套定义） | Part A §2–§7 | 一处变更、多处失配 |
 
+**与跨设备契约的边界**：本文只约束 GM-IX 产品内部（采集 → 处理 → 落盘 → UI）。设备原始输出归一成统一帧形态的约定，以《统一数据契约 v0.7》（[`docs/contracts/统一数据契约_v0.7.md`](统一数据契约_v0.7.md)）为准；两者交界仅在**接入层**——接入层把统一帧写入本规范的测量记录。本文不重复定义帧形态，统一契约不重复定义落盘 schema 与处理链路。
+
 ### 0.2 角色与义务
 
 | 角色 | 承担者 | 义务 | 禁止 |
 |---|---|---|---|
 | 生产者 | 采集进程（独立运行、可强杀） | 只写 `_staging/<groupId>/`（Part B §7） | 执行最终提交；写 `GMIX_DATA/` 其它位置 |
 | 处理者 | 编排进程（唯一写者） | 校验 → 纯函数处理 → 原子提交；错误按 Part B §4 分类上报 | 跳过校验直接提交；`catch {}` 吞错 |
-| 消费者 | WPF UI、报表、检索 | 只读字段（`scanId`/`groupId` 等）；显示状态按 `view.json` | 解析 ID 字符串；做单位换算；直读厂商类型 |
+| 消费者 | UI（WinForms）、报表、检索 | 只读字段（`scanId`/`groupId` 等）；显示状态按 `view.json` | 解析 ID 字符串；做单位换算；直读厂商类型 |
 | 仲裁 | `SchemaValidator` | 提交与回读双重校验（长度/单调性/计数） | 放宽任何一项校验 |
 
 ### 0.3 不变量（枢轴纪律）
@@ -77,7 +79,7 @@
 | 组扩展 | v1.0 新增 `groupId/repeatIndex/isAverage/averageOf/avgMode`；旧数据缺失时按 `averageCount=1` 处理 |
 | 新增字段 | 除组字段外，其余新增字段可选；缺失表示“不支持/未启用” |
 | 语义变更 | 禁止在 v1.0 内改已有字段单位或含义；需变更时升 `v1.1` |
-| 版本号 | 不兼容变更（旧数据读取失败或字段语义改变）升主版本；仅新增可选字段升次版本；v1.0 为首个稳定基线命名 |
+| 版本号 | 不兼容变更（旧数据读取失败或字段语义改变）升主版本；新增可选 schema 字段升次版本；溯源注记字段（如 `contractVersion`，跨契约溯源用，见 §2.2）不属 schema 字段，不触发版本升级；v1.0 为首个稳定基线命名 |
 | 配置失效 | 采样率、AFE、量程、通道映射变化后，旧 `calibrationId` 失效 |
 | 数值缺失 | JSON 用 `null`，禁止 `NaN` |
 
@@ -155,6 +157,7 @@ N=1 与 N>1 共用同一套结构，只有 `AVG/` 是否存在不同。
 ```json
 {
   "schemaVersion": "1.0",
+  "contractVersion": "0.7",
   "groupId": "GR-20261105-1530-001",
   "createdAtUtc": "2026-11-05T07:30:00Z",
   "status": "complete",
@@ -185,6 +188,7 @@ N=1 与 N>1 共用同一套结构，只有 `AVG/` 是否存在不同。
 | 字段 | 类型 | 必填 | 说明 |
 |---|---|---|---|
 | `schemaVersion` | string | 是 | `"1.0"` |
+| `contractVersion` | string/null | 否 | 归一依据的 L1 契约版本（《统一数据契约》）；新记录写当前版本，旧数据缺失为 `null` |
 | `groupId` | string | 是 | `GR-YYYYMMDD-HHMM-NNN` |
 | `createdAtUtc` | string | 是 | 组创建时间（UTC） |
 | `status` | string | 是 | `complete` / `incomplete`（validCount<N 仍出 AVG）/ `failed`（未出 AVG） |
@@ -210,6 +214,7 @@ N=1 与 N>1 共用同一套结构，只有 `AVG/` 是否存在不同。
 - 某次重复失败：`validCount < averageCount`，仍可出 `AVG`，但 `status = incomplete`；
 - 组内 `configHash` 或 `calibrationId` 不一致：整组拒绝平均，`status = failed`；
 - 多段数据必须明确 `segmentIndex`，不能默认拼接。
+- `contractVersion` 是**可选附加字段**，不改变 `schemaVersion`：旧读取器忽略未知字段，新读取器遇缺失按 `null` 处理；写入方在该字段引入后一律携带（对应 L1 契约 R-05）。
 
 精度字段（自有口径，不向厂商索取）：
 
@@ -577,41 +582,23 @@ configHash = "sha256:" + lowercaseHex(SHA256(UTF-8(canonical)))
 
 ---
 
-## 10. 当前实现（v0.2 字段已落地，v1.0 组结构待实现）
+## 10. 当前实现（v1.0 组结构已落地）
 
-> 当前 `Gmix.Data` 代码仍按 `schemaVersion="0.2"` 输出；实现组结构时升级为 `"1.0"`。
-> guard 默认 0.1、全部已检出峰参与功率求和、基线统计不设符号过滤（detect 原始 dB_rel 为正值，厂商负值为标定后口径），已按本文口径修正代码与测试（2026-11-05）；RL 符号裁定（§0.3 #12）已随代码落地，含 4 条方向回归断言；`precisionBasis` 随组结构落地实现。
+> 组结构（`<groupId>/`、staging/`.ready` 交接、`AVG/`、`group.json` 原子提交、保留策略、组平均）已在 `Gmix.Core` / `Gmix.Commit` / `Gmix.Acquirer` 实现，`schemaVersion="1.0"`；`group.json` 自 2026-11-11 起携带 `contractVersion`（§2.2）。
+> guard 默认 0.1、全部已检出峰参与功率求和、基线统计不设符号过滤（detect 原始 dB_rel 为正值，厂商负值为标定后口径），已按本文口径修正代码与测试（2026-11-05）；RL 符号裁定（§0.3 #12）已随代码落地，含 4 条方向回归断言；`precisionBasis` 已随组结构实现。
 
-| 文件 | 作用 |
+| 组件 | 作用 |
 |---|---|
-| `products/gmix/src/Gmix.Data/SchemaModels.cs` | v0.2 全部 JSON 模型（scan/ofdr/events/summary/calibration/view） |
-| `products/gmix/src/Gmix.Data/CalibrationModel.cs` | 距离比例、绝对 RL、IL 斜率/截距、configHash 校验 |
-| `products/gmix/src/Gmix.Data/MetricsAggregator.cs` | 总 IL/RL、仅峰值/基线+峰值、精度、区间统计 |
-| `products/gmix/src/Gmix.Data/JsonAndFileStore.cs` | JSON、`.f64`、`raw.bin` 读写与哈希 |
-| `products/gmix/src/Gmix.Data/SchemaValidator.cs` | 长度、单调性、通道、计数等校验 |
-| `products/gmix/src/Gmix.Data/Program.cs` | 合成样例 + 公式回归测试 |
-| `products/gmix/src/Gmix.Data/build-and-test.ps1` | 一键编译 `Gmix.Data.dll` + 测试 |
+| `products/gmix/src/Gmix.Core/` | v1.0 JSON 模型（含 `GroupDocument` 组模型）、组装配、`.f64`/`raw.bin` 读写、staging 校验、保留策略 |
+| `products/gmix/src/Gmix.Commit/` | 提交管线：校验 → 组平均 → detect → `AVG/` → `group.json` → 原子提交（Part B §7） |
+| `products/gmix/src/Gmix.Acquirer/` | 采集进程：qt_acq → ofdr 处理 → 数组落盘 → `.ready` 交接 |
+| `products/gmix/src/Gmix.Data/` | 遗留独立样例与 v0.2 兼容回归工具（输出 `0.2`，保留用于旧格式验证） |
+| `products/gmix/src/Gmix.Import/` | 昊衡抓包过渡导入：按 v1.0 组结构输出（不写 summary/ofdr.json，见其文件头说明） |
+| `products/gmix/src/Gmix.App/` | WinForms 上位机：曲线显示、结果与历史回读 |
 
-测试输出（14 项断言全绿，2026-11-05）：
+回归入口：`dotnet run --project products/gmix/src/Gmix.Tests`，覆盖组结构、T-IPC-01~03 交接、保留策略、组平均、旧数据兼容、`configHash`、RL 裁定与 L1 契约测试（`RunContractL1`，断言 L-01/L-02/L-03、C-02、C-10、R-05）。2026-11-05 的 14 项断言基线已并入该套件。
 
-```text
-PASS schema validation
-PASS calibration round-trip
-PASS summary rl fields
-PASS peak_only totalRlRaw
-PASS baseline_plus_peak 应大于 peak_only
-PASS 区间插损 raw=12dB
-PASS 插损标定公式
-PASS 绝对回损公式
-PASS RL 裁定：未标定 totalRlRaw 为正电平刻度
-PASS RL 裁定：标定后 totalRl 为负值
-PASS RL 裁定：全部峰 +3dB → totalRlRaw 增大 3dB（正刻度，不取负）
-PASS RL 裁定：反射增强 → 标定后 RL 更接近 0
-PASS 精度 sample std
-PASS schema v0.2
-```
-
-样例数据生成在 `tests/fixtures/gmix/schema_v02_sample/`（50 MHz / 8 ms，含 raw、数组、JSON）。
+样例夹具：`tests/fixtures/gmix/schema_v02_sample/`（50 MHz / 8 ms，v0.2 兼容回读）；昊衡夹具 `tests/fixtures/lga50/heng_capture_head.txt`（L1 契约测试用）。
 
 ---
 
@@ -842,13 +829,13 @@ GMIX_DATA/<groupId>/R001..R00N/ + AVG/
 
 | 项 | 状态 |
 |---|---|
-| Schema 模型、JSON/数组读写 | 已实现（`Gmix.Data`，暂不含 group 字段） |
-| 组目录、`group.json`、`AVG/` | 文档已定义，代码待实现 |
+| Schema 模型、JSON/数组读写 | 已实现（`Gmix.Core` 含组模型；`Gmix.Data` 为遗留 v0.2 样例工具） |
+| 组目录、`group.json`、`AVG/` | 已实现（`Gmix.Core`/`Gmix.Commit`：staging→`.ready`→AVG→原子提交），回归通过 |
 | CalibrationModel、MetricsAggregator | 已实现 |
 | SchemaValidator、回归测试 | 已实现 |
 | Acquisition 适配器 | 复用 `Qt2144Probe`，未产品化 |
-| Conversion/Ofdr/Detect 编排 | 未形成正式服务 |
-| WPF UI | 未开始 |
+| Conversion/Ofdr/Detect 编排 | 已落地：`Gmix.Acquirer`（采集+处理出数组）→ `Gmix.Commit`（detect/AVG/组提交） |
+| UI | WinForms `Gmix.App` 已实现（曲线、结果与历史回读）；报表/检索待扩展 |
 | 厂商基线/台阶/绝对 RL 对齐 | 可选扩展，不阻塞主线 |
 
 ---
@@ -866,6 +853,8 @@ GMIX_DATA/<groupId>/R001..R00N/ + AVG/
 - [ ] 校准 `configHash` 不匹配时不输出绝对 IL/RL；
 - [ ] `groupId`/`scanId`/`avgScanId` 符合 `GR/SC/AV-YYYYMMDD-HHMM(SS)-NNN`，末段 3 位；
 - [ ] `group.json` 存在，且 `scanIds` 与 `Rxxx/` 目录一致；
+- [ ] `group.json` 携带 `contractVersion`（新记录必填；旧记录缺失读为 `null`，不补写）；
+- [ ] L1 契约测试通过：真实抓包走导入链路，断言 L-01/L-02/L-03、C-02、C-10、R-05（夹具缺失应 FAIL）；
 - [ ] N=1 时存在 `R001/`，不生成 `AVG/`；
 - [ ] N>1 时存在 `AVG/`，且 `avgScanId` 有效；
 - [ ] 平均只在线性 `ps` 域进行，`dist` 轴一致或已标记 `resampled`；
