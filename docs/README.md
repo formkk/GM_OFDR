@@ -35,7 +35,7 @@
 | 预研平台评审 | [platform/REVIEW_OFDR_Platform_v0.1.0.md](platform/REVIEW_OFDR_Platform_v0.1.0.md) | 预研，冻结 | 一期 v0.1.0 |
 | CNN 评估 | [cnn/评估方案.md](cnn/评估方案.md) / [评估报告.md](cnn/评估报告.md) / [落地评估.md](cnn/落地评估.md) | 独立评估线 | 不改产品线，不改契约 |
 | 培训与研究 | [Study/OFDR检测全流程培训_上位机开发者版.md](../Study/OFDR检测全流程培训_上位机开发者版.md) | 知识库 | 与契约冲突时以 `docs/contracts/` 为准 |
-| 检测系统（OCS + OFDR） | [detection/README.md](detection/README.md) | SRS v0.4 评审稿，SDD 待建 | 上位机为 LGA50 后续版本；1 路径 = 1 L2 组，批次 = 64 组 |
+| 检测系统（OCS + OFDR） | [detection/README.md](detection/README.md) | SRS v0.4 定稿，SDD v0.1 评审稿 | 上位机为 LGA50 后续版本；1 路径 = 1 L2 组，批次 = 64 组 |
 
 ## 3. 文档清单（按目录）
 
@@ -71,11 +71,14 @@
 
 | 文件 | 性质 |
 |---|---|
-| `README.md` | 骨架：系统边界、检测流程、文档规划、已知事实、TBD-D01~D12 |
-| `SRS_检测平台_v0.4.md` | 评审稿：范围、64 路径、测量口径、关注提示、基线、批次状态机、错误分类、目录结构、验收用例、TBD |
-| `OCS_控制协议分析.md` | 正本：1×8 / 8×8 协议提取、状态模型、实现约束、TBD-O01~O10 与测试获取方法 |
+| `README.md` | 骨架：系统边界、检测流程、文档规划、已知事实、TBD-D01~D12 与 TBD-O01~O10 状态 |
+| `SRS_检测平台_v0.4.md` | 定稿：范围、64 路径、测量口径、关注提示、基线、批次状态机、错误分类、目录结构、验收用例、TBD |
+| `SDD_检测平台_v0.1.md` | 评审稿：五工程布局、单进程模型、模块设计、批次状态机与恢复、detection.json 写入策略、错误模型、测试策略 |
+| `OCS_控制协议分析.md` | 正本：1×8 / 8×8 协议提取 + 2026-11-11 实机核对、实现约束、TBD-O01~O10 状态 |
+| `OCS_协议实测报告_2026-11-11.md` | 证据：真机时序、错误码、唯一性、状态还原、未覆盖项 |
+| `基线数据收集方案.md` | 方案：TBD-D05a/D05b 的采集、统计、参考范围与峰窗口规则；不含数值 |
 
-SRS v0.4 已建；SDD、通道编排与时序、接线核验与基线管理设计待建。工程占位骨架：`products/gmix/src/Gmix.OcsVerify`（核验域纯逻辑）、`Gmix.OcsCheck`（编排进程）、`Gmix.OcsCheck.App`（UI，不引 Vendor）。厂商协议文档在 `references/ocs/`，夹具在 `tests/fixtures/ocs/`。
+SRS v0.4 定稿、SDD v0.1 评审稿；通道编排细节归 SDD §4，接线核验与基线细化设计随实现补充。OCS 协议已完成 2026-11-11 实机核对，结论见实测报告；基线数值待 golden DUT 数据集评审。工程占位骨架 `Gmix.Ocs*` 按 SDD §1.3 迁移至 `products/detection`。厂商协议文档在 `references/ocs/`，夹具在 `tests/fixtures/ocs/`，实测工具在 `devices/ocs/tools/`。
 
 ### 3.5 `docs/platform/` — 预研平台（冻结）
 
@@ -144,9 +147,10 @@ SRS v0.4 已建；SDD、通道编排与时序、接线核验与基线管理设�
 | GM-IX 实机结果 | `products/gmix/results/` | 被 `.gitignore` 忽略 |
 | GM-IX 运行时 | `products/gmix/runtime/` | 被 `.gitignore` 忽略 |
 | 漂移验证原始帧 | `products/gmix/investigations/signal-drift/raw*` | 被 `.gitignore` 忽略 |
+| OCS 串口实测日志 | `devices/ocs/capture/` | 被 `.gitignore` 忽略 |
 | CNN 派生数据 | `CNN/data/`、`CNN/runs/` | 被 `.gitignore` 忽略 |
 
-**已建立**：[data-assets.md](data-assets.md) 记录 LGA50 抓包、GM-IX 结果与漂移数据的字节数、SHA256 和采集参数；干净克隆可验证什么、不能复现什么，见该文 §6。
+**已建立**：[data-assets.md](data-assets.md) 记录 LGA50 抓包、GM-IX 结果、漂移数据与 OCS 串口实测日志的字节数、SHA256 和采集参数；干净克隆可验证什么、不能复现什么，见该文 §7。
 
 ## 6. 新增内容放哪
 
