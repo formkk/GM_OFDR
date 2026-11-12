@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <AssemblyName>Detection.Orchestration</AssemblyName>
+    <RootNamespace>Detection.Orchestration</RootNamespace>
+    <LangVersion>latest</LangVersion>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Detection.Core\Detection.Core.csproj" />
+    <ProjectReference Include="..\Detection.Vendor\Detection.Vendor.csproj" />
+    <ProjectReference Include="..\..\..\gmix\src\Gmix.Core\Gmix.Core.csproj" />
+  </ItemGroup>
+
+</Project>

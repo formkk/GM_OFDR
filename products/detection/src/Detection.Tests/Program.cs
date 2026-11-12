@@ -36,6 +36,7 @@ namespace Detection.Tests
                 RunCompleteFrame(ref failures);
                 RunSerialization(ref failures);
                 RunFrameLog(ref failures);
+                OrchestrationTests.Run(ref failures);
             }
             catch (Exception ex)
             {
@@ -43,7 +44,7 @@ namespace Detection.Tests
                 return 2;
             }
 
-            Console.WriteLine(failures == 0 ? "PASS detection vendor" : "FAIL detection vendor: " + failures);
+            Console.WriteLine(failures == 0 ? "PASS detection vendor+orchestration" : "FAIL detection: " + failures);
             return failures == 0 ? 0 : 1;
         }
 

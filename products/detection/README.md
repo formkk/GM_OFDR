@@ -4,14 +4,15 @@
 
 ## 当前状态
 
-**阶段 A 完成**：`Detection.Vendor`（OCS 串口协议层）+ 契约测试，0 警告 0 错误，96 项断言 PASS。
+**阶段 A 完成**：`Detection.Vendor`（OCS 串口协议层）+ 契约测试。
+**阶段 B 完成**：`Detection.Orchestration`（批次状态机、路径流水线、组提交、恢复）+ 编排测试。
 
 | 工程 | 状态 | 说明 |
 |---|---|---|
-| `src/Detection.Core` | 已建 | 纯域：`ErrorClass`、`Ocs1x8State`、`Ocs8x8State`、`OcsDeviceInfo`；只依赖 BCL |
+| `src/Detection.Core` | 已建 | 纯域：错误分类、OCS 状态、路径计划、批次/路径模型、汇总口径、关注提示、命名、配置哈希 |
 | `src/Detection.Vendor` | 已建 | OCS 串口协议、错误映射、唯一性本地校验；唯一 `System.IO.Ports` 使用点 |
-| `src/Detection.Tests` | 已建 | 夹具回放、错误映射、本地拒绝、串行化、帧日志；96 项断言 |
-| `src/Detection.Orchestration` | 待建 | 批次状态机、路径编排（阶段 B） |
+| `src/Detection.Orchestration` | 已建 | `BatchRunner` 状态机、`PathExecutor` 流水线、`GroupPipeline` 提交、`MetricsReader`、`DetectionStore`、`RecoveryService` |
+| `src/Detection.Tests` | 已建 | Vendor 契约回放 + 编排全批次/失败/中止/恢复/N>1 场景 |
 | `src/Detection.App` | 待建 | WinForms 矩阵工作台（阶段 D） |
 
 ## 入口
@@ -45,7 +46,6 @@ CI 已在 `.github/workflows/ci.yml` 中增加对应两项。
 
 ## 待办
 
-- 阶段 B：`Detection.Orchestration`（批次状态机、64 路径流水线、组提交、恢复）
-- 阶段 C：判定与基线（依赖 TBD-D05a/b 的 golden DUT 数据）
+- 阶段 C：`IGroupProducer` 的真实实现（LGA50 扫描触发 + 峰值检测，TBD-D10）与基线判定
 - 阶段 D：`Detection.App`
-- `Gmix.OcsVerify` / `Gmix.OcsCheck` / `Gmix.OcsCheck.App` 三个占位工程在阶段 B/D 落地后按 SDD §1.3 迁移并删除
+- `Gmix.OcsVerify` / `Gmix.OcsCheck` / `Gmix.OcsCheck.App` 三个占位工程在阶段 D 落地后按 SDD §1.3 迁移并删除

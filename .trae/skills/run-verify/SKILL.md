@@ -25,7 +25,7 @@ description: 执行本项目的构建与验证（GM-IX 产品主线 + 检测平�
    `dotnet build products/detection/Detection.sln`
    期望：`0 个警告`、`0 个错误`。
    `dotnet run --project products/detection/src/Detection.Tests`
-   期望：`PASS detection vendor`，退出码 0。
+   期望：`PASS detection vendor+orchestration`，退出码 0。
    依赖 `System.IO.Ports`（ADR-001），首次需联网还原一次。
 3. **预研平台**（仅改动 `research/platform/src` 时）：
    `dotnet build research/platform/src/OFDR.Platform.sln`
