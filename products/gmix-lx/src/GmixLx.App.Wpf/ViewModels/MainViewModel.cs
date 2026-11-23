@@ -13,6 +13,7 @@ namespace GmixLx.App.Wpf.ViewModels
         {
             MetricTable = new MetricTableViewModel();
             MetricTable.RowActivated += OnRowActivated;
+            MetricTable.StatusChanged += OnStatusChanged;
         }
 
         public MetricTableViewModel MetricTable { get; private set; }
@@ -49,6 +50,11 @@ namespace GmixLx.App.Wpf.ViewModels
             }
 
             CurveRequested?.Invoke(data);
+        }
+
+        void OnStatusChanged(string text)
+        {
+            StatusText = text;
         }
 
         public event PropertyChangedEventHandler PropertyChanged;

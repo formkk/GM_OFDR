@@ -65,7 +65,20 @@
         </Style>
     </UserControl.Resources>
 
-    <Border Style="{StaticResource CardStyle}" Margin="0">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,0,0,8">
+            <Button Content="导出 CSV" Width="112" Height="30"
+                    Style="{StaticResource SecondaryButtonStyle}"
+                    IsEnabled="{Binding CanExport}"
+                    Click="OnExportClick" />
+        </StackPanel>
+
+        <Border Grid.Row="1" Style="{StaticResource CardStyle}" Margin="0">
         <DataGrid ItemsSource="{Binding Rows}"
                   ColumnWidth="80"
                   HorizontalAlignment="Stretch"
@@ -141,5 +154,6 @@
                                     CellStyle="{StaticResource MetricCellStyle}" />
             </DataGrid.Columns>
         </DataGrid>
-    </Border>
+        </Border>
+    </Grid>
 </UserControl>
