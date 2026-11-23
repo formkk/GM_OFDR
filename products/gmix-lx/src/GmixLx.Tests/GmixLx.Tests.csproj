@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <OutputType>Exe</OutputType>
+    <AssemblyName>GmixLx.Tests</AssemblyName>
+    <RootNamespace>GmixLx.Tests</RootNamespace>
+    <LangVersion>latest</LangVersion>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\GmixLx.Core\GmixLx.Core.csproj" />
+    <ProjectReference Include="..\GmixLx.Vendor\GmixLx.Vendor.csproj" />
+    <ProjectReference Include="..\GmixLx.Orchestration\GmixLx.Orchestration.csproj" />
+    <ProjectReference Include="..\..\..\gmix\src\Gmix.Core\Gmix.Core.csproj" />
+  </ItemGroup>
+
+</Project>

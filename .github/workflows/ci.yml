@@ -31,6 +31,13 @@ jobs:
       - name: Test detection vendor
         run: dotnet run --project products/detection/src/Detection.Tests -c Release --no-build
 
+      # GM-IX-LX：映讯 GM-IX OFDR 专用上位机（检测平台裁剪版）
+      - name: Build GM-IX-LX
+        run: dotnet build products/gmix-lx/GmixLx.sln -c Release
+
+      - name: Test GM-IX-LX
+        run: dotnet run --project products/gmix-lx/src/GmixLx.Tests -c Release --no-build
+
       # 预研平台：ofdr_platform（未接硬件，冻结）
       - name: Build platform
         run: dotnet build research/platform/src/OFDR.Platform.sln -c Release

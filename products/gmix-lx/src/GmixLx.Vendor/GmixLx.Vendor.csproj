@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <AssemblyName>GmixLx.Vendor</AssemblyName>
+    <RootNamespace>GmixLx.Vendor</RootNamespace>
+    <LangVersion>latest</LangVersion>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- 唯一 NuGet 依赖：微软官方串口包。决策与约束见 docs/detection/ADR-001_System.IO.Ports.md -->
+    <PackageReference Include="System.IO.Ports" Version="8.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\GmixLx.Core\GmixLx.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- 原生结构体布局只在程序集内可见，测试用 Marshal 尺寸/偏移做 ABI 校验。 -->
+    <InternalsVisibleTo Include="GmixLx.Tests" />
+  </ItemGroup>
+
+</Project>

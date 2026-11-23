@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <AssemblyName>GmixLx.App</AssemblyName>
+    <RootNamespace>GmixLx.App</RootNamespace>
+    <LangVersion>latest</LangVersion>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <!-- 与 GM-IX 上位机统一图标（复用产品线资产，不复制文件） -->
+    <ApplicationIcon>..\..\..\gmix\Assets\guangmai.ico</ApplicationIcon>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="..\..\..\gmix\Assets\guangmai.ico" LogicalName="GmixLx.App.guangmai.ico" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\GmixLx.Core\GmixLx.Core.csproj" />
+    <ProjectReference Include="..\GmixLx.Orchestration\GmixLx.Orchestration.csproj" />
+  </ItemGroup>
+
+</Project>

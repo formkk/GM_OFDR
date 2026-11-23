@@ -1,0 +1,55 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{9AF41CCC-D545-47C4-910B-86880FE98855}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GmixLx.Core", "src\GmixLx.Core\GmixLx.Core.csproj", "{85E5DA80-2064-4DCE-A3FC-04C7B118E072}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GmixLx.Vendor", "src\GmixLx.Vendor\GmixLx.Vendor.csproj", "{04F14CD4-8346-49A6-8686-B3DA5BFED3C5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GmixLx.Orchestration", "src\GmixLx.Orchestration\GmixLx.Orchestration.csproj", "{FA80DB3A-F91E-4E89-9673-7688DD51B90B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GmixLx.App", "src\GmixLx.App\GmixLx.App.csproj", "{36961CE6-F3BE-4D37-88A3-7D8F7476BD71}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GmixLx.Tests", "src\GmixLx.Tests\GmixLx.Tests.csproj", "{D71456EE-CF48-45EE-BD5F-69468A442C13}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{85E5DA80-2064-4DCE-A3FC-04C7B118E072}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{85E5DA80-2064-4DCE-A3FC-04C7B118E072}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{85E5DA80-2064-4DCE-A3FC-04C7B118E072}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{85E5DA80-2064-4DCE-A3FC-04C7B118E072}.Release|Any CPU.Build.0 = Release|Any CPU
+		{04F14CD4-8346-49A6-8686-B3DA5BFED3C5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{04F14CD4-8346-49A6-8686-B3DA5BFED3C5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{04F14CD4-8346-49A6-8686-B3DA5BFED3C5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{04F14CD4-8346-49A6-8686-B3DA5BFED3C5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FA80DB3A-F91E-4E89-9673-7688DD51B90B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FA80DB3A-F91E-4E89-9673-7688DD51B90B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FA80DB3A-F91E-4E89-9673-7688DD51B90B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FA80DB3A-F91E-4E89-9673-7688DD51B90B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{36961CE6-F3BE-4D37-88A3-7D8F7476BD71}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{36961CE6-F3BE-4D37-88A3-7D8F7476BD71}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{36961CE6-F3BE-4D37-88A3-7D8F7476BD71}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{36961CE6-F3BE-4D37-88A3-7D8F7476BD71}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D71456EE-CF48-45EE-BD5F-69468A442C13}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D71456EE-CF48-45EE-BD5F-69468A442C13}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D71456EE-CF48-45EE-BD5F-69468A442C13}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D71456EE-CF48-45EE-BD5F-69468A442C13}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{85E5DA80-2064-4DCE-A3FC-04C7B118E072} = {9AF41CCC-D545-47C4-910B-86880FE98855}
+		{04F14CD4-8346-49A6-8686-B3DA5BFED3C5} = {9AF41CCC-D545-47C4-910B-86880FE98855}
+		{FA80DB3A-F91E-4E89-9673-7688DD51B90B} = {9AF41CCC-D545-47C4-910B-86880FE98855}
+		{36961CE6-F3BE-4D37-88A3-7D8F7476BD71} = {9AF41CCC-D545-47C4-910B-86880FE98855}
+		{D71456EE-CF48-45EE-BD5F-69468A442C13} = {9AF41CCC-D545-47C4-910B-86880FE98855}
+	EndGlobalSection
+EndGlobal

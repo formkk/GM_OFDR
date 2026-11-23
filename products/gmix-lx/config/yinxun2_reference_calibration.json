@@ -1,0 +1,54 @@
+{
+  "device": "YinXun_2",
+  "kind": "reference_calibration",
+  "status": "pilot_axis_beta_device_scale_verified",
+  "created": "2026-11-16",
+  "updated": "2026-11-17",
+  "reference_device": "LGA50-D",
+  "reference_data": "CNN/data/rawdata/capture_20261113_142707",
+  "axis": {
+    "a": 0.964511776,
+    "b_m": 1.089573026
+  },
+  "db": {
+    "alpha": 0.9985,
+    "alpha_std_error": 0.0051,
+    "alpha_status": "verified 2026-11-17：EXFO FVA-3150 单支路 0/1/2/3/5/10 dB 正反扫（1310 nm，40 帧/点）；全段 α=0.9985±0.0051、R²=0.99974；正向 1.0044、反向 0.9927、重复性 0.0117；2–10 dB α=1.0063",
+    "beta": 94.183066,
+    "beta_status": "runtime_unused：IL 为差值截距抵消；RL 用设备内部参考；beta 随会话漂移（TBD-Y11）",
+    "transfer_slope_to_lga50": 0.941380,
+    "transfer_slope_status": "historical_pilot：2026-11-16 映讯→LGA50 电平传递拟合，含参考系差异；不再用于 IL 刻度"
+  },
+  "device_scale_calibration": {
+    "date": "2026-11-17",
+    "method": "FVA-3150 单支路 0/1/2/3/5/10 dB 正反扫；端面积分功率 − 内部参考积分功率；α = −slope/2",
+    "wavelength_nm": 1310,
+    "attenuator": "EXFO FVA-3150 S/N 63468882",
+    "data": "devices/yinxun2/capture/ilcal_20261117",
+    "result": "devices/yinxun2/capture/ilcal_20261117/il_calibration_20261117.json",
+    "alpha_all": 0.9985,
+    "alpha_std_error": 0.0051,
+    "alpha_forward": 1.0044,
+    "alpha_reverse": 0.9927,
+    "alpha_2_10db": 1.0063,
+    "r2": 0.999738,
+    "alpha_repeatability": 0.0117,
+    "note": "0/1 dB 正反向差 −0.284/−0.191 dB 为衰减器低端迟滞；2–10 dB ≤0.103 dB"
+  },
+  "internal_reference_peak_m": 1.089573,
+  "level_offset_db": -90.0,
+  "level_offset_status": "adopted_vendor_90db_20261117 (TBD-Y17)：OCS_test 的 rl_offset_db 默认 −90.0 dB（显示/频谱平移，不是绝对 RL）；实测同帧差 −89.96/−89.67/−89.85（均值 −89.83），按厂商值取 −90.0",
+  "yin_pitch_m": 0.0004258363425773126,
+  "lga50_point_count": 82152,
+  "lga50_pitch_m": 0.000185,
+  "mask_before_lga50_m": 0.2,
+  "vendor_roi_start_m": 3.5,
+  "qualification": "轴/β：与 LGA50 的一致性传递，非计量学绝对；dB α：2026-11-17 用已知衰减（FVA-3150）单支路验证。",
+  "limitations": [
+    "轴/β 传递仅 IN1 with OUT1/2/5/6（4/64 路）；α 为无 OCS 的单支路直连标定。",
+    "dB mapping RMS 1.54 dB（轴/β 传递）；不用于绝对 IL/RL。",
+    "dB 刻度 α=0.9985±0.0051 已由 0–10 dB 衰减扫描验证；0/1 dB 正反向差 −0.284/−0.191 dB 为衰减器低端迟滞，2–10 dB ≤0.103 dB。",
+    "No IL/RL transfer coefficients yet.",
+    "No independent hold-out validation."
+  ]
+}
