@@ -79,3 +79,24 @@ dotnet run --project src/GmixLx.Tests -- --live-yinxun2-table
 - 曲线与指标必须处于产品参考系（叠加 `level_offset_db`），换算只在 `YinXun2SingleSession` 出口发生一次。
 - 配置是不可变快照；参考标定变化需同步 `config/yinxun2_reference_calibration.json`。
 - 不引入新的第三方依赖；`System.IO.Ports` 仍是唯一 NuGet 依赖（OCS 串口）。
+
+## 5 发布与部署（M-45）
+
+发布形态：**自包含文件夹**（`win-x64`、非单文件），现场免装 .NET 10 Desktop Runtime。命令在 `products/gmix-lx` 下执行：
+
+```powershell
+dotnet publish src/GmixLx.App.Wpf -c Release -r win-x64 --self-contained true -p:PublishSingleFile=false -o releases/GM-IX-LX
+```
+
+部署目录需保持与仓库相同的相对层级，`AppPaths` 会从 exe 目录向上查找：
+
+```text
+GM-IX-LX/
+├─ GmixLx.App.Wpf.exe + 运行时文件
+├─ references/YinXun_2/customer/
+└─ products/gmix-lx/config/yinxun2_reference_calibration.json
+```
+
+实测：409 个文件 / 140.1 MB；发布 exe 可直接启动，单实例第二份退出码 0，exe 图标可提取。缺失 SDK 目录或参考标定时，开始测试会在状态栏报「未找到 SDK 目录 / 未找到参考标定文件」，不静默兜底。
+
+> 发布产物只允许包含一套 App（WPF 或 WinForms），由 M-46 固化打包规则。

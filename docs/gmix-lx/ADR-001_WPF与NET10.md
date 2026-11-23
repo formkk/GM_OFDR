@@ -75,7 +75,11 @@ GM-IX-LX 的迁移起点为 **WinForms + .NET 8**；2026-11-23 已完成 M-12，
 10. **阶段 3 性能验证后设正式决策门**：未达到 §5.4 指标则停止 WPF 迁移或回退，不在阶段 4 继续投入。
     - **M-36 决策（2026-11-23，已评审）：接受偏差，继续 WPF 迁移。** 依据：M-35 优化后首帧 8.32 ms（中位数，目标 7.92 ms，超约 5%），但远低于 60 fps 单帧预算 16.7 ms；稳态曲线 p50 6.53–6.74 ms 与 WinForms 基线持平，平移/叠加/内存（0 B）全部达标；曲线/缩放/叠加的 p95 中位数达标，偶发 8.3–12.9 ms 离群仅出现于 p95 且 p50 不变、内存不增长，已确认为整机调度噪声（沙箱内外均出现），非渲染路径退化。偏差记录于 [UI 基线 §8.1](基线_UI_2026-11-23.md)，正式验收前须在静止机器复测归档。
     - 同次决策关闭 TBD-LX-04：曲线渲染保留 `DrawingContext` 逐像素 `DrawLine` + `MinMaxPyramid`，不引入 `WriteableBitmap`（`StreamGeometry` 实测更慢已回退；`WriteableBitmap` 对首帧字形/资源初始化无帮助，且会增加 DPI/抗锯齿/交互重绘复杂度）。
-11. 部署基线：默认 framework-dependent、Windows 10/11 x64；是否 self-contained/单文件由阶段 4 决定并记录（TBD-LX-06）。
+11. 部署基线：**自包含文件夹发布**（`win-x64`、`--self-contained true`、非单文件），Windows 10/11 x64；TBD-LX-06 已关闭（2026-11-23）。发布命令（在 `products/gmix-lx` 下）：
+    ```powershell
+    dotnet publish src/GmixLx.App.Wpf -c Release -r win-x64 --self-contained true -p:PublishSingleFile=false
+    ```
+    理由：现场可能离线，自包含免装 .NET 10 Desktop Runtime；实测发布目录 409 个文件 / 140.1 MB，可直接启动；单文件仍需释放原生依赖、首启更慢，且部署目录必须携带 `references/` 与 `config/`，单文件收益有限。发布目录需与 `references/YinXun_2/customer`、`products/gmix-lx/config/` 保持与仓库相同的相对层级，`AppPaths` 才能从 exe 目录向上解析。
 12. 文档同步：本 ADR、迁移清单、`products/gmix-lx/README.md`、`docs/README.md` 文档地图。
 
 ## 6 验证方法
@@ -108,7 +112,7 @@ dotnet run --project src/GmixLx.Tests --no-build
 | TBD-LX-03 | WPF 版是否随首版一起发布，还是先内部并行一个版本 | 开放，产品 |
 | TBD-LX-04 | 曲线控件最终渲染方案（DrawingVisual vs WriteableBitmap） | **已关闭（2026-11-23，M-36）**：`DrawingContext` 逐像素 `DrawLine` + `MinMaxPyramid`；不采用 `WriteableBitmap` |
 | TBD-LX-05 | 关键界面截图基线与视觉验收人 | 开放，产品/测试 |
-| TBD-LX-06 | 部署形态（framework-dependent / self-contained / 单文件） | 开放，阶段 4 |
+| TBD-LX-06 | 部署形态（framework-dependent / self-contained / 单文件） | **已关闭（2026-11-23，M-45）**：自包含文件夹发布（win-x64，非单文件），实测 409 文件 / 140.1 MB 可启动 |
 | TBD-LX-07 | GM-IX-LX 的 SRS/SDD 范围与责任人 | 部分关闭：SDD v0.1 骨架已建立（M-06）；是否补 SRS 待定 |
 
 ## 8 追溯

@@ -74,7 +74,7 @@
 | M-42 | CSV 导出（指标表、曲线） **（已完成 2026-11-23：指标表页新增「导出 CSV」，直接复用 `MetricTableCsv` 列序与格式化，UTF-8 BOM；无结果时按钮禁用并提示；曲线 CSV 沿用 M-40 设备页「保存数据」（`distance_m,reflection_db`），`CurveForm` 本身无导出，保持一致；验证见[基线 §11](基线_UI_2026-11-23.md)）** | 高 | 文件内容与列序一致 |
 | M-43 | 状态栏、错误提示、进度反馈 **（已完成 2026-11-23：指标表页补齐连接卡/判据卡/开始·停止，`MetricTableViewModel.Start` 按 WinForms 顺序校验并驱动 `YinXun2Station` + `MetricTableRunner`；状态栏文案与语气（就绪/采集进行中/完成/已停止/失败/参数错误）与 WinForms 一致，颜色由 `StatusTone` 驱动；路径解析收敛到 `AppPaths`；验证见[基线 §12](基线_UI_2026-11-23.md)；真机采集待 M-16/M-51）** | 中 | 与现有文案一致 |
 | M-44 | SDK/标定路径解析、图标资源、单实例行为 **（已完成 2026-11-23：路径统一由 `AppPaths` 从 exe 目录向上解析（部署时把 `references/YinXun_2/customer` 与 `products/gmix-lx/config/…` 保持在 exe 的可达父级即可）；窗口图标用 pack URI、exe 图标经 `ApplicationIcon` 嵌入（实测可提取 32×32）；单实例用命名 Mutex，第二份实例置前已有窗口后静默退出（实测退出码 0），验证见[基线 §13](基线_UI_2026-11-23.md)）** | 中 | 部署后可运行 |
-| M-45 | 确定部署形态（framework-dependent / self-contained / 单文件）并记录 | 中 | ADR TBD-LX-06 关闭 |
+| M-45 | 确定部署形态（framework-dependent / self-contained / 单文件）并记录 **（已完成 2026-11-23：自包含文件夹发布 win-x64、非单文件；`dotnet publish -c Release -r win-x64 --self-contained true` 实测 409 文件 / 140.1 MB，发布 exe 启动存活、单实例与图标正常；记录于 [ADR-001 §5 第 11 条](ADR-001_WPF与NET10.md) 与 README §5，TBD-LX-06 关闭）** | 中 | ADR TBD-LX-06 关闭 |
 | M-46 | 打包规则：发布物只含一套 App（`GmixLx.App` 或 `GmixLx.App.Wpf`） | 高 | 发布目录检查 |
 
 ### 阶段 5：验收与切换（M-5x）
