@@ -691,19 +691,19 @@ namespace GmixLx.App.Wpf.Visualization
         {
             if (_curvePen != null) return;
 
-            _backgroundBrush = FindBrush("CardBackgroundBrush", Color.FromRgb(255, 255, 255));
-            _textBrush = FindBrush("TextMutedBrush", Color.FromRgb(106, 114, 125));
-            _peakBrush = FindBrush("PeakBrush", Color.FromRgb(206, 84, 60));
-            _roiBrush = FindBrush("RoiBackgroundBrush", Color.FromRgb(234, 242, 254));
+            _backgroundBrush = FindBrush("CardBackgroundBrush", Color.FromRgb(35, 37, 40));
+            _textBrush = FindBrush("TextMutedBrush", Color.FromRgb(154, 160, 166));
+            _peakBrush = FindBrush("PeakBrush", Color.FromRgb(255, 138, 101));
+            _roiBrush = FindBrush("RoiBackgroundBrush", Color.FromArgb(0x2E, 0x5A, 0xA9, 0xFF));
 
-            _gridPen = FindPen("GridLineBrush", Color.FromRgb(232, 236, 242), 1.0);
-            _axisPen = FindPen("AxisBrush", Color.FromRgb(150, 158, 170), 1.0);
-            _curvePen = FindPen("CurveBrush", Color.FromRgb(24, 90, 188), 1.0);
-            _cursorAPen = DashPen("CursorABrush", Color.FromRgb(214, 122, 34), DashStyles.Dash);
-            _cursorBPen = DashPen("CursorBBrush", Color.FromRgb(28, 132, 108), DashStyles.Dash);
+            _gridPen = FindPen("GridLineBrush", Color.FromRgb(47, 50, 54), 1.0);
+            _axisPen = FindPen("AxisBrush", Color.FromRgb(110, 115, 120), 1.0);
+            _curvePen = FindPen("CurveBrush", Color.FromRgb(90, 169, 255), 1.0);
+            _cursorAPen = DashPen("CursorABrush", Color.FromRgb(240, 160, 48), DashStyles.Dash);
+            _cursorBPen = DashPen("CursorBBrush", Color.FromRgb(53, 193, 160), DashStyles.Dash);
             _hoverPen = DashPen("HoverBrush", Color.FromRgb(140, 146, 156), DashStyles.Dot);
-            _peakPen = DashPen("PeakBrush", Color.FromRgb(206, 84, 60), DashStyles.Dot);
-            _thresholdPen = DashPen("ThresholdBrush", Color.FromRgb(200, 208, 220), DashStyles.Dash);
+            _peakPen = DashPen("PeakBrush", Color.FromRgb(255, 138, 101), DashStyles.Dot);
+            _thresholdPen = DashPen("ThresholdBrush", Color.FromRgb(90, 96, 104), DashStyles.Dash);
         }
 
         FormattedText FormatCached(string text, double size, Brush brush)

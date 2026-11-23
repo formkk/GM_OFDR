@@ -2,37 +2,45 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:sys="clr-namespace:System;assembly=System.Runtime">
 
-    <!-- ===== 颜色：与 WinForms 版逐项对齐 ===== -->
-    <Color x:Key="PageBackgroundColor">#F3F5F8</Color>
-    <Color x:Key="CardBackgroundColor">#FFFFFF</Color>
-    <Color x:Key="BorderColor">#DBE0E7</Color>
-    <Color x:Key="AccentColor">#185ABC</Color>
-    <Color x:Key="AccentPressedColor">#124898</Color>
-    <Color x:Key="TextPrimaryColor">#212529</Color>
-    <Color x:Key="TextMutedColor">#6A727D</Color>
-    <Color x:Key="DangerColor">#BE2D2D</Color>
-    <Color x:Key="SuccessColor">#16825D</Color>
-    <Color x:Key="RowFailureColor">#F2F3F5</Color>
-    <Color x:Key="GroupBandOddColor">#FFFFFF</Color>
-    <Color x:Key="GroupBandEvenColor">#F0F5FC</Color>
-    <Color x:Key="GroupTintColor">#E2ECFA</Color>
-    <Color x:Key="GridLineColor">#E8ECF2</Color>
-    <Color x:Key="AxisColor">#969EAA</Color>
-    <Color x:Key="CurveColor">#185ABC</Color>
-    <Color x:Key="PeakColor">#CE543C</Color>
-    <Color x:Key="RoiBackgroundColor">#EAF2FE</Color>
-    <Color x:Key="CursorAColor">#D67A22</Color>
-    <Color x:Key="CursorBColor">#1C846C</Color>
-    <Color x:Key="CursorBandColor">#16185ABC</Color>
-    <Color x:Key="ThresholdColor">#C8D0DC</Color>
+    <!-- ===== 颜色：参考 VIAVI PCTMax 炭黑+蓝仪表风格（2026-11-23 改版） ===== -->
+    <Color x:Key="PageBackgroundColor">#1B1C1E</Color>
+    <Color x:Key="CardBackgroundColor">#232528</Color>
+    <Color x:Key="InputBackgroundColor">#1D1F22</Color>
+    <Color x:Key="HeaderBackgroundColor">#2B3138</Color>
+    <Color x:Key="BorderColor">#383B40</Color>
+    <Color x:Key="AccentColor">#426CA9</Color>
+    <Color x:Key="AccentPressedColor">#35578A</Color>
+    <Color x:Key="ActionColor">#3FBF5F</Color>
+    <Color x:Key="ActionPressedColor">#35A852</Color>
+    <Color x:Key="TextPrimaryColor">#E6E8EB</Color>
+    <Color x:Key="TextMutedColor">#9AA0A6</Color>
+    <Color x:Key="DangerColor">#E5534B</Color>
+    <Color x:Key="SuccessColor">#4CC46A</Color>
+    <Color x:Key="RowFailureColor">#2C2627</Color>
+    <Color x:Key="GroupBandOddColor">#232528</Color>
+    <Color x:Key="GroupBandEvenColor">#262A2F</Color>
+    <Color x:Key="GroupTintColor">#2C3644</Color>
+    <Color x:Key="GridLineColor">#2F3236</Color>
+    <Color x:Key="AxisColor">#6E7378</Color>
+    <Color x:Key="CurveColor">#5AA9FF</Color>
+    <Color x:Key="PeakColor">#FF8A65</Color>
+    <Color x:Key="RoiBackgroundColor">#2E5AA9FF</Color>
+    <Color x:Key="CursorAColor">#F0A030</Color>
+    <Color x:Key="CursorBColor">#35C1A0</Color>
+    <Color x:Key="CursorBandColor">#1E5AA9FF</Color>
+    <Color x:Key="ThresholdColor">#5A6068</Color>
     <Color x:Key="HoverColor">#8C929C</Color>
-    <Color x:Key="HoverBackgroundColor">#EEF3FB</Color>
+    <Color x:Key="HoverBackgroundColor">#2C3036</Color>
 
     <SolidColorBrush x:Key="PageBackgroundBrush" Color="{StaticResource PageBackgroundColor}" />
     <SolidColorBrush x:Key="CardBackgroundBrush" Color="{StaticResource CardBackgroundColor}" />
+    <SolidColorBrush x:Key="InputBackgroundBrush" Color="{StaticResource InputBackgroundColor}" />
+    <SolidColorBrush x:Key="HeaderBackgroundBrush" Color="{StaticResource HeaderBackgroundColor}" />
     <SolidColorBrush x:Key="BorderBrush" Color="{StaticResource BorderColor}" />
     <SolidColorBrush x:Key="AccentBrush" Color="{StaticResource AccentColor}" />
     <SolidColorBrush x:Key="AccentPressedBrush" Color="{StaticResource AccentPressedColor}" />
+    <SolidColorBrush x:Key="ActionBrush" Color="{StaticResource ActionColor}" />
+    <SolidColorBrush x:Key="ActionPressedBrush" Color="{StaticResource ActionPressedColor}" />
     <SolidColorBrush x:Key="TextPrimaryBrush" Color="{StaticResource TextPrimaryColor}" />
     <SolidColorBrush x:Key="TextMutedBrush" Color="{StaticResource TextMutedColor}" />
     <SolidColorBrush x:Key="DangerBrush" Color="{StaticResource DangerColor}" />
@@ -53,7 +61,7 @@
     <SolidColorBrush x:Key="HoverBrush" Color="{StaticResource HoverColor}" />
     <SolidColorBrush x:Key="HoverBackgroundBrush" Color="{StaticResource HoverBackgroundColor}" />
 
-    <!-- ===== 字体与字号（WinForms pt → WPF DIP，1pt = 1.333DIP）===== -->
+    <!-- ===== 字体与字号 ===== -->
     <FontFamily x:Key="UiFontFamily">Microsoft YaHei</FontFamily>
     <FontFamily x:Key="MonoFontFamily">Consolas</FontFamily>
 
@@ -72,7 +80,7 @@
     <sys:Double x:Key="TableRowHeight">26</sys:Double>
     <sys:Double x:Key="TableHeaderHeight">40</sys:Double>
 
-    <CornerRadius x:Key="CardCornerRadius">0</CornerRadius>
+    <CornerRadius x:Key="CardCornerRadius">2</CornerRadius>
     <Thickness x:Key="CardBorderThickness">1</Thickness>
     <Thickness x:Key="CardPadding">14,8,14,8</Thickness>
     <Thickness x:Key="PagePadding">16,12,16,12</Thickness>
@@ -113,7 +121,7 @@
     </Style>
 
     <Style x:Key="PrimaryButtonStyle" TargetType="Button">
-        <Setter Property="Background" Value="{StaticResource AccentBrush}" />
+        <Setter Property="Background" Value="{StaticResource ActionBrush}" />
         <Setter Property="Foreground" Value="White" />
         <Setter Property="BorderThickness" Value="0" />
         <Setter Property="Padding" Value="16,6" />
@@ -126,16 +134,16 @@
                 <ControlTemplate TargetType="Button">
                     <Border x:Name="Bd"
                             Background="{TemplateBinding Background}"
-                            CornerRadius="0"
+                            CornerRadius="2"
                             Padding="{TemplateBinding Padding}">
                         <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="Bd" Property="Background" Value="{StaticResource AccentPressedBrush}" />
+                            <Setter TargetName="Bd" Property="Background" Value="{StaticResource ActionPressedBrush}" />
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="False">
-                            <Setter Property="Opacity" Value="0.45" />
+                            <Setter Property="Opacity" Value="0.4" />
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -145,7 +153,7 @@
 
     <Style x:Key="SecondaryButtonStyle" TargetType="Button">
         <Setter Property="Background" Value="{StaticResource CardBackgroundBrush}" />
-        <Setter Property="Foreground" Value="{StaticResource AccentBrush}" />
+        <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
         <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}" />
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="Padding" Value="16,6" />
@@ -159,7 +167,7 @@
                             Background="{TemplateBinding Background}"
                             BorderBrush="{TemplateBinding BorderBrush}"
                             BorderThickness="{TemplateBinding BorderThickness}"
-                            CornerRadius="0"
+                            CornerRadius="2"
                             Padding="{TemplateBinding Padding}">
                         <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
                     </Border>
@@ -168,7 +176,7 @@
                             <Setter TargetName="Bd" Property="Background" Value="{StaticResource HoverBackgroundBrush}" />
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="False">
-                            <Setter Property="Opacity" Value="0.45" />
+                            <Setter Property="Opacity" Value="0.4" />
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>

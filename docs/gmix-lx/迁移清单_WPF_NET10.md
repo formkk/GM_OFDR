@@ -47,7 +47,7 @@
 | 编号 | 任务 | 优先级 | 验收方法 |
 |---|---|---|---|
 | M-20 | 新建 `GmixLx.App.Wpf`（`net10.0-windows`、`UseWPF`、x64），加入 `GmixLx.sln` **（已完成 2026-11-23：构建 0/0，启动验证通过）** | 高 | 构建通过 |
-| M-21 | 设计令牌资源字典（配色、字体、间距、圆角） **（已完成 2026-11-23：`Themes/Tokens.xaml`，构建 0/0，启动验证通过）** | 高 | 与 WinForms 版视觉一致 |
+| M-21 | 设计令牌资源字典（配色、字体、间距、圆角） **（已完成 2026-11-23：`Themes/Tokens.xaml`，构建 0/0，启动验证通过；2026-11-23 按 VIAVI PCTMax 风格改版为炭黑+蓝，见[基线 §15](基线_UI_2026-11-23.md)）** | 高 | 与 WinForms 版视觉一致 |
 | M-22 | 主窗口壳：两个页签 + 状态栏 + 窗口图标 **（已完成 2026-11-23：MainWindow + DeviceDebugView/MetricTableView 占位，状态栏绑定 MainViewModel，启动验证通过）** | 高 | 可启动、可切换 |
 | M-23 | 指标表：64 行 × 11 列、8 行分组底色、失败样式、ToolTip、双击事件 **（已完成 2026-11-23：两行表头、失败行灰底+破折号、ToolTip 绑定、双击 RowActivated；截图见基线文档 §6）** | 高 | 与 WinForms 版逐项比对 |
 | M-24 | 高 DPI 清单（PerMonitorV2） **（已完成 2026-11-23：`app.manifest` 声明 PerMonitorV2；实测 PerMonitorV2=True、窗口 DPI 144；96/144/192 渲染检查 11 列完整）** | 中 | 100%/150%/200% 缩放正常 |

@@ -12,7 +12,10 @@
         </Style>
 
         <Style x:Key="ParamInputStyle" TargetType="TextBox">
-            <Setter Property="Background" Value="{StaticResource CardBackgroundBrush}" />
+            <Setter Property="Background" Value="{StaticResource InputBackgroundBrush}" />
+            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
+            <Setter Property="CaretBrush" Value="{StaticResource TextPrimaryBrush}" />
+            <Setter Property="SelectionBrush" Value="{StaticResource AccentBrush}" />
             <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}" />
             <Setter Property="BorderThickness" Value="1" />
             <Setter Property="FontFamily" Value="{StaticResource MonoFontFamily}" />
@@ -25,7 +28,7 @@
         </Style>
 
         <Style x:Key="PeakHeaderStyle" TargetType="DataGridColumnHeader">
-            <Setter Property="Background" Value="{StaticResource GroupTintBrush}" />
+            <Setter Property="Background" Value="{StaticResource HeaderBackgroundBrush}" />
             <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
             <Setter Property="FontFamily" Value="{StaticResource UiFontFamily}" />
             <Setter Property="FontSize" Value="{StaticResource FontSizeSmall}" />
