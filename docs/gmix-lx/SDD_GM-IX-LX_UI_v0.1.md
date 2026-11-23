@@ -212,6 +212,8 @@ WPF 主窗口壳由 `MainWindow` + `Views/DeviceDebugView` + `Views/MetricTableV
 - 采集在后台线程执行（`Task.Run`），结果回到 UI 线程渲染；单次与连续互斥，A/B 拖动结束会先停止连续采集再按新 ROI 重采；窗口关闭时释放会话与取消令牌。
 - 峰后处理、事件表过滤（0.05 m 前伪峰不进表）、CSV 列序（`distance_m,reflection_db`）与 WinForms 版一致。
 
+指标表页（M-43）补齐连接卡（1×8/8×8 串口、采样次数）与判据卡（空间/时间平均、A/D、阈值余量），由 `MetricTableViewModel.Start()` 校验参数并驱动 `YinXun2Station` + `MetricTableRunner`；逐行结果经 `SynchronizationContext` 回投 UI。状态栏文案与颜色由 `MainViewModel.StatusText` + `StatusTone` 驱动（DataTrigger 映射 Token 画刷），文案与 WinForms `MainForm` 逐条对齐。仓库内相对路径（SDK、参考标定）统一由 `AppPaths` 解析，设备页与指标表共用。
+
 ## 9 验收要点
 
 1. 主窗口两页签可切换，状态栏正常。

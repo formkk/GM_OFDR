@@ -25,5 +25,17 @@ namespace GmixLx.App.Wpf.Views
             var viewModel = DataContext as MetricTableViewModel;
             if (viewModel != null) viewModel.SaveCsv();
         }
+
+        void OnStartClick(object sender, System.Windows.RoutedEventArgs e)
+        {
+            var viewModel = DataContext as MetricTableViewModel;
+            if (viewModel != null) viewModel.Start();
+        }
+
+        void OnStopClick(object sender, System.Windows.RoutedEventArgs e)
+        {
+            var viewModel = DataContext as MetricTableViewModel;
+            if (viewModel != null) viewModel.Stop();
+        }
     }
 }

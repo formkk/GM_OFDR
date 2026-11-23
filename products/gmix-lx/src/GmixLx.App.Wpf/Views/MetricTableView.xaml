@@ -63,22 +63,80 @@
                 </DataTrigger>
             </Style.Triggers>
         </Style>
+        <Style x:Key="FieldLabelStyle" TargetType="TextBlock" BasedOn="{StaticResource MutedTextStyle}">
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="Margin" Value="0,0,6,0" />
+        </Style>
+
+        <Style x:Key="TableInputStyle" TargetType="TextBox">
+            <Setter Property="Background" Value="{StaticResource CardBackgroundBrush}" />
+            <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="FontFamily" Value="{StaticResource MonoFontFamily}" />
+            <Setter Property="FontSize" Value="{StaticResource FontSizeMono}" />
+            <Setter Property="Height" Value="26" />
+            <Setter Property="Padding" Value="4,2" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+        </Style>
     </UserControl.Resources>
 
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,0,0,8">
-            <Button Content="导出 CSV" Width="112" Height="30"
-                    Style="{StaticResource SecondaryButtonStyle}"
-                    IsEnabled="{Binding CanExport}"
-                    Click="OnExportClick" />
-        </StackPanel>
+        <!-- 连接与操作 -->
+        <Border Grid.Row="0" Style="{StaticResource CardStyle}" Margin="0,0,0,8">
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                <TextBlock Text="1×8 串口" Style="{StaticResource FieldLabelStyle}" />
+                <TextBox Style="{StaticResource TableInputStyle}" Width="72"
+                         Text="{Binding Com1x8Text, UpdateSourceTrigger=PropertyChanged}" />
+                <TextBlock Text="8×8 串口" Style="{StaticResource FieldLabelStyle}" Margin="12,0,6,0" />
+                <TextBox Style="{StaticResource TableInputStyle}" Width="72"
+                         Text="{Binding Com8x8Text, UpdateSourceTrigger=PropertyChanged}" />
+                <TextBlock Text="采样次数" Style="{StaticResource FieldLabelStyle}" Margin="12,0,6,0" />
+                <TextBox Style="{StaticResource TableInputStyle}" Width="60"
+                         Text="{Binding SamplesText, UpdateSourceTrigger=PropertyChanged}" />
 
-        <Border Grid.Row="1" Style="{StaticResource CardStyle}" Margin="0">
+                <Button Content="开始测试" Width="96" Height="30" Margin="16,0,8,0"
+                        Style="{StaticResource PrimaryButtonStyle}"
+                        IsEnabled="{Binding CanStart}"
+                        Click="OnStartClick" />
+                <Button Content="停止" Width="72" Height="30" Margin="0,0,8,0"
+                        Style="{StaticResource SecondaryButtonStyle}"
+                        IsEnabled="{Binding CanStop}"
+                        Click="OnStopClick" />
+                <Button Content="导出 CSV" Width="96" Height="30"
+                        Style="{StaticResource SecondaryButtonStyle}"
+                        IsEnabled="{Binding CanExport}"
+                        Click="OnExportClick" />
+            </StackPanel>
+        </Border>
+
+        <!-- 判据参数 -->
+        <Border Grid.Row="1" Style="{StaticResource CardStyle}" Margin="0,0,0,8">
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                <TextBlock Text="空间平均 m" Style="{StaticResource FieldLabelStyle}" />
+                <TextBox Style="{StaticResource TableInputStyle}" Width="60"
+                         Text="{Binding SpatialAverageText, UpdateSourceTrigger=PropertyChanged}" />
+                <TextBlock Text="时间平均 n" Style="{StaticResource FieldLabelStyle}" Margin="12,0,6,0" />
+                <TextBox Style="{StaticResource TableInputStyle}" Width="60"
+                         Text="{Binding TemporalAverageText, UpdateSourceTrigger=PropertyChanged}" />
+                <TextBlock Text="开始位置(m)" Style="{StaticResource FieldLabelStyle}" Margin="12,0,6,0" />
+                <TextBox Style="{StaticResource TableInputStyle}" Width="72"
+                         Text="{Binding MarkAText, UpdateSourceTrigger=PropertyChanged}" />
+                <TextBlock Text="终止位置(m)" Style="{StaticResource FieldLabelStyle}" Margin="12,0,6,0" />
+                <TextBox Style="{StaticResource TableInputStyle}" Width="72"
+                         Text="{Binding MarkDText, UpdateSourceTrigger=PropertyChanged}" />
+                <TextBlock Text="阈值余量(dB)" Style="{StaticResource FieldLabelStyle}" Margin="12,0,6,0" />
+                <TextBox Style="{StaticResource TableInputStyle}" Width="60"
+                         Text="{Binding MarginText, UpdateSourceTrigger=PropertyChanged}" />
+            </StackPanel>
+        </Border>
+
+        <Border Grid.Row="2" Style="{StaticResource CardStyle}" Margin="0">
         <DataGrid ItemsSource="{Binding Rows}"
                   ColumnWidth="80"
                   HorizontalAlignment="Stretch"

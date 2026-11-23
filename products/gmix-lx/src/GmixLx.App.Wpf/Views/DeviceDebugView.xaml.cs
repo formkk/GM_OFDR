@@ -1,7 +1,6 @@
 using System;
 using System.ComponentModel;
 using System.Globalization;
-using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using GmixLx.App.Wpf.ViewModels;
@@ -15,12 +14,6 @@ namespace GmixLx.App.Wpf.Views
     /// </summary>
     public partial class DeviceDebugView : UserControl
     {
-        /// <summary>厂商 SDK 目录（相对仓库根，按 exe 目录向上解析）。</summary>
-        const string SdkRelativePath = "references/YinXun_2/customer";
-
-        /// <summary>参考标定文件（相对仓库根，按 exe 目录向上解析）。</summary>
-        const string CalibrationRelativePath = "products/gmix-lx/config/yinxun2_reference_calibration.json";
-
         readonly DeviceDebugViewModel _viewModel;
 
         bool _viewInitialized;
@@ -31,8 +24,7 @@ namespace GmixLx.App.Wpf.Views
         public DeviceDebugView()
         {
             InitializeComponent();
-            _viewModel = new DeviceDebugViewModel(ResolvePath(SdkRelativePath),
-                ResolvePath(CalibrationRelativePath));
+            _viewModel = new DeviceDebugViewModel(AppPaths.SdkDirectory, AppPaths.CalibrationPath);
             DataContext = _viewModel;
 
             _viewModel.FrameReady += OnFrameReady;
@@ -128,26 +120,6 @@ namespace GmixLx.App.Wpf.Views
             if (window == null) return;
             _closedHooked = true;
             window.Closed += delegate { _viewModel.Dispose(); };
-        }
-
-        static string ResolvePath(string path)
-        {
-            if (string.IsNullOrWhiteSpace(path)) return null;
-            path = path.Trim();
-
-            if (Path.IsPathRooted(path))
-            {
-                return File.Exists(path) || Directory.Exists(path) ? path : null;
-            }
-
-            var directory = new DirectoryInfo(AppContext.BaseDirectory);
-            while (directory != null)
-            {
-                string candidate = Path.Combine(directory.FullName, path);
-                if (File.Exists(candidate) || Directory.Exists(candidate)) return candidate;
-                directory = directory.Parent;
-            }
-            return null;
         }
     }
 }

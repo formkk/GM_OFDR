@@ -25,7 +25,26 @@
         <StatusBar DockPanel.Dock="Bottom" Padding="10,0"
                    Background="{StaticResource CardBackgroundBrush}">
             <StatusBarItem>
-                <TextBlock Text="{Binding StatusText}" Foreground="{StaticResource TextMutedBrush}" />
+                <TextBlock Text="{Binding StatusText}">
+                    <TextBlock.Style>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="FontFamily" Value="{StaticResource UiFontFamily}" />
+                            <Setter Property="FontSize" Value="{StaticResource FontSizeBody}" />
+                            <Setter Property="Foreground" Value="{StaticResource TextMutedBrush}" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding StatusTone}" Value="Accent">
+                                    <Setter Property="Foreground" Value="{StaticResource AccentBrush}" />
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding StatusTone}" Value="Danger">
+                                    <Setter Property="Foreground" Value="{StaticResource DangerBrush}" />
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding StatusTone}" Value="Success">
+                                    <Setter Property="Foreground" Value="{StaticResource SuccessBrush}" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBlock.Style>
+                </TextBlock>
             </StatusBarItem>
         </StatusBar>
         <TabControl Margin="{StaticResource PageMargin}" SelectedIndex="0">
