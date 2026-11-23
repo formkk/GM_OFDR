@@ -73,6 +73,8 @@ GM-IX-LX 的迁移起点为 **WinForms + .NET 8**；2026-11-23 已完成 M-12，
 8. 任何图表库、UI 控件库或跨平台框架的引入，必须另立 ADR。
 9. 两套 App 命名固定：`GmixLx.App`（WinForms，回退）与 `GmixLx.App.Wpf`（目标）；迁移期间 CI 双构建，但**发布产物只能包含一套**。
 10. **阶段 3 性能验证后设正式决策门**：未达到 §5.4 指标则停止 WPF 迁移或回退，不在阶段 4 继续投入。
+    - **M-36 决策（2026-11-23，已评审）：接受偏差，继续 WPF 迁移。** 依据：M-35 优化后首帧 8.32 ms（中位数，目标 7.92 ms，超约 5%），但远低于 60 fps 单帧预算 16.7 ms；稳态曲线 p50 6.53–6.74 ms 与 WinForms 基线持平，平移/叠加/内存（0 B）全部达标；曲线/缩放/叠加的 p95 中位数达标，偶发 8.3–12.9 ms 离群仅出现于 p95 且 p50 不变、内存不增长，已确认为整机调度噪声（沙箱内外均出现），非渲染路径退化。偏差记录于 [UI 基线 §8.1](基线_UI_2026-11-23.md)，正式验收前须在静止机器复测归档。
+    - 同次决策关闭 TBD-LX-04：曲线渲染保留 `DrawingContext` 逐像素 `DrawLine` + `MinMaxPyramid`，不引入 `WriteableBitmap`（`StreamGeometry` 实测更慢已回退；`WriteableBitmap` 对首帧字形/资源初始化无帮助，且会增加 DPI/抗锯齿/交互重绘复杂度）。
 11. 部署基线：默认 framework-dependent、Windows 10/11 x64；是否 self-contained/单文件由阶段 4 决定并记录（TBD-LX-06）。
 12. 文档同步：本 ADR、迁移清单、`products/gmix-lx/README.md`、`docs/README.md` 文档地图。
 
@@ -104,7 +106,7 @@ dotnet run --project src/GmixLx.Tests --no-build
 | TBD-LX-01 | CI 中 SDK 8 与 SDK 10 的安装与 `working-directory` 具体写法 | **已关闭（2026-11-23）**：双 SDK + 子目录构建，CI 首跑通过（run 45105112412） |
 | TBD-LX-02 | `global.json` 共存策略 | **已关闭**：采用方案 B，子目录精确 `10.0.404` |
 | TBD-LX-03 | WPF 版是否随首版一起发布，还是先内部并行一个版本 | 开放，产品 |
-| TBD-LX-04 | 曲线控件最终渲染方案（DrawingVisual vs WriteableBitmap） | 开放，技术验证 |
+| TBD-LX-04 | 曲线控件最终渲染方案（DrawingVisual vs WriteableBitmap） | **已关闭（2026-11-23，M-36）**：`DrawingContext` 逐像素 `DrawLine` + `MinMaxPyramid`；不采用 `WriteableBitmap` |
 | TBD-LX-05 | 关键界面截图基线与视觉验收人 | 开放，产品/测试 |
 | TBD-LX-06 | 部署形态（framework-dependent / self-contained / 单文件） | 开放，阶段 4 |
 | TBD-LX-07 | GM-IX-LX 的 SRS/SDD 范围与责任人 | 部分关闭：SDD v0.1 骨架已建立（M-06）；是否补 SRS 待定 |

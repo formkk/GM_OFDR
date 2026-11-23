@@ -43,6 +43,7 @@ products/gmix-lx/
    ├─ GmixLx.App.Wpf/        # WPF 目标 UI（阶段 2 骨架）
    │  ├─ Views/              # 页面壳（DeviceDebugView / MetricTableView）
    │  ├─ ViewModels/         # MainViewModel 等
+   │  ├─ Visualization/      # MinMaxPyramid + CurvePlotControl 曲线渲染
    │  └─ Themes/Tokens.xaml  # 设计令牌（颜色/字体/间距）
    └─ GmixLx.Tests/          # 契约回放、编排与设备适配测试
 ```

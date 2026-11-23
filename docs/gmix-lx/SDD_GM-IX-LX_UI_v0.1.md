@@ -203,6 +203,8 @@
 
 WPF 主窗口壳由 `MainWindow` + `Views/DeviceDebugView` + `Views/MetricTableView` 组成，状态栏文本经 `MainViewModel.StatusText` 绑定；两个页面壳在 M-23/M-40 中填充具体内容。WPF App 分层检查（M-25）已确认源码与程序集均不直接引用 `GmixLx.Vendor`。
 
+曲线渲染的 min/max 分块聚合已抽离为 `Visualization/MinMaxPyramid.cs`（纯计算，不依赖 UI），WPF 曲线控件 `Visualization/CurvePlotControl.cs` 复用该算法绘制 16 万点曲线；当前已支持滚轮缩放、左键拖动平移、A/B 游标拖动、悬停读数、峰标记/峰标签、ROI 底纹与阈值线。
+
 ## 9 验收要点
 
 1. 主窗口两页签可切换，状态栏正常。
