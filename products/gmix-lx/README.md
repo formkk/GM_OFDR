@@ -39,11 +39,15 @@ products/gmix-lx/
    ├─ GmixLx.Core/           # 纯域模型、曲线/峰/指标计算、参考标定
    ├─ GmixLx.Vendor/         # 厂商归口：YinXun_2 SDK + OCS 串口协议
    ├─ GmixLx.Orchestration/  # 台架装配、指标表、组提交、批次状态机
-   ├─ GmixLx.App/            # WinForms UI（距离域曲线 + 指标表）
+   ├─ GmixLx.App/            # WinForms UI（当前发布形态，迁移回退基线）
+   ├─ GmixLx.App.Wpf/        # WPF 目标 UI（阶段 2 骨架）
+   │  ├─ Views/              # 页面壳（DeviceDebugView / MetricTableView）
+   │  ├─ ViewModels/         # MainViewModel 等
+   │  └─ Themes/Tokens.xaml  # 设计令牌（颜色/字体/间距）
    └─ GmixLx.Tests/          # 契约回放、编排与设备适配测试
 ```
 
-依赖方向与检测平台一致：`Core → BCL`；`Vendor → Core`；`Orchestration → Core + Vendor + Gmix.Core`；`App → Core + Orchestration`。厂商类型只允许出现在 `GmixLx.Vendor`。
+依赖方向与检测平台一致：`Core → BCL`；`Vendor → Core`；`Orchestration → Core + Vendor + Gmix.Core`；`App` / `App.Wpf → Core + Orchestration`。厂商类型只允许出现在 `GmixLx.Vendor`。
 
 ## 3. 构建与验证
 

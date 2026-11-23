@@ -1,0 +1,8 @@
+synthetic_points=160000
+form_size=1360x700
+first_frame_ms=6.60
+render_p50_ms=6.13
+render_p95_ms=6.46
+zoom_p95_ms=7.55
+pan_p95_ms=10.88
+mem_delta_bytes=-21072

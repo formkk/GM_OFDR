@@ -1,6 +1,6 @@
 # ADR-001：GM-IX-LX 采用 WPF + .NET 10
 
-> **状态**：草案（评审修订稿，待复审）
+> **状态**：已接受（2026-11-23，评审修订后接受）
 > **日期**：2026-11-23
 > **适用**：`products/gmix-lx/src/GmixLx.App`
 > **依据**：`.trae/rules/00-scope.md`「不引入 NuGet 或其它第三方依赖。确需引入时，先修改对应 SDD 约束并新增 ADR，再动代码。」；`.trae/rules/10-architecture.md`；`.trae/rules/20-change-workflow.md`
@@ -60,14 +60,13 @@ GM-IX-LX 的迁移起点为 **WinForms + .NET 8**；2026-11-23 已完成 M-12，
 
 ## 5 后果与约束
 
-1. `GmixLx.App` 仍只允许引用 `Core + Orchestration`，**不得引用 `Vendor`**；包括不得通过传递引用使用 Vendor 类型。现有 `YinXun2ProtocolConstants` 使用已修复（M-05），WPF 重写须保持。
+1. `GmixLx.App` 仍只允许引用 `Core + Orchestration`，**不得引用 `Vendor`**；包括不得通过传递引用使用 Vendor 类型。现有 `YinXun2ProtocolConstants` 使用已修复（M-05），WPF App 分层已检查（M-25：源码无 Vendor、程序集无 Vendor 直接引用），后续重写须保持。
 2. 不采用 `ElementHost` 混合 WinForms/WPF；曲线控件整体重写。
 3. 颜色、字体、间距统一收敛为 WPF 资源字典（设计令牌），禁止散落硬编码。
 4. **曲线性能预算（可度量）**：
-   - 阶段 0 记录 WinForms 基线（首帧耗时、缩放/平移交互帧时间 p95）；
-   - 16 万点首帧渲染耗时 ≤ 基线 × 1.2；
-   - 缩放/平移交互帧时间 p95 ≤ 33 ms，且不劣于基线 × 1.2；
-   - 连续采集 10 帧无持续内存增长、无明显卡顿。
+   - 阶段 0 基线已记录（2026-11-23）：首帧 6.60 ms、连续渲染 p95 6.46 ms、缩放 p95 7.55 ms、平移 p95 10.88 ms，见 [UI 基线](基线_UI_2026-11-23.md)；
+   - WPF 目标：首帧 ≤ 基线 × 1.2（7.92 ms）；渲染/缩放/平移 p95 ≤ 基线 × 1.2 且 ≤ 33 ms；
+   - 连续 10 帧无持续内存增长、无明显卡顿。
 5. `GmixLx.App` 与真机测试宿主（`GmixLx.Tests` 的 live 模式）均为 x64（已落地，2026-11-23）；厂商 DLL 只在 x64 进程加载。
 6. `System.IO.Ports` 默认**保持 8.0.0** 完成 .NET 10 升级；仅在验证确有需要时升级到 10.x，并重跑 OCS 契约测试。
 7. 界面文字保持中文、简洁；不添加解释性/防御性说明文字（项目既有 UI 约定）。
@@ -117,6 +116,7 @@ dotnet run --project src/GmixLx.Tests --no-build
 | 规则 | `.trae/rules/00-scope.md`（第三方依赖）、`10-architecture.md`（分层）、`20-change-workflow.md`（验证与文档） |
 | 产品说明 | [products/gmix-lx/README.md](../../products/gmix-lx/README.md) |
 | UI 设计 | [SDD_GM-IX-LX_UI_v0.1.md](SDD_GM-IX-LX_UI_v0.1.md) |
+| UI 基线 | [基线_UI_2026-11-23.md](基线_UI_2026-11-23.md) |
 | 迁移计划 | [迁移清单_WPF_NET10.md](迁移清单_WPF_NET10.md) |
 | 现有依赖决策 | [detection/ADR-001_System.IO.Ports.md](../detection/ADR-001_System.IO.Ports.md) |
 | 现状代码 | `products/gmix-lx/src/GmixLx.App/`（WinForms，约 2,365 行） |

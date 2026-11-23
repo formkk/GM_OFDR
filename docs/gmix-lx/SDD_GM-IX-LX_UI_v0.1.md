@@ -199,6 +199,10 @@
 
 详细任务与验收见 [迁移清单](迁移清单_WPF_NET10.md)。
 
+设计令牌统一收敛在 `GmixLx.App.Wpf/Themes/Tokens.xaml`（颜色、字体、间距、圆角、表格行高），WPF 界面禁止散落硬编码颜色与字号。
+
+WPF 主窗口壳由 `MainWindow` + `Views/DeviceDebugView` + `Views/MetricTableView` 组成，状态栏文本经 `MainViewModel.StatusText` 绑定；两个页面壳在 M-23/M-40 中填充具体内容。WPF App 分层检查（M-25）已确认源码与程序集均不直接引用 `GmixLx.Vendor`。
+
 ## 9 验收要点
 
 1. 主窗口两页签可切换，状态栏正常。

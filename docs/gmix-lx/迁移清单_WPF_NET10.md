@@ -23,9 +23,9 @@
 
 | 编号 | 任务 | 优先级 | 验收方法 |
 |---|---|---|---|
-| M-01 | 复审并接受 ADR-001 | 高 | ADR 状态改为「已接受」 |
-| M-02 | 采集 WinForms 关键界面截图基线（指标表、距离域曲线、曲线弹窗） | 高 | 截图入库或登记路径 |
-| M-03 | 记录曲线交互性能基线：首帧耗时、缩放/平移帧时间 p95、连续采集 10 帧内存 | 高 | 记录数值与测量方法 |
+| M-01 | 复审并接受 ADR-001 **（已完成 2026-11-23）** | 高 | ADR 状态改为「已接受」 |
+| M-02 | 采集 WinForms 关键界面截图基线（指标表、距离域曲线、曲线弹窗） **（已完成 2026-11-23，见 [基线_UI_2026-11-23.md](基线_UI_2026-11-23.md)）** | 高 | 截图入库或登记路径 |
+| M-03 | 记录曲线交互性能基线：首帧耗时、缩放/平移帧时间 p95、连续采集 10 帧内存 **（已完成 2026-11-23，见 [基线_UI_2026-11-23.md](基线_UI_2026-11-23.md)）** | 高 | 记录数值与测量方法 |
 | M-04 | 在 `products/gmix-lx/README.md` 与 `docs/README.md` 增加文档入口 | 中 | 链接可达 |
 | M-05 | 修复 App 对 Vendor 的传递引用：`PitchM` 经 `YinXun2Station`（Orchestration）暴露，`DeviceDebugPanel` 移除 `using GmixLx.Vendor` **（已完成 2026-11-23）** | 高 | App 源码无 Vendor 引用；构建 0 警告 0 错误；测试 PASS；曲线页峰距正常 |
 | M-06 | 建立 `docs/gmix-lx/` 的 SDD 骨架（UI 结构、数据流、线程模型），或书面声明 ADR + 清单暂代设计依据 **（已完成 2026-11-23，见 [SDD_GM-IX-LX_UI_v0.1.md](SDD_GM-IX-LX_UI_v0.1.md)）** | 高 | 文档存在或声明记录在 ADR §8 |
@@ -46,12 +46,12 @@
 
 | 编号 | 任务 | 优先级 | 验收方法 |
 |---|---|---|---|
-| M-20 | 新建 `GmixLx.App.Wpf`（`net10.0-windows`、`UseWPF`、x64），加入 `GmixLx.sln` | 高 | 构建通过 |
-| M-21 | 设计令牌资源字典（配色、字体、间距、圆角） | 高 | 与 WinForms 版视觉一致 |
-| M-22 | 主窗口壳：两个页签 + 状态栏 + 窗口图标 | 高 | 可启动、可切换 |
-| M-23 | 指标表：64 行 × 11 列、8 行分组底色、失败样式、ToolTip、双击事件 | 高 | 与 WinForms 版逐项比对 |
-| M-24 | 高 DPI 清单（PerMonitorV2） | 中 | 100%/150%/200% 缩放正常 |
-| M-25 | App 分层检查：WPF App 不出现 `GmixLx.Vendor` 类型 | 高 | 源码检查通过 |
+| M-20 | 新建 `GmixLx.App.Wpf`（`net10.0-windows`、`UseWPF`、x64），加入 `GmixLx.sln` **（已完成 2026-11-23：构建 0/0，启动验证通过）** | 高 | 构建通过 |
+| M-21 | 设计令牌资源字典（配色、字体、间距、圆角） **（已完成 2026-11-23：`Themes/Tokens.xaml`，构建 0/0，启动验证通过）** | 高 | 与 WinForms 版视觉一致 |
+| M-22 | 主窗口壳：两个页签 + 状态栏 + 窗口图标 **（已完成 2026-11-23：MainWindow + DeviceDebugView/MetricTableView 占位，状态栏绑定 MainViewModel，启动验证通过）** | 高 | 可启动、可切换 |
+| M-23 | 指标表：64 行 × 11 列、8 行分组底色、失败样式、ToolTip、双击事件 **（已完成 2026-11-23：两行表头、失败行灰底+破折号、ToolTip 绑定、双击 RowActivated；截图见基线文档 §6）** | 高 | 与 WinForms 版逐项比对 |
+| M-24 | 高 DPI 清单（PerMonitorV2） **（已完成 2026-11-23：`app.manifest` 声明 PerMonitorV2；实测 PerMonitorV2=True、窗口 DPI 144；96/144/192 渲染检查 11 列完整）** | 中 | 100%/150%/200% 缩放正常 |
+| M-25 | App 分层检查：WPF App 不出现 `GmixLx.Vendor` 类型 **（已完成 2026-11-23：源码无 Vendor 匹配；程序集引用仅 Orchestration/Core；deps 中 Vendor 仅为 Orchestration 传递依赖）** | 高 | 源码检查通过 |
 
 ### 阶段 3：曲线控件技术验证（M-3x）
 
