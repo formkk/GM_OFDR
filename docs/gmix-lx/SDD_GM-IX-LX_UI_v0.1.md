@@ -214,6 +214,8 @@ WPF 主窗口壳由 `MainWindow` + `Views/DeviceDebugView` + `Views/MetricTableV
 
 指标表页（M-43）补齐连接卡（1×8/8×8 串口、采样次数）与判据卡（空间/时间平均、A/D、阈值余量），由 `MetricTableViewModel.Start()` 校验参数并驱动 `YinXun2Station` + `MetricTableRunner`；逐行结果经 `SynchronizationContext` 回投 UI。状态栏文案与颜色由 `MainViewModel.StatusText` + `StatusTone` 驱动（DataTrigger 映射 Token 画刷），文案与 WinForms `MainForm` 逐条对齐。仓库内相对路径（SDK、参考标定）统一由 `AppPaths` 解析，设备页与指标表共用。
 
+应用启动（M-44）：`App.OnStartup` 先抢命名 Mutex 保证单实例（第二份实例置前已有窗口后退出），再预热曲线控件并创建 `MainWindow`；窗口图标用 pack URI，exe 图标由 `ApplicationIcon` 嵌入。
+
 ## 9 验收要点
 
 1. 主窗口两页签可切换，状态栏正常。
