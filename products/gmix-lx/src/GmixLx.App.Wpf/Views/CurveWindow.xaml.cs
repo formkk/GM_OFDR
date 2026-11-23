@@ -33,6 +33,7 @@ namespace GmixLx.App.Wpf.Views
             Plot.XScale = axisScale;
             Plot.XOffset = axisOffset;
             Plot.PeakThresholdDb = row.PeakThresholdDb;
+            Plot.ReferenceLevelDb = row.PeakThresholdDb;
             if (!double.IsNaN(row.PeakThresholdDb))
             {
                 Plot.Peaks = CurveMetrics.FindPeaks(levels, row.PeakThresholdDb,

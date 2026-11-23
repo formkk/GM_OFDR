@@ -203,7 +203,7 @@
 
 WPF 主窗口壳由 `MainWindow` + `Views/DeviceDebugView` + `Views/MetricTableView` 组成，状态栏文本经 `MainViewModel.StatusText` 绑定；两个页面壳在 M-23/M-40 中填充具体内容。WPF App 分层检查（M-25）已确认源码与程序集均不直接引用 `GmixLx.Vendor`。
 
-曲线渲染的 min/max 分块聚合已抽离为 `Visualization/MinMaxPyramid.cs`（纯计算，不依赖 UI），WPF 曲线控件 `Visualization/CurvePlotControl.cs` 复用该算法绘制 16 万点曲线；当前已支持滚轮缩放、左键拖动平移、A/B 游标拖动、悬停读数、峰标记/峰标签、ROI 底纹与阈值线。
+曲线渲染的 min/max 分块聚合已抽离为 `Visualization/MinMaxPyramid.cs`（纯计算，不依赖 UI），WPF 曲线控件 `Visualization/CurvePlotControl.cs` 复用该算法绘制 16 万点曲线；当前已支持滚轮缩放、左键拖动平移、A/B 游标拖动、悬停十字线与跟随指针的坐标提示、峰顶单行坐标标签、ROI 底纹、阈值线，以及可上下拖动的水平参考线（`ReferenceLevelDb`，默认等于阈值，拖动右侧标签移动）。
 
 距离域曲线页（M-40）由 `Views/DeviceDebugView.xaml` + `ViewModels/DeviceDebugViewModel.cs` 构成，结构与 WinForms `DeviceDebugPanel` 一一对应：
 

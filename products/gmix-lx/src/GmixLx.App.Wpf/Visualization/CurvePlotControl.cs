@@ -70,12 +70,18 @@ namespace GmixLx.App.Wpf.Visualization
             "ShowPeakLabels", typeof(bool), typeof(CurvePlotControl),
             new FrameworkPropertyMetadata(true, FrameworkPropertyMetadataOptions.AffectsRender));
 
+        /// <summary>可拖动的水平参考线电平（dB）；NaN 表示不显示。</summary>
+        public static readonly DependencyProperty ReferenceLevelDbProperty = DependencyProperty.Register(
+            "ReferenceLevelDb", typeof(double), typeof(CurvePlotControl),
+            new FrameworkPropertyMetadata(double.NaN, FrameworkPropertyMetadataOptions.AffectsRender));
+
         static readonly Typeface _typeface = new Typeface(new FontFamily("Consolas"),
             FontStyles.Normal, FontWeights.Normal, FontStretches.Normal);
 
         static bool _prewarmed;
         static Brush _backgroundBrush;
         static Brush _textBrush;
+        static Brush _primaryTextBrush;
         static Brush _peakBrush;
         static Brush _roiBrush;
         static Pen _gridPen;
@@ -84,7 +90,7 @@ namespace GmixLx.App.Wpf.Visualization
         static Pen _cursorAPen;
         static Pen _cursorBPen;
         static Pen _hoverPen;
-        static Pen _peakPen;
+        static Pen _referencePen;
         static Pen _thresholdPen;
 
         static readonly Dictionary<string, FormattedText> _textCache = new Dictionary<string, FormattedText>();
@@ -97,8 +103,14 @@ namespace GmixLx.App.Wpf.Visualization
         double _panEndM;
         int _dragCursor;
         bool _hoverValid;
+        Point _hoverPoint;
         double _hoverDistanceM;
         double _hoverLevelDb;
+
+        bool _draggingReference;
+        Rect _referenceLabelRect = Rect.Empty;
+        double _levelMin;
+        double _levelMax;
 
         public CurvePlotControl()
         {
@@ -181,6 +193,12 @@ namespace GmixLx.App.Wpf.Visualization
             set { SetValue(ShowPeakLabelsProperty, value); }
         }
 
+        public double ReferenceLevelDb
+        {
+            get { return (double)GetValue(ReferenceLevelDbProperty); }
+            set { SetValue(ReferenceLevelDbProperty, value); }
+        }
+
         public event Action<double, double> CursorsChanged;
 
         static void OnValuesChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
@@ -229,6 +247,8 @@ namespace GmixLx.App.Wpf.Visualization
             min -= pad;
             max += pad;
             if (max - min < 1) max = min + 1;
+            _levelMin = min;
+            _levelMax = max;
 
             var gridPen = _gridPen;
             var axisPen = _axisPen;
@@ -236,7 +256,6 @@ namespace GmixLx.App.Wpf.Visualization
             var textBrush = _textBrush;
             var cursorAPen = _cursorAPen;
             var cursorBPen = _cursorBPen;
-            var hoverPen = _hoverPen;
 
             for (int k = 0; k <= 5; k++)
             {
@@ -288,21 +307,77 @@ namespace GmixLx.App.Wpf.Visualization
 
             DrawPeaks(dc, plot, viewStart, viewEnd, min, max);
             DrawThreshold(dc, plot, min, max);
+            DrawReference(dc, plot, min, max);
 
             DrawCursor(dc, plot, CursorAM, cursorAPen, "A", viewStart, viewEnd);
             DrawCursor(dc, plot, CursorBM, cursorBPen, "B", viewStart, viewEnd);
 
-            if (_hoverValid && _hoverDistanceM >= viewStart && _hoverDistanceM <= viewEnd)
-            {
-                double hx = DistanceToX(_hoverDistanceM, viewStart, viewEnd, plot);
-                dc.DrawLine(hoverPen, new Point(hx, plot.Top), new Point(hx, plot.Bottom));
-                string text = string.Format(CultureInfo.InvariantCulture,
-                    "x={0:F3} m  y={1:F2} dB", _hoverDistanceM, _hoverLevelDb);
-                FormattedText ft = FormatCached(text, 10, textBrush);
-                dc.DrawText(ft, new Point(plot.Right - ft.Width - 6, plot.Top + 4));
-            }
+            DrawHover(dc, plot, viewStart, viewEnd, min, max);
 
             dc.DrawRectangle(null, axisPen, plot);
+        }
+
+        /// <summary>悬停十字线 + 跟随指针的坐标提示框。</summary>
+        void DrawHover(DrawingContext dc, Rect plot, double viewStart, double viewEnd, double min, double max)
+        {
+            if (!_hoverValid) return;
+            if (_hoverDistanceM < viewStart || _hoverDistanceM > viewEnd) return;
+
+            double hx = DistanceToX(_hoverDistanceM, viewStart, viewEnd, plot);
+            if (double.IsNaN(hx)) return;
+            Pen pen = _hoverPen;
+            dc.DrawLine(pen, new Point(hx, plot.Top), new Point(hx, plot.Bottom));
+            if (!double.IsNaN(_hoverLevelDb))
+            {
+                double hy = ToY(_hoverLevelDb, min, max, plot);
+                if (hy >= plot.Top && hy <= plot.Bottom)
+                {
+                    dc.DrawLine(pen, new Point(plot.Left, hy), new Point(plot.Right, hy));
+                }
+            }
+
+            string text = string.Format(CultureInfo.InvariantCulture,
+                "x={0:F3} m  y={1:F2} dB", _hoverDistanceM, _hoverLevelDb);
+            FormattedText ft = FormatCached(text, 10, _primaryTextBrush);
+
+            double boxW = ft.Width + 10;
+            double boxH = ft.Height + 6;
+            double boxX = _hoverPoint.X + 14;
+            if (boxX + boxW > plot.Right) boxX = _hoverPoint.X - 14 - boxW;
+            if (boxX < plot.Left) boxX = plot.Left + 2;
+            double boxY = _hoverPoint.Y + 14;
+            if (boxY + boxH > plot.Bottom) boxY = _hoverPoint.Y - 14 - boxH;
+            if (boxY < plot.Top) boxY = plot.Top + 2;
+
+            dc.DrawRectangle(_backgroundBrush, _axisPen, new Rect(boxX, boxY, boxW, boxH));
+            dc.DrawText(ft, new Point(boxX + 5, boxY + 3));
+        }
+
+        /// <summary>水平参考线：虚线 + 右侧可拖动标签；标签命中后才允许拖动，避免与平移冲突。</summary>
+        void DrawReference(DrawingContext dc, Rect plot, double min, double max)
+        {
+            double level = ReferenceLevelDb;
+            if (double.IsNaN(level) || level < min || level > max)
+            {
+                _referenceLabelRect = Rect.Empty;
+                return;
+            }
+
+            double y = ToY(level, min, max, plot);
+            Pen pen = _referencePen;
+            dc.DrawLine(pen, new Point(plot.Left, y), new Point(plot.Right, y));
+
+            FormattedText text = FormatCached("参考 " + level.ToString("F1", CultureInfo.InvariantCulture) + " dB",
+                9, pen.Brush);
+            double boxW = text.Width + 10;
+            double boxH = text.Height + 4;
+            double boxX = plot.Right - boxW - 4;
+            double boxY = y - boxH - 2;
+            if (boxY < plot.Top) boxY = y + 2;
+
+            _referenceLabelRect = new Rect(boxX, boxY, boxW, boxH);
+            dc.DrawRectangle(_backgroundBrush, pen, _referenceLabelRect);
+            dc.DrawText(text, new Point(boxX + 5, boxY + 2));
         }
 
         void DrawRoi(DrawingContext dc, Rect plot, double viewStart, double viewEnd)
@@ -328,7 +403,6 @@ namespace GmixLx.App.Wpf.Visualization
             if (peaks == null || peaks.Count == 0) return;
 
             Brush brush = _peakBrush;
-            Pen pen = _peakPen;
             for (int i = 0; i < peaks.Count; i++)
             {
                 CurvePeak peak = peaks[i];
@@ -341,7 +415,6 @@ namespace GmixLx.App.Wpf.Visualization
                 double y = ToY(peak.Db, min, max, plot);
                 if (double.IsNaN(x) || double.IsNaN(y)) continue;
 
-                dc.DrawLine(pen, new Point(x, plot.Top), new Point(x, plot.Bottom));
                 if (y >= plot.Top - 2 && y <= plot.Bottom + 2)
                 {
                     dc.DrawEllipse(brush, null, new Point(x, y), 2.5, 2.5);
@@ -365,46 +438,32 @@ namespace GmixLx.App.Wpf.Visualization
             Brush brush = _textBrush;
             FormattedText text = FormatCached("阈值 " + threshold.ToString("F1", CultureInfo.InvariantCulture) + " dB",
                 9, brush);
-            double tx = plot.Right - text.Width - 6;
+            // 标签放左侧，避免与右侧参考线标签在数值相同时重叠。
+            double tx = plot.Left + 4;
             double ty = y - 13;
             if (ty < plot.Top) ty = y + 4;
             dc.DrawText(text, new Point(tx, ty));
         }
 
+        /// <summary>峰顶标注：单行显示编号与坐标（距离 + 电平），不再画竖直虚线。</summary>
         void DrawPeakLabel(DrawingContext dc, Rect plot, double x, double y, int number,
             double distanceM, double levelDb)
         {
             Brush brush = _peakBrush;
-            string[] lines =
-            {
-                "P" + number.ToString(CultureInfo.InvariantCulture),
-                distanceM.ToString("F3", CultureInfo.InvariantCulture) + " m",
-                levelDb.ToString("F1", CultureInfo.InvariantCulture) + " dB"
-            };
-
-            double lineHeight = 12;
-            double maxWidth = 0;
-            foreach (string line in lines)
-            {
-                FormattedText measure = FormatCached(line, 9, brush);
-                if (measure.Width > maxWidth) maxWidth = measure.Width;
-            }
+            string text = "P" + number.ToString(CultureInfo.InvariantCulture)
+                + "  " + distanceM.ToString("F3", CultureInfo.InvariantCulture) + " m"
+                + " · " + levelDb.ToString("F1", CultureInfo.InvariantCulture) + " dB";
+            FormattedText ft = FormatCached(text, 9, brush);
 
             double textX = x + 6;
-            if (textX + maxWidth > plot.Right) textX = x - maxWidth - 6;
+            if (textX + ft.Width > plot.Right) textX = x - ft.Width - 6;
             if (textX < plot.Left) textX = plot.Left + 2;
 
-            double textY = y - lineHeight * lines.Length - 6;
-            if (textY < plot.Top) textY = y + 6;
-            if (textY + lineHeight * lines.Length > plot.Bottom)
-            {
-                textY = plot.Bottom - lineHeight * lines.Length - 2;
-            }
+            double textY = y - ft.Height - 4;
+            if (textY < plot.Top) textY = y + 4;
+            if (textY + ft.Height > plot.Bottom) textY = plot.Bottom - ft.Height - 2;
 
-            for (int i = 0; i < lines.Length; i++)
-            {
-                DrawText(dc, lines[i], new Point(textX, textY + i * lineHeight), 9, brush);
-            }
+            dc.DrawText(ft, new Point(textX, textY));
         }
 
         double PeakPosition(CurvePeak peak)
@@ -455,6 +514,14 @@ namespace GmixLx.App.Wpf.Visualization
             Rect plot = PlotRect;
             Point position = e.GetPosition(this);
 
+            if (!_referenceLabelRect.IsEmpty && _referenceLabelRect.Contains(position))
+            {
+                _draggingReference = true;
+                CaptureMouse();
+                e.Handled = true;
+                return;
+            }
+
             double xa = DistanceToX(CursorAM, viewStart, viewEnd, plot);
             double xb = DistanceToX(CursorBM, viewStart, viewEnd, plot);
             if (!double.IsNaN(CursorAM) && Math.Abs(position.X - xa) <= CursorHitPx)
@@ -491,6 +558,18 @@ namespace GmixLx.App.Wpf.Visualization
             Rect plot = PlotRect;
             Point position = e.GetPosition(this);
 
+            if (_draggingReference && e.LeftButton == MouseButtonState.Pressed)
+            {
+                double level = YToLevel(position.Y, _levelMin, _levelMax, plot);
+                if (!double.IsNaN(level))
+                {
+                    level = Math.Max(_levelMin, Math.Min(_levelMax, level));
+                    SetCurrentValue(ReferenceLevelDbProperty, level);
+                }
+                e.Handled = true;
+                return;
+            }
+
             if (_dragCursor != 0 && e.LeftButton == MouseButtonState.Pressed)
             {
                 double distance = XToDistance(position.X, viewStart, viewEnd, plot);
@@ -518,13 +597,21 @@ namespace GmixLx.App.Wpf.Visualization
             }
 
             UpdateHover(position, plot, viewStart, viewEnd);
-            if (!double.IsNaN(CursorAM) || !double.IsNaN(CursorBM))
+            if (!_referenceLabelRect.IsEmpty && _referenceLabelRect.Contains(position))
+            {
+                Cursor = Cursors.SizeNS;
+            }
+            else if (!double.IsNaN(CursorAM) || !double.IsNaN(CursorBM))
             {
                 double xa = DistanceToX(CursorAM, viewStart, viewEnd, plot);
                 double xb = DistanceToX(CursorBM, viewStart, viewEnd, plot);
                 Cursor = Math.Abs(position.X - xa) <= CursorHitPx || Math.Abs(position.X - xb) <= CursorHitPx
                     ? Cursors.SizeWE
                     : Cursors.Arrow;
+            }
+            else
+            {
+                Cursor = Cursors.Arrow;
             }
         }
 
@@ -533,6 +620,7 @@ namespace GmixLx.App.Wpf.Visualization
             base.OnMouseLeftButtonUp(e);
             _panning = false;
             _dragCursor = 0;
+            _draggingReference = false;
             ReleaseMouseCapture();
             e.Handled = true;
         }
@@ -568,6 +656,7 @@ namespace GmixLx.App.Wpf.Visualization
 
             _hoverDistanceM = distance;
             _hoverLevelDb = level;
+            _hoverPoint = position;
             _hoverValid = true;
             InvalidateVisual();
         }
@@ -614,6 +703,14 @@ namespace GmixLx.App.Wpf.Visualization
         static double ToY(double value, double min, double max, Rect plot)
         {
             return plot.Top + (max - value) / (max - min) * plot.Height;
+        }
+
+        static double YToLevel(double y, double min, double max, Rect plot)
+        {
+            if (plot.Height <= 0) return double.NaN;
+            double ratio = (y - plot.Top) / plot.Height;
+            ratio = Math.Max(0.0, Math.Min(1.0, ratio));
+            return max - ratio * (max - min);
         }
 
         static double DistanceToX(double distance, double viewStart, double viewEnd, Rect plot)
@@ -676,6 +773,7 @@ namespace GmixLx.App.Wpf.Visualization
                 XOffset = 0.0,
                 Peaks = peaks,
                 PeakThresholdDb = 112.0,
+                ReferenceLevelDb = 112.0,
                 RoiStartM = 5.37,
                 RoiEndM = 11.31,
                 CursorAM = 5.37,
@@ -693,6 +791,7 @@ namespace GmixLx.App.Wpf.Visualization
 
             _backgroundBrush = FindBrush("CardBackgroundBrush", Color.FromRgb(35, 37, 40));
             _textBrush = FindBrush("TextMutedBrush", Color.FromRgb(154, 160, 166));
+            _primaryTextBrush = FindBrush("TextPrimaryBrush", Color.FromRgb(230, 232, 235));
             _peakBrush = FindBrush("PeakBrush", Color.FromRgb(255, 138, 101));
             _roiBrush = FindBrush("RoiBackgroundBrush", Color.FromArgb(0x2E, 0x5A, 0xA9, 0xFF));
 
@@ -702,7 +801,7 @@ namespace GmixLx.App.Wpf.Visualization
             _cursorAPen = DashPen("CursorABrush", Color.FromRgb(240, 160, 48), DashStyles.Dash);
             _cursorBPen = DashPen("CursorBBrush", Color.FromRgb(53, 193, 160), DashStyles.Dash);
             _hoverPen = DashPen("HoverBrush", Color.FromRgb(140, 146, 156), DashStyles.Dot);
-            _peakPen = DashPen("PeakBrush", Color.FromRgb(255, 138, 101), DashStyles.Dot);
+            _referencePen = DashPen("ReferenceBrush", Color.FromRgb(200, 205, 211), DashStyles.Dash);
             _thresholdPen = DashPen("ThresholdBrush", Color.FromRgb(90, 96, 104), DashStyles.Dash);
         }
 

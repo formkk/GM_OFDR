@@ -56,6 +56,11 @@ namespace GmixLx.App.Wpf.Views
             Plot.XOffset = 0.0;
             Plot.Peaks = frame.Peaks;
             Plot.PeakThresholdDb = frame.ThresholdDb;
+            // 参考线默认落在阈值上；用户拖动后不再被后续帧覆盖。
+            if (double.IsNaN(Plot.ReferenceLevelDb))
+            {
+                Plot.ReferenceLevelDb = frame.ThresholdDb;
+            }
             Plot.RoiStartM = frame.RoiStartM;
             Plot.RoiEndM = frame.RoiEndM;
 

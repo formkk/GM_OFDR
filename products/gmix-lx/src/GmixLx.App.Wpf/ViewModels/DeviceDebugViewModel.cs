@@ -28,7 +28,11 @@ namespace GmixLx.App.Wpf.ViewModels
     /// </summary>
     public sealed class DeviceDebugViewModel : INotifyPropertyChanged, IDisposable
     {
-        const double PeakMarginDb = 22.0;
+        /// <summary>
+        /// 峰判定余量（dB）：取 64 路标定给出的稳定值 30（25/30/35 稳定检出 8 峰，15/20 会多出伪峰）；
+        /// 原 WinForms 页取 22，噪声区会产出伪峰，本页统一到 30。
+        /// </summary>
+        const double PeakMarginDb = 30.0;
         const int PeakMergeGapRows = 22;
 
         /// <summary>右下角事件表只显示该距离之后的峰（0.05 m 之前为零距/连接器伪峰）。</summary>
