@@ -102,7 +102,7 @@ dotnet run --project src/GmixLx.Tests --no-build
 
 | 编号 | 内容 | 状态/归属 |
 |---|---|---|
-| TBD-LX-01 | CI 中 SDK 8 与 SDK 10 的安装与 `working-directory` 具体写法 | **已实现（2026-11-23）**：双 SDK + 子目录构建；待 CI 首跑确认 |
+| TBD-LX-01 | CI 中 SDK 8 与 SDK 10 的安装与 `working-directory` 具体写法 | **已关闭（2026-11-23）**：双 SDK + 子目录构建，CI 首跑通过（run 45105112412） |
 | TBD-LX-02 | `global.json` 共存策略 | **已关闭**：采用方案 B，子目录精确 `10.0.404` |
 | TBD-LX-03 | WPF 版是否随首版一起发布，还是先内部并行一个版本 | 开放，产品 |
 | TBD-LX-04 | 曲线控件最终渲染方案（DrawingVisual vs WriteableBitmap） | 开放，技术验证 |

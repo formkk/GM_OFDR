@@ -39,7 +39,7 @@
 | M-12 | 五个工程 TFM 改为 `net10.0` / `net10.0-windows` **（已完成 2026-11-23）** | 高 | 在 `products/gmix-lx` 下构建通过：0 警告 0 错误，测试 PASS |
 | M-13 | `System.IO.Ports` **默认保持 8.0.0**；仅当验证确需时升 10.x **（已完成 2026-11-23：保持 8.0.0，net10 构建与 OCS 测试通过）** | 中 | OCS 契约测试通过；变更需在 ADR 追加记录 |
 | M-14 | `GmixLx.App` 与 `GmixLx.Tests` 显式 `PlatformTarget=x64` **（已完成 2026-11-23：两工程 PlatformTarget=x64，产物 PE 均为 x64）** | 高 | 进程为 64 位，能加载厂商 DLL |
-| M-15 | CI 同时安装 SDK 8 与 SDK 10；gmix-lx 的构建/测试步骤设置 `working-directory: products/gmix-lx` **（已完成 2026-11-23；本地已按 Release 方式验证，待 CI 首跑确认）** | 高 | CI 全部通过；不得从仓库根直接构建 gmix-lx |
+| M-15 | CI 同时安装 SDK 8 与 SDK 10；gmix-lx 的构建/测试步骤设置 `working-directory: products/gmix-lx` **（已完成 2026-11-23；CI 首跑通过，run 45105112412）** | 高 | CI 全部通过；不得从仓库根直接构建 gmix-lx |
 | M-16 | 构建、测试、真机冒烟（命令均在 `products/gmix-lx` 下） | 高 | 0 警告 0 错误；测试 PASS；单路采集正常 |
 
 ### 阶段 2：WPF 骨架（M-2x）
