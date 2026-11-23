@@ -31,6 +31,9 @@ namespace GmixLx.Orchestration
         /// <summary>产品默认时间平均 n（单一来源在 Vendor 常量，App 经这里读取，避免跨层引用）。</summary>
         public const uint DefaultTemporalAverageN = YinXun2ProtocolConstants.DefaultTemporalAverageN;
 
+        /// <summary>厂商原生点距（单一来源在 Vendor 常量，App 经这里读取，避免跨层引用）。</summary>
+        public const double NativePitchM = YinXun2ProtocolConstants.PitchM;
+
         /// <summary>
         /// 打开 SDK 并按给定 ROI 建立会话，再打开两台 OCS。
         /// m/n/ROI/超时全部由调用方给出：默认 ROI 未文档化（TBD-Y03），不得在此猜值。

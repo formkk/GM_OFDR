@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using GmixLx.Core;
 using GmixLx.Orchestration;
-using GmixLx.Vendor;
 
 namespace GmixLx.App
 {
@@ -370,7 +369,7 @@ namespace GmixLx.App
             _rlValue.Text = FormatDb(frame.RoiRlDb + _levelOffsetDb);
 
             // 峰事件后处理：旁瓣剔除 + 最小间距合并
-            double pitch = frame.PitchM > 0 ? frame.PitchM : YinXun2ProtocolConstants.PitchM;
+            double pitch = frame.PitchM > 0 ? frame.PitchM : YinXun2Station.NativePitchM;
             List<PeakEvent> events = PeakEventFilter.Apply(frame.Peaks, pitch,
                 MinPeakSeparationM, SidelobeWindowM, SidelobeDropDb);
 

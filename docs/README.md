@@ -39,6 +39,9 @@
 | 培训与研究 | [Study/OFDR检测全流程培训_上位机开发者版.md](../Study/OFDR检测全流程培训_上位机开发者版.md) | 知识库 | 与契约冲突时以 `docs/contracts/` 为准 |
 | 检测系统（OCS + OFDR） | [detection/README.md](detection/README.md) | SRS v0.4 定稿，SDD v0.1 评审稿 | 上位机为 LGA50 后续版本；1 路径 = 1 L2 组，批次 = 64 组 |
 | GM-IX-LX 专用上位机 | [products/gmix-lx/README.md](../products/gmix-lx/README.md) | 现行产品分支（映讯 GM-IX 专用） | 2026-11-23 从检测平台 fork；移除 LGA50-D 接入与跳线维护，保留 OCS 批次与 11 列指标表 |
+| GM-IX-LX UI 设计 | [gmix-lx/SDD_GM-IX-LX_UI_v0.1.md](gmix-lx/SDD_GM-IX-LX_UI_v0.1.md) | 草案（v0.1 骨架） | UI 结构、数据流、线程模型、WinForms→WPF 映射与验收要点 |
+| GM-IX-LX UI 技术选型 | [gmix-lx/ADR-001_WPF与NET10.md](gmix-lx/ADR-001_WPF与NET10.md) | 草案（评审修订稿，待复审） | App 层迁移到 WPF + .NET 10；Core/Vendor/Orchestration 只改目标框架；含 SDK 隔离与分层修复要求 |
+| GM-IX-LX 迁移计划 | [gmix-lx/迁移清单_WPF_NET10.md](gmix-lx/迁移清单_WPF_NET10.md) | 草案（评审修订稿，待复审） | 阶段 0~5、任务编号 M-0x~M-5x、文件映射、验证与回退；命令需在 `products/gmix-lx` 下执行 |
 | 映讯_2 设备接入 | [硬件与 SDK 接入核查](detection/映讯_2_硬件与SDK接入核查_2026-11-16.md) / [测试报告](detection/映讯_2_测试报告_2026-11-16.md) / [双机对比报告](detection/OFDR双机对比报告_2026-11-16.md) / [基线校正方案](detection/映讯GM-IX_基线校正方案_2026-11-17.md) | 现行设备（映讯 GM-IX）实测证据 | 8 峰口径已在 LGA50 产线 DUT 上验证，映讯_2 待同光路复测；绝对 dB 参考面未确认 |
 | 映讯 GM-IX 通讯与数据 | [通讯与数据分析](detection/映讯GM-IX_通讯与数据分析_2026-11-17.md) | 实测证据（汇总，非正本） | UDP 10086 + `ocs_measurement.dll`；无 int16 原始数据；数值口径以核查/测试报告为准 |
 
@@ -87,6 +90,14 @@
 | `映讯GM-IX_基线校正方案_2026-11-17.md` | 方案：帧内基线斜率校正的目标、算法、代码落点、验证判据与风险 |
 
 SRS v0.4 定稿、SDD v0.1 评审稿；通道编排细节归 SDD §4，接线核验与基线细化设计随实现补充。OCS 协议已完成 2026-11-11 实机核对，结论见实测报告；基线数值待 golden DUT 数据集评审。工程占位骨架 `Gmix.Ocs*` 按 SDD §1.3 迁移至 `products/detection`。厂商协议文档在 `references/ocs/`，夹具在 `tests/fixtures/ocs/`，实测工具在 `devices/ocs/tools/`。
+
+### 3.4.1 `docs/gmix-lx/` — GM-IX-LX 专用上位机（现行产品分支）
+
+| 文件 | 性质 |
+|---|---|
+| `SDD_GM-IX-LX_UI_v0.1.md` | 草案：UI 结构、数据流、线程模型、WinForms→WPF 映射与验收要点 |
+| `ADR-001_WPF与NET10.md` | 草案：App 层迁移到 WPF + .NET 10 的决策、约束与验证 |
+| `迁移清单_WPF_NET10.md` | 草案：阶段 0~5 的任务编号、文件映射、验证命令与回退策略 |
 
 ### 3.5 `docs/platform/` — 预研平台（冻结）
 

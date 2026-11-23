@@ -5,6 +5,14 @@
 > **来源**：2026-11-23 从 `products/detection`（检测平台）独立 fork，缩减接入范围
 > **产品主线**：`products/detection` 仍是检测系统主线；本目录是其「仅 GM-IX OFDR」的专用裁剪版
 
+## 0. 文档入口
+
+| 内容 | 位置 |
+|---|---|
+| UI 设计（草案） | [SDD：GM-IX-LX UI v0.1](../../docs/gmix-lx/SDD_GM-IX-LX_UI_v0.1.md) |
+| UI 技术选型（草案） | [ADR-001：WPF + .NET 10](../../docs/gmix-lx/ADR-001_WPF与NET10.md) |
+| 迁移清单（草案） | [WPF + .NET 10 迁移清单](../../docs/gmix-lx/迁移清单_WPF_NET10.md) |
+
 ## 1. 接入范围
 
 | 能力 | 状态 |
@@ -39,9 +47,12 @@ products/gmix-lx/
 
 ## 3. 构建与验证
 
+需要 .NET 10 SDK（`products/gmix-lx/global.json` 固定 `10.0.404`）。命令必须在 `products/gmix-lx` 目录下执行：
+
 ```powershell
-dotnet build products/gmix-lx/GmixLx.sln
-dotnet run --project products/gmix-lx/src/GmixLx.Tests --no-build
+cd products/gmix-lx
+dotnet build GmixLx.sln
+dotnet run --project src/GmixLx.Tests --no-build
 ```
 
 判定标准：构建 0 警告 0 错误；测试输出 `PASS gmix-lx vendor+orchestration`，退出码 0。
@@ -49,10 +60,11 @@ dotnet run --project products/gmix-lx/src/GmixLx.Tests --no-build
 真机联调入口：
 
 ```powershell
+cd products/gmix-lx
 # 映讯 GM-IX 单路冒烟
-dotnet run --project products/gmix-lx/src/GmixLx.Tests -- --live-yinxun2
+dotnet run --project src/GmixLx.Tests -- --live-yinxun2
 # 映讯 GM-IX 64 路指标表
-dotnet run --project products/gmix-lx/src/GmixLx.Tests -- --live-yinxun2-table
+dotnet run --project src/GmixLx.Tests -- --live-yinxun2-table
 ```
 
 ## 4. 口径约束
