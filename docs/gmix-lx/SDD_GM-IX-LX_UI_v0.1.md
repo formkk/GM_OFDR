@@ -191,7 +191,7 @@
 |---|---|
 | `MainForm` | `MainWindow.xaml` + `MainViewModel` |
 | `DeviceDebugPanel` | `DeviceDebugView.xaml` + `DeviceDebugViewModel` |
-| `CurveForm` | `CurveWindow.xaml` + `CurveViewModel` |
+| `CurveForm` | `CurveWindow.xaml`（M-41 已落地，复用 `CurvePlotControl`） |
 | `CurvePlotPanel` | `CurvePlotControl`（`FrameworkElement` / `DrawingVisual`） |
 | `DataGridView` | `DataGrid` + RowStyle/Trigger |
 | `BeginInvoke` | `Dispatcher.InvokeAsync` |
@@ -204,6 +204,13 @@
 WPF 主窗口壳由 `MainWindow` + `Views/DeviceDebugView` + `Views/MetricTableView` 组成，状态栏文本经 `MainViewModel.StatusText` 绑定；两个页面壳在 M-23/M-40 中填充具体内容。WPF App 分层检查（M-25）已确认源码与程序集均不直接引用 `GmixLx.Vendor`。
 
 曲线渲染的 min/max 分块聚合已抽离为 `Visualization/MinMaxPyramid.cs`（纯计算，不依赖 UI），WPF 曲线控件 `Visualization/CurvePlotControl.cs` 复用该算法绘制 16 万点曲线；当前已支持滚轮缩放、左键拖动平移、A/B 游标拖动、悬停读数、峰标记/峰标签、ROI 底纹与阈值线。
+
+距离域曲线页（M-40）由 `Views/DeviceDebugView.xaml` + `ViewModels/DeviceDebugViewModel.cs` 构成，结构与 WinForms `DeviceDebugPanel` 一一对应：
+
+- 顶部两张 ROI IL/RL 卡片；中部 `CurvePlotControl`；底部左侧参数（空间平均、采集次数、ROI 起止、显示上限）与三个按钮，右侧峰事件表（序号/位置/RL/状态）。
+- ViewModel 只依赖 `GmixLx.Orchestration`（`YinXun2SingleSession`、`YinXun2Station`）与 `GmixLx.Core`（`PeakEventFilter`），不接触 Vendor；视图负责 SDK/标定路径解析（按 exe 目录向上查找仓库根）、`SaveFileDialog` 与错误弹窗。
+- 采集在后台线程执行（`Task.Run`），结果回到 UI 线程渲染；单次与连续互斥，A/B 拖动结束会先停止连续采集再按新 ROI 重采；窗口关闭时释放会话与取消令牌。
+- 峰后处理、事件表过滤（0.05 m 前伪峰不进表）、CSV 列序（`distance_m,reflection_db`）与 WinForms 版一致。
 
 ## 9 验收要点
 

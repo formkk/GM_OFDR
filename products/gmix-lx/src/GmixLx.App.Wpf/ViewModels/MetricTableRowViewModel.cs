@@ -81,10 +81,14 @@ namespace GmixLx.App.Wpf.ViewModels
             get { return _failure; }
         }
 
+        /// <summary>本行最近一次指标结果；双击查看曲线时使用，未采集时为 null。</summary>
+        public MetricTableRow Source { get; private set; }
+
         /// <summary>把一条指标结果写入本行；由后续采集编排调用。</summary>
         public void Apply(MetricTableRow row)
         {
             if (row == null) throw new ArgumentNullException("row");
+            Source = row;
             _hasData = true;
             _isFailure = !row.Succeeded;
             _failure = row.Failure;
@@ -102,6 +106,7 @@ namespace GmixLx.App.Wpf.ViewModels
         /// <summary>清空本行测量结果，保留 IN/OUT 结构。</summary>
         public void Clear()
         {
+            Source = null;
             _hasData = false;
             _isFailure = false;
             _failure = null;

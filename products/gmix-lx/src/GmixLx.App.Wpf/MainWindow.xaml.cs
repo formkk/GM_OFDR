@@ -1,5 +1,7 @@
 using System.Windows;
 using GmixLx.App.Wpf.ViewModels;
+using GmixLx.App.Wpf.Views;
+using GmixLx.Orchestration;
 
 namespace GmixLx.App.Wpf
 {
@@ -8,7 +10,15 @@ namespace GmixLx.App.Wpf
         public MainWindow()
         {
             InitializeComponent();
-            DataContext = new MainViewModel();
+            var viewModel = new MainViewModel();
+            viewModel.CurveRequested += ShowCurveWindow;
+            DataContext = viewModel;
+        }
+
+        void ShowCurveWindow(MetricTableRow row)
+        {
+            var window = new CurveWindow(row) { Owner = this };
+            window.ShowDialog();
         }
     }
 }
