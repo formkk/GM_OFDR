@@ -38,8 +38,8 @@ namespace GmixLx.App.Wpf.Views
         void OnParamsToggle(object sender, RoutedEventArgs e)
         {
             bool collapsed = ParamsToggle.IsChecked == true;
-            ParamsColumn.Width = new GridLength(collapsed ? 34 : 280);
-            ParamsPanel.Padding = collapsed ? new Thickness(4, 8, 4, 10) : new Thickness(12, 8, 12, 10);
+            ParamsColumn.Width = new GridLength(collapsed ? 26 : 140);
+            ParamsPanel.Padding = collapsed ? new Thickness(1, 6, 1, 8) : new Thickness(8, 6, 8, 8);
             ParamsTitle.Visibility = collapsed ? Visibility.Collapsed : Visibility.Visible;
             ParamsContent.Visibility = collapsed ? Visibility.Collapsed : Visibility.Visible;
             ParamsButtons.Visibility = collapsed ? Visibility.Collapsed : Visibility.Visible;

@@ -7,12 +7,12 @@
              VerticalContentAlignment="Stretch">
     <UserControl.Resources>
         <Style x:Key="FieldLabelStyle" TargetType="TextBlock" BasedOn="{StaticResource MutedTextStyle}">
-            <Setter Property="Margin" Value="0,0,0,2" />
+            <Setter Property="Margin" Value="0,0,0,1" />
         </Style>
 
         <Style x:Key="GroupHeaderStyle" TargetType="TextBlock" BasedOn="{StaticResource MutedTextStyle}">
             <Setter Property="FontWeight" Value="Bold" />
-            <Setter Property="Margin" Value="0,10,0,4" />
+            <Setter Property="Margin" Value="0,6,0,2" />
         </Style>
 
         <Style x:Key="ParamInputStyle" TargetType="TextBox">
@@ -25,10 +25,10 @@
             <Setter Property="FontFamily" Value="{StaticResource MonoFontFamily}" />
             <Setter Property="FontSize" Value="{StaticResource FontSizeMono}" />
             <Setter Property="TextAlignment" Value="Right" />
-            <Setter Property="Padding" Value="4,2" />
-            <Setter Property="Height" Value="26" />
+            <Setter Property="Padding" Value="3,1" />
+            <Setter Property="Height" Value="22" />
             <Setter Property="VerticalContentAlignment" Value="Center" />
-            <Setter Property="Margin" Value="0,2,0,8" />
+            <Setter Property="Margin" Value="0,1,0,4" />
         </Style>
 
         <Style x:Key="PeakHeaderStyle" TargetType="DataGridColumnHeader">
@@ -88,13 +88,13 @@
 
     <Grid Margin="{StaticResource PagePadding}">
         <Grid.ColumnDefinitions>
-            <ColumnDefinition x:Name="ParamsColumn" Width="280" />
+            <ColumnDefinition x:Name="ParamsColumn" Width="140" />
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
 
         <!-- 左侧可折叠参数面板 -->
         <Border x:Name="ParamsPanel" Grid.Column="0" Style="{StaticResource CardStyle}"
-                Margin="0,0,8,0" Padding="12,8,12,10">
+                Margin="0,0,8,0" Padding="8,6,8,8">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
@@ -111,9 +111,9 @@
                                   Click="OnParamsToggle" />
                 </Grid>
 
-                <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Margin="0,6,0,0">
+                <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Margin="0,4,0,0">
                     <StackPanel x:Name="ParamsContent">
-                        <TextBlock Text="采集" Style="{StaticResource GroupHeaderStyle}" Margin="0,0,0,4" />
+                        <TextBlock Text="采集" Style="{StaticResource GroupHeaderStyle}" Margin="0,0,0,2" />
                         <TextBlock Text="空间平均 m" Style="{StaticResource FieldLabelStyle}" />
                         <TextBox Style="{StaticResource ParamInputStyle}"
                                  Text="{Binding SpatialAverageText, UpdateSourceTrigger=PropertyChanged}" />
@@ -136,15 +136,15 @@
                     </StackPanel>
                 </ScrollViewer>
 
-                <StackPanel x:Name="ParamsButtons" Grid.Row="2" Margin="0,8,0,0">
-                    <Button Content="单次采集" Height="32" Margin="0,0,0,6"
+                <StackPanel x:Name="ParamsButtons" Grid.Row="2" Margin="0,4,0,0">
+                    <Button Content="单次采集" Height="26" Margin="0,0,0,4"
                             Style="{StaticResource PrimaryButtonStyle}"
                             IsEnabled="{Binding CanRunOnce}"
                             Click="OnSingleClick" />
-                    <Button Content="{Binding ContinuousButtonText}" Height="32" Margin="0,0,0,6"
+                    <Button Content="{Binding ContinuousButtonText}" Height="26" Margin="0,0,0,4"
                             Style="{StaticResource SecondaryButtonStyle}"
                             Click="OnContinuousClick" />
-                    <Button Content="保存数据" Height="32"
+                    <Button Content="保存数据" Height="26"
                             Style="{StaticResource SecondaryButtonStyle}"
                             Click="OnSaveClick" />
                 </StackPanel>
