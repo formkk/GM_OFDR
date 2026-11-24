@@ -11,12 +11,6 @@
             <Setter Property="Margin" Value="0,0,0,1" />
         </Style>
 
-        <Style x:Key="GroupHeaderStyle" TargetType="TextBlock" BasedOn="{StaticResource MutedTextStyle}">
-            <Setter Property="FontSize" Value="12.5" />
-            <Setter Property="FontWeight" Value="Bold" />
-            <Setter Property="Margin" Value="0,6,0,2" />
-        </Style>
-
         <Style x:Key="ParamInputStyle" TargetType="TextBox">
             <Setter Property="Background" Value="{StaticResource InputBackgroundBrush}" />
             <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
@@ -115,12 +109,10 @@
 
                 <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Margin="0,4,0,0">
                     <StackPanel x:Name="ParamsContent">
-                        <TextBlock Text="采集" Style="{StaticResource GroupHeaderStyle}" Margin="0,0,0,2" />
                         <TextBlock Text="采集次数" Style="{StaticResource FieldLabelStyle}" />
                         <TextBox Style="{StaticResource ParamInputStyle}"
                                  Text="{Binding TemporalAverageText, UpdateSourceTrigger=PropertyChanged}" />
 
-                        <TextBlock Text="ROI" Style="{StaticResource GroupHeaderStyle}" />
                         <TextBlock Text="起点 (m)" Style="{StaticResource FieldLabelStyle}" />
                         <TextBox Style="{StaticResource ParamInputStyle}"
                                  Text="{Binding RoiStartText, UpdateSourceTrigger=PropertyChanged}" />
@@ -128,7 +120,6 @@
                         <TextBox Style="{StaticResource ParamInputStyle}"
                                  Text="{Binding RoiEndText, UpdateSourceTrigger=PropertyChanged}" />
 
-                        <TextBlock Text="显示" Style="{StaticResource GroupHeaderStyle}" />
                         <TextBlock Text="显示上限 (m)" Style="{StaticResource FieldLabelStyle}" />
                         <TextBox Style="{StaticResource ParamInputStyle}"
                                  Text="{Binding DisplayMaxText, UpdateSourceTrigger=PropertyChanged}" />
