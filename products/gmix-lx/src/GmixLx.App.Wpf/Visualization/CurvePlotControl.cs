@@ -91,6 +91,8 @@ namespace GmixLx.App.Wpf.Visualization
         static Brush _textBrush;
         static Brush _primaryTextBrush;
         static Brush _peakBrush;
+        static Brush _peakLabelBrush;
+        static Brush _referenceLabelBrush;
         static Brush _roiBrush;
         static Pen _gridPen;
         static Pen _axisPen;
@@ -99,6 +101,7 @@ namespace GmixLx.App.Wpf.Visualization
         static Pen _cursorBPen;
         static Pen _hoverPen;
         static Pen _referencePen;
+        static Pen _referenceLabelPen;
         static Pen _thresholdPen;
 
         static readonly Dictionary<string, FormattedText> _textCache = new Dictionary<string, FormattedText>();
@@ -466,11 +469,11 @@ namespace GmixLx.App.Wpf.Visualization
             }
 
             double y = ToY(level, min, max, plot);
-            Pen pen = _referencePen;
-            dc.DrawLine(pen, new Point(plot.Left, y), new Point(plot.Right, y));
+            dc.DrawLine(_referencePen, new Point(plot.Left, y), new Point(plot.Right, y));
 
+            // 参考线标签用独立对比色（紫），与阈值线、峰标签区分。
             FormattedText text = FormatCached("参考 " + level.ToString("F1", CultureInfo.InvariantCulture) + " dB",
-                9, pen.Brush);
+                9, _referenceLabelBrush);
             double boxW = text.Width + 10;
             double boxH = text.Height + 4;
             double boxX = plot.Right - boxW - 4;
@@ -478,7 +481,7 @@ namespace GmixLx.App.Wpf.Visualization
             if (boxY < plot.Top) boxY = y + 2;
 
             _referenceLabelRect = new Rect(boxX, boxY, boxW, boxH);
-            dc.DrawRectangle(_backgroundBrush, pen, _referenceLabelRect);
+            dc.DrawRectangle(_backgroundBrush, _referenceLabelPen, _referenceLabelRect);
             dc.DrawText(text, new Point(boxX + 5, boxY + 2));
         }
 
@@ -523,7 +526,7 @@ namespace GmixLx.App.Wpf.Visualization
                 }
                 if (ShowPeakLabels && i < 16)
                 {
-                    DrawPeakLabel(dc, plot, x, y, i + 1, position, peak.Db);
+                    DrawPeakLabel(dc, plot, x, y, i + 1, peak.Db);
                 }
             }
         }
@@ -534,28 +537,15 @@ namespace GmixLx.App.Wpf.Visualization
             if (double.IsNaN(threshold) || threshold < min || threshold > max) return;
 
             double y = ToY(threshold, min, max, plot);
-            Pen pen = _thresholdPen;
-            dc.DrawLine(pen, new Point(plot.Left, y), new Point(plot.Right, y));
-
-            Brush brush = _textBrush;
-            FormattedText text = FormatCached("阈值 " + threshold.ToString("F1", CultureInfo.InvariantCulture) + " dB",
-                9, brush);
-            // 标签放左侧，避免与右侧参考线标签在数值相同时重叠。
-            double tx = plot.Left + 4;
-            double ty = y - 13;
-            if (ty < plot.Top) ty = y + 4;
-            dc.DrawText(text, new Point(tx, ty));
+            dc.DrawLine(_thresholdPen, new Point(plot.Left, y), new Point(plot.Right, y));
         }
 
-        /// <summary>峰顶标注：单行显示编号与坐标（距离 + 电平），不再画竖直虚线。</summary>
-        void DrawPeakLabel(DrawingContext dc, Rect plot, double x, double y, int number,
-            double distanceM, double levelDb)
+        /// <summary>峰顶标注：只显示峰号与电平（dB），不显示距离。</summary>
+        void DrawPeakLabel(DrawingContext dc, Rect plot, double x, double y, int number, double levelDb)
         {
-            Brush brush = _peakBrush;
             string text = "P" + number.ToString(CultureInfo.InvariantCulture)
-                + "  " + distanceM.ToString("F3", CultureInfo.InvariantCulture) + " m"
-                + " · " + levelDb.ToString("F1", CultureInfo.InvariantCulture) + " dB";
-            FormattedText ft = FormatCached(text, 9, brush);
+                + "  " + levelDb.ToString("F1", CultureInfo.InvariantCulture) + " dB";
+            FormattedText ft = FormatCached(text, 9, _peakLabelBrush);
 
             double textX = x + 6;
             if (textX + ft.Width > plot.Right) textX = x - ft.Width - 6;
@@ -895,6 +885,8 @@ namespace GmixLx.App.Wpf.Visualization
             _textBrush = FindBrush("TextMutedBrush", Color.FromRgb(154, 160, 166));
             _primaryTextBrush = FindBrush("TextPrimaryBrush", Color.FromRgb(230, 232, 235));
             _peakBrush = FindBrush("PeakBrush", Color.FromRgb(255, 138, 101));
+            _peakLabelBrush = FindBrush("PeakLabelBrush", Color.FromRgb(47, 160, 94));
+            _referenceLabelBrush = FindBrush("ReferenceHighlightBrush", Color.FromRgb(176, 139, 232));
             _roiBrush = FindBrush("RoiBackgroundBrush", Color.FromArgb(0x2E, 0x5A, 0xA9, 0xFF));
 
             _gridPen = FindPen("GridLineBrush", Color.FromRgb(47, 50, 54), 1.0);
@@ -904,6 +896,7 @@ namespace GmixLx.App.Wpf.Visualization
             _cursorBPen = DashPen("CursorBBrush", Color.FromRgb(53, 193, 160), DashStyles.Dash);
             _hoverPen = DashPen("HoverBrush", Color.FromRgb(140, 146, 156), DashStyles.Dot);
             _referencePen = DashPen("ReferenceBrush", Color.FromRgb(200, 205, 211), DashStyles.Dash);
+            _referenceLabelPen = FindPen("ReferenceHighlightBrush", Color.FromRgb(176, 139, 232), 1.0);
             _thresholdPen = DashPen("ThresholdBrush", Color.FromRgb(90, 96, 104), DashStyles.Dash);
         }
 

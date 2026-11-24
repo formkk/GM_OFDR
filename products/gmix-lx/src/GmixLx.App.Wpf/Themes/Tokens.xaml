@@ -30,6 +30,8 @@
     <Color x:Key="CursorBandColor">#1E5AA9FF</Color>
     <Color x:Key="ThresholdColor">#5A6068</Color>
     <Color x:Key="ReferenceColor">#C8CDD3</Color>
+    <Color x:Key="ReferenceHighlightColor">#B08BE8</Color>
+    <Color x:Key="PeakLabelColor">#2FA05E</Color>
     <Color x:Key="HoverColor">#8C929C</Color>
     <Color x:Key="HoverBackgroundColor">#2C3036</Color>
 
@@ -81,6 +83,8 @@
     <SolidColorBrush x:Key="CursorBandBrush" Color="{StaticResource CursorBandColor}" />
     <SolidColorBrush x:Key="ThresholdBrush" Color="{StaticResource ThresholdColor}" />
     <SolidColorBrush x:Key="ReferenceBrush" Color="{StaticResource ReferenceColor}" />
+    <SolidColorBrush x:Key="ReferenceHighlightBrush" Color="{StaticResource ReferenceHighlightColor}" />
+    <SolidColorBrush x:Key="PeakLabelBrush" Color="{StaticResource PeakLabelColor}" />
     <SolidColorBrush x:Key="HoverBrush" Color="{StaticResource HoverColor}" />
     <SolidColorBrush x:Key="PassBackgroundBrush" Color="#1E3A27" />
     <SolidColorBrush x:Key="FailBackgroundBrush" Color="#3A2226" />
