@@ -155,7 +155,6 @@
         <Grid Grid.Column="1">
             <Grid.RowDefinitions>
                 <RowDefinition Height="76" />
-                <RowDefinition Height="Auto" />
                 <RowDefinition Height="*" />
                 <RowDefinition Height="160" />
             </Grid.RowDefinitions>
@@ -179,23 +178,11 @@
                 </Border>
             </Grid>
 
-            <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,8">
-                <ToggleButton Content="框选 ROI" Margin="0,0,6,0"
-                              Style="{StaticResource ToolToggleButtonStyle}"
-                              IsChecked="{Binding ElementName=Plot, Path=RoiSelectMode, Mode=TwoWay}" />
-                <Button Content="复位视图" Margin="0,0,6,0"
-                        Style="{StaticResource ToolButtonStyle}"
-                        Click="OnResetViewClick" />
-                <ToggleButton Content="显示峰" Margin="0,0,6,0"
-                              Style="{StaticResource ToolToggleButtonStyle}"
-                              IsChecked="{Binding ElementName=Plot, Path=ShowPeaks, Mode=TwoWay}" />
-            </StackPanel>
-
-            <Border Grid.Row="2" Style="{StaticResource CardStyle}" Padding="10,8,10,6">
+            <Border Grid.Row="1" Style="{StaticResource CardStyle}" Padding="10,8,10,6">
                 <vis:CurvePlotControl x:Name="Plot" />
             </Border>
 
-            <Border Grid.Row="3" Style="{StaticResource CardStyle}" Margin="0,8,0,0" Padding="10,8,10,8">
+            <Border Grid.Row="2" Style="{StaticResource CardStyle}" Margin="0,8,0,0" Padding="10,8,10,8">
                 <DataGrid x:Name="PeakGrid"
                           ItemsSource="{Binding PeakRows}"
                           AutoGenerateColumns="False"

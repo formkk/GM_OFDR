@@ -54,8 +54,9 @@ namespace GmixLx.App.Wpf.ViewModels
 
         string _spatialAverageText = "1";
         string _temporalAverageText = YinXun2Station.DefaultTemporalAverageN.ToString(CultureInfo.InvariantCulture);
-        string _roiStartText = "5.37";
-        string _roiEndText = "11.31";
+        // 缺省 A/B = 显示上限 12.00 m 的中央 80%（两端各留 10%）。
+        string _roiStartText = "1.20";
+        string _roiEndText = "10.80";
         string _displayMaxText = "12.00";
         string _ilText = "-- dB";
         string _rlText = "-- dB";

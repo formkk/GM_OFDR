@@ -31,13 +31,7 @@ namespace GmixLx.App.Wpf.Views
             _viewModel.ErrorRaised += OnError;
             _viewModel.PropertyChanged += OnViewModelPropertyChanged;
             Plot.CursorsChanged += OnCursorsChanged;
-            Plot.RoiSelected += OnRoiSelected;
             Loaded += OnLoaded;
-        }
-
-        void OnResetViewClick(object sender, RoutedEventArgs e)
-        {
-            Plot.ResetView();
         }
 
         /// <summary>左侧参数面板折叠：收窄到按钮宽度，隐藏内容与按钮。</summary>
@@ -51,16 +45,6 @@ namespace GmixLx.App.Wpf.Views
             ParamsButtons.Visibility = collapsed ? Visibility.Collapsed : Visibility.Visible;
             ParamsToggle.HorizontalAlignment = collapsed ? HorizontalAlignment.Center : HorizontalAlignment.Right;
             ParamsToggle.Content = collapsed ? "▶" : "◀";
-        }
-
-        void OnRoiSelected(double a, double b)
-        {
-            _ = ApplyRoiAsync(a, b);
-        }
-
-        async System.Threading.Tasks.Task ApplyRoiAsync(double a, double b)
-        {
-            await _viewModel.ApplyCursorsAsync(a, b);
         }
 
         async void OnSingleClick(object sender, RoutedEventArgs e)

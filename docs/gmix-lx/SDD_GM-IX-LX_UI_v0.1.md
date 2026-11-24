@@ -205,11 +205,11 @@
 
 WPF 主窗口壳由 `MainWindow` + `Views/DeviceDebugView` + `Views/MetricTableView` 组成，状态栏文本经 `MainViewModel.StatusText` 绑定；两个页面壳在 M-23/M-40 中填充具体内容。WPF App 分层检查（M-25）已确认源码与程序集均不直接引用 `GmixLx.Vendor`。
 
-曲线渲染的 min/max 分块聚合已抽离为 `Visualization/MinMaxPyramid.cs`（纯计算，不依赖 UI），WPF 曲线控件 `Visualization/CurvePlotControl.cs` 复用该算法绘制 16 万点曲线；当前已支持滚轮缩放、左键拖动平移、A/B 游标拖动、悬停十字线与跟随指针的坐标提示、峰顶单行坐标标签、ROI 底纹、阈值线，以及可上下拖动的水平参考线（`ReferenceLevelDb`，默认等于阈值，拖动右侧标签移动）。曲线区域提供右键菜单：导出图片（按屏幕 DPI 生成 PNG）、复位视图、显示/隐藏峰；导出与截图走同一渲染路径。
+曲线渲染的 min/max 分块聚合已抽离为 `Visualization/MinMaxPyramid.cs`（纯计算，不依赖 UI），WPF 曲线控件 `Visualization/CurvePlotControl.cs` 复用该算法绘制 16 万点曲线；当前已支持滚轮缩放、左键拖动平移、A/B 游标拖动、悬停十字线与跟随指针的坐标提示、峰顶单行坐标标签、ROI 底纹、阈值线，以及可上下拖动的水平参考线（`ReferenceLevelDb`，默认等于阈值，拖动右侧标签移动）。初始视窗为 `[0, 显示上限]`，A/B 缺省取该视窗中央 80%（缺省 12.00 m → 1.20/10.80）。曲线区域提供右键菜单：导出图片（按屏幕 DPI 生成 PNG）、复位视图、显示/隐藏峰；导出与截图走同一渲染路径。
 
 距离域曲线页（M-40）由 `Views/DeviceDebugView.xaml` + `ViewModels/DeviceDebugViewModel.cs` 构成，结构与 WinForms `DeviceDebugPanel` 一一对应：
 
-- 左侧可折叠参数面板（采集 / ROI / 显示 分组，折叠后仅留展开按钮）；右侧顶部 ROI IL/RL 卡片、图表工具条（框选 ROI、复位视图、显示峰）、中部 `CurvePlotControl`、底部峰事件表（序号/位置/RL/状态）。
+- 左侧可折叠参数面板（采集 / ROI / 显示 分组，折叠后仅留展开按钮）；右侧顶部 ROI IL/RL 卡片、中部 `CurvePlotControl`、底部峰事件表（序号/位置/RL/状态）。峰默认显示，复位视图与显隐峰在曲线右键菜单中。
 - ViewModel 只依赖 `GmixLx.Orchestration`（`YinXun2SingleSession`、`YinXun2Station`）与 `GmixLx.Core`（`PeakEventFilter`），不接触 Vendor；视图负责 SDK/标定路径解析（按 exe 目录向上查找仓库根）、`SaveFileDialog` 与错误弹窗。
 - 采集在后台线程执行（`Task.Run`），结果回到 UI 线程渲染；单次与连续互斥，A/B 拖动结束会先停止连续采集再按新 ROI 重采；窗口关闭时释放会话与取消令牌。
 - 峰后处理、事件表过滤（0.05 m 前伪峰不进表）、CSV 列序（`distance_m,reflection_db`）与 WinForms 版一致。

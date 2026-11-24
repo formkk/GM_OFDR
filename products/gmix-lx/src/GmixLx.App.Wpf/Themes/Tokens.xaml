@@ -271,12 +271,6 @@
         </Setter>
     </Style>
 
-    <Style x:Key="ToolButtonStyle" TargetType="Button" BasedOn="{StaticResource SecondaryButtonStyle}">
-        <Setter Property="Padding" Value="10,3" />
-        <Setter Property="FontSize" Value="{StaticResource FontSizeSmall}" />
-        <Setter Property="Height" Value="28" />
-    </Style>
-
     <Style x:Key="ToolToggleButtonStyle" TargetType="ToggleButton">
         <Setter Property="Background" Value="{StaticResource CardBackgroundBrush}" />
         <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
