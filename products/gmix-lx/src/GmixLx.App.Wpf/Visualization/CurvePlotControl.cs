@@ -522,8 +522,10 @@ namespace GmixLx.App.Wpf.Visualization
             double boxW = text.Width + 10;
             double boxH = text.Height + 4;
             double boxX = plot.Right - boxW - 4;
-            double boxY = y - boxH - 2;
-            if (boxY < plot.Top) boxY = y + 2;
+            // 标签框垂直居中对齐参考线；贴顶/贴底时夹到绘图区内。
+            double boxY = y - boxH / 2;
+            if (boxY < plot.Top) boxY = plot.Top;
+            if (boxY + boxH > plot.Bottom) boxY = plot.Bottom - boxH;
 
             _referenceLabelRect = new Rect(boxX, boxY, boxW, boxH);
             dc.DrawRectangle(_backgroundBrush, _referenceLabelPen, _referenceLabelRect);
