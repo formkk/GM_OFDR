@@ -137,16 +137,38 @@
                 </ScrollViewer>
 
                 <StackPanel x:Name="ParamsButtons" Grid.Row="2" Margin="0,4,0,0">
-                    <Button Content="单次采集" Height="26" Margin="0,0,0,4"
+                    <Button Height="26" Margin="0,0,0,4" Padding="8,2"
                             Style="{StaticResource PrimaryButtonStyle}"
                             IsEnabled="{Binding CanRunOnce}"
-                            Click="OnSingleClick" />
-                    <Button Content="{Binding ContinuousButtonText}" Height="26" Margin="0,0,0,4"
+                            Click="OnSingleClick">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="▶" FontFamily="Segoe UI Symbol" FontSize="9"
+                                       VerticalAlignment="Center" />
+                            <TextBlock Text="单次采集" Margin="5,0,0,0" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+                    <Button Height="26" Margin="0,0,0,4" Padding="8,2"
                             Style="{StaticResource SecondaryButtonStyle}"
-                            Click="OnContinuousClick" />
-                    <Button Content="保存数据" Height="26"
+                            Click="OnContinuousClick">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="▶▶" FontFamily="Segoe UI Symbol" FontSize="9"
+                                       VerticalAlignment="Center" />
+                            <TextBlock Text="{Binding ContinuousButtonText}" Margin="5,0,0,0"
+                                       VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+                    <Button Height="26" Padding="8,2"
                             Style="{StaticResource SecondaryButtonStyle}"
-                            Click="OnSaveClick" />
+                            Click="OnSaveClick">
+                        <StackPanel Orientation="Horizontal">
+                            <Viewbox Width="11" Height="11" VerticalAlignment="Center">
+                                <Path StrokeThickness="1"
+                                      Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                                      Data="M1,1 H9 L11,3 V11 H1 Z M3,1 V4 H8 V1 M3,7 H9 V11 H3 Z" />
+                            </Viewbox>
+                            <TextBlock Text="保存数据" Margin="5,0,0,0" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
                 </StackPanel>
             </Grid>
         </Border>

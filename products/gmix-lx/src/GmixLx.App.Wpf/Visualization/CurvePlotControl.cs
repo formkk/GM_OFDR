@@ -491,6 +491,24 @@ namespace GmixLx.App.Wpf.Visualization
             _referenceLabelRect = new Rect(boxX, boxY, boxW, boxH);
             dc.DrawRectangle(_backgroundBrush, _referenceLabelPen, _referenceLabelRect);
             dc.DrawText(text, new Point(boxX + 5, boxY + 2));
+
+            // 上下小箭头，提示标签可上下拖动
+            Pen arrowPen = _referenceLabelPen;
+            double cx = boxX + boxW / 2;
+            dc.DrawLine(arrowPen, new Point(cx - 5, boxY - 1), new Point(cx, boxY - 7));
+            dc.DrawLine(arrowPen, new Point(cx + 5, boxY - 1), new Point(cx, boxY - 7));
+            double bottomY = boxY + boxH;
+            dc.DrawLine(arrowPen, new Point(cx - 5, bottomY + 1), new Point(cx, bottomY + 7));
+            dc.DrawLine(arrowPen, new Point(cx + 5, bottomY + 1), new Point(cx, bottomY + 7));
+        }
+
+        /// <summary>参考标签命中区：比标签框左右各放宽 4px、上下各放宽 8px，覆盖拖动箭头。</summary>
+        bool HitReferenceLabel(Point point)
+        {
+            if (_referenceLabelRect.IsEmpty) return false;
+            Rect hit = _referenceLabelRect;
+            hit.Inflate(4, 8);
+            return hit.Contains(point);
         }
 
         void DrawRoi(DrawingContext dc, Rect plot, double viewStart, double viewEnd,
@@ -615,7 +633,7 @@ namespace GmixLx.App.Wpf.Visualization
             Rect plot = PlotRect;
             Point position = e.GetPosition(this);
 
-            if (!_referenceLabelRect.IsEmpty && _referenceLabelRect.Contains(position))
+            if (HitReferenceLabel(position))
             {
                 _draggingReference = true;
                 CaptureMouse();
@@ -698,7 +716,7 @@ namespace GmixLx.App.Wpf.Visualization
             }
 
             UpdateHover(position, plot, viewStart, viewEnd);
-            if (!_referenceLabelRect.IsEmpty && _referenceLabelRect.Contains(position))
+            if (HitReferenceLabel(position))
             {
                 Cursor = Cursors.SizeNS;
             }
