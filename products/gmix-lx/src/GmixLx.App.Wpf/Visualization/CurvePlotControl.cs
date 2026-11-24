@@ -1,11 +1,14 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using GmixLx.Core;
+using Microsoft.Win32;
 
 namespace GmixLx.App.Wpf.Visualization
 {
@@ -135,6 +138,7 @@ namespace GmixLx.App.Wpf.Visualization
             MinWidth = 200;
             MinHeight = 120;
             Focusable = true;
+            ContextMenu = BuildContextMenu();
         }
 
         public double[] Values
@@ -238,6 +242,82 @@ namespace GmixLx.App.Wpf.Visualization
             if (Values == null || Values.Length < 2) return;
             SetCurrentValue(ViewStartMProperty, 0.0);
             SetCurrentValue(ViewEndMProperty, 0.0);
+        }
+
+        /// <summary>
+        /// 把当前曲线区域按屏幕 DPI 渲染为 PNG；返回 false 表示控件尚未布局。
+        /// </summary>
+        public bool SaveImage(string path)
+        {
+            if (string.IsNullOrEmpty(path)) throw new ArgumentNullException("path");
+            int width = (int)Math.Round(ActualWidth);
+            int height = (int)Math.Round(ActualHeight);
+            if (width <= 0 || height <= 0) return false;
+
+            DpiScale dpi = VisualTreeHelper.GetDpi(this);
+            var bitmap = new RenderTargetBitmap(
+                (int)Math.Round(ActualWidth * dpi.DpiScaleX),
+                (int)Math.Round(ActualHeight * dpi.DpiScaleY),
+                dpi.PixelsPerInchX, dpi.PixelsPerInchY, PixelFormats.Pbgra32);
+            bitmap.Render(this);
+
+            var encoder = new PngBitmapEncoder();
+            encoder.Frames.Add(BitmapFrame.Create(bitmap));
+            using (var stream = File.Create(path))
+            {
+                encoder.Save(stream);
+            }
+            return true;
+        }
+
+        ContextMenu BuildContextMenu()
+        {
+            var menu = new ContextMenu();
+            Style menuStyle = TryFindResource("DarkContextMenuStyle") as Style;
+            if (menuStyle != null) menu.Style = menuStyle;
+
+            var export = new MenuItem { Header = "导出图片…" };
+            ApplyMenuStyle(export);
+            export.Click += delegate { ExportImageWithDialog(); };
+
+            var reset = new MenuItem { Header = "复位视图" };
+            ApplyMenuStyle(reset);
+            reset.Click += delegate { ResetView(); };
+
+            var peaks = new MenuItem { Header = "显示峰", IsCheckable = true, IsChecked = ShowPeaks };
+            ApplyMenuStyle(peaks);
+            peaks.Click += delegate { SetCurrentValue(ShowPeaksProperty, peaks.IsChecked); };
+
+            menu.Items.Add(export);
+            menu.Items.Add(reset);
+            menu.Items.Add(peaks);
+            return menu;
+        }
+
+        void ApplyMenuStyle(MenuItem item)
+        {
+            Style style = TryFindResource("DarkMenuItemStyle") as Style;
+            if (style != null) item.Style = style;
+        }
+
+        void ExportImageWithDialog()
+        {
+            var dialog = new SaveFileDialog
+            {
+                Filter = "PNG 图片|*.png",
+                FileName = "curve_"
+                    + DateTime.Now.ToString("yyyyMMdd_HHmmss", CultureInfo.InvariantCulture) + ".png"
+            };
+            if (dialog.ShowDialog() != true) return;
+
+            try
+            {
+                SaveImage(dialog.FileName);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("导出失败：" + ex.Message, "导出图片");
+            }
         }
 
         static void OnValuesChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)

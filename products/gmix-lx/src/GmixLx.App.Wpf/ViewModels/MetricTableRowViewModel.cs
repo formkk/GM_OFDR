@@ -81,6 +81,12 @@ namespace GmixLx.App.Wpf.ViewModels
             get { return _failure; }
         }
 
+        /// <summary>行状态：PASS / FAIL / —（未采集），供状态 chip 使用。</summary>
+        public string StatusText
+        {
+            get { return !_hasData ? "—" : (_isFailure ? "FAIL" : "PASS"); }
+        }
+
         /// <summary>本行最近一次指标结果；双击查看曲线时使用，未采集时为 null。</summary>
         public MetricTableRow Source { get; private set; }
 
@@ -134,6 +140,7 @@ namespace GmixLx.App.Wpf.ViewModels
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HasData)));
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsFailure)));
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Failure)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(StatusText)));
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IlInText)));
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IlDutText)));
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IlOutText)));

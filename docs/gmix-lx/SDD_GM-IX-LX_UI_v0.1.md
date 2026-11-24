@@ -138,6 +138,8 @@
 - N>1：同一路径重复采样后取平均（`MetricTableRunner.Accumulate`）。
 - 测量类错误只废掉当前行；设备/传输/协议类错误中止整批。
 - 完成后可「导出 CSV」：`MetricTableCsv.Write`。
+- 顶部汇总条：整体判定 chip（未开始 / 进行中 / PASS / FAIL / 部分完成）+ 有效、失败、待采集计数 + 用时；FAIL chip 的提示显示失败原因汇总。
+- 表格末列「状态」：PASS / FAIL 彩色 chip，未采集显示「—」；状态由行 ViewModel 的 `StatusText` 派生，计数与整体判定由 `MetricTableViewModel.RaiseSummary` 统一重算。
 
 ### 4.3 参考标定与参考系
 
@@ -203,7 +205,7 @@
 
 WPF 主窗口壳由 `MainWindow` + `Views/DeviceDebugView` + `Views/MetricTableView` 组成，状态栏文本经 `MainViewModel.StatusText` 绑定；两个页面壳在 M-23/M-40 中填充具体内容。WPF App 分层检查（M-25）已确认源码与程序集均不直接引用 `GmixLx.Vendor`。
 
-曲线渲染的 min/max 分块聚合已抽离为 `Visualization/MinMaxPyramid.cs`（纯计算，不依赖 UI），WPF 曲线控件 `Visualization/CurvePlotControl.cs` 复用该算法绘制 16 万点曲线；当前已支持滚轮缩放、左键拖动平移、A/B 游标拖动、悬停十字线与跟随指针的坐标提示、峰顶单行坐标标签、ROI 底纹、阈值线，以及可上下拖动的水平参考线（`ReferenceLevelDb`，默认等于阈值，拖动右侧标签移动）。
+曲线渲染的 min/max 分块聚合已抽离为 `Visualization/MinMaxPyramid.cs`（纯计算，不依赖 UI），WPF 曲线控件 `Visualization/CurvePlotControl.cs` 复用该算法绘制 16 万点曲线；当前已支持滚轮缩放、左键拖动平移、A/B 游标拖动、悬停十字线与跟随指针的坐标提示、峰顶单行坐标标签、ROI 底纹、阈值线，以及可上下拖动的水平参考线（`ReferenceLevelDb`，默认等于阈值，拖动右侧标签移动）。曲线区域提供右键菜单：导出图片（按屏幕 DPI 生成 PNG）、复位视图、显示/隐藏峰；导出与截图走同一渲染路径。
 
 距离域曲线页（M-40）由 `Views/DeviceDebugView.xaml` + `ViewModels/DeviceDebugViewModel.cs` 构成，结构与 WinForms `DeviceDebugPanel` 一一对应：
 

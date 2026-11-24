@@ -30,6 +30,10 @@ namespace GmixLx.App.Wpf.ViewModels
 
         CancellationTokenSource _cts;
         bool _running;
+        readonly System.Diagnostics.Stopwatch _watch = new System.Diagnostics.Stopwatch();
+        string _elapsedText = "—";
+        string _overallState = "未开始";
+        string _failuresSummary = "";
 
         public MetricTableViewModel(string sdkDirectory, string calibrationPath)
         {
@@ -130,6 +134,35 @@ namespace GmixLx.App.Wpf.ViewModels
             }
         }
 
+        // ---------------- 顶部汇总 ----------------
+
+        /// <summary>有效行数（PASS）。</summary>
+        public int PassCount { get; private set; }
+
+        /// <summary>失败行数（FAIL）。</summary>
+        public int FailCount { get; private set; }
+
+        /// <summary>尚未采集的行数。</summary>
+        public int PendingCount { get; private set; }
+
+        /// <summary>汇总状态：未开始 / 进行中 / PASS / FAIL / 部分完成。</summary>
+        public string OverallState
+        {
+            get { return _overallState; }
+        }
+
+        /// <summary>失败原因汇总，作为 FAIL chip 的提示。</summary>
+        public string FailuresSummary
+        {
+            get { return _failuresSummary; }
+        }
+
+        /// <summary>最近一次批量的用时；运行中或未开始为 —。</summary>
+        public string ElapsedText
+        {
+            get { return _elapsedText; }
+        }
+
         /// <summary>按 IN/OUT 把一条指标结果写入对应行；由采集回调调用。</summary>
         public void ApplyRow(MetricTableRow row)
         {
@@ -195,6 +228,8 @@ namespace GmixLx.App.Wpf.ViewModels
             double roiEndM = calibration.ToYinXunDistance(metrics.MarkDM);
 
             Clear();
+            _watch.Restart();
+            SetElapsed("—");
             _running = true;
             _cts = new CancellationTokenSource();
             RaiseState();
@@ -232,6 +267,8 @@ namespace GmixLx.App.Wpf.ViewModels
                             string failures = result.DescribeFailures();
                             if (!string.IsNullOrEmpty(failures)) text += " · 失败原因：" + failures;
                             text += " · 映讯 GM-IX：RL 为设备内部参考";
+                            SetElapsed((result.DurationMs / 1000.0)
+                                .ToString("F1", CultureInfo.InvariantCulture) + " s");
                             Report(text, result.FailedPaths > 0 ? StatusKind.Normal : StatusKind.Success);
                         });
                     }
@@ -248,6 +285,12 @@ namespace GmixLx.App.Wpf.ViewModels
                 {
                     Post(ui, delegate
                     {
+                        _watch.Stop();
+                        if (_elapsedText == "—")
+                        {
+                            SetElapsed(_watch.Elapsed.TotalSeconds
+                                .ToString("F1", CultureInfo.InvariantCulture) + " s");
+                        }
                         _running = false;
                         CancellationTokenSource cts = _cts;
                         _cts = null;
@@ -401,6 +444,72 @@ namespace GmixLx.App.Wpf.ViewModels
             OnPropertyChanged("CanStart");
             OnPropertyChanged("CanStop");
             OnPropertyChanged("CanExport");
+            RaiseSummary();
+        }
+
+        /// <summary>重算 PASS/FAIL/待采集计数与汇总状态；行数固定 64，逐行扫描开销可忽略。</summary>
+        void RaiseSummary()
+        {
+            int pass = 0;
+            int fail = 0;
+            var reasons = new List<string>();
+            foreach (MetricTableRowViewModel item in Rows)
+            {
+                if (item.Source == null) continue;
+                if (item.IsFailure)
+                {
+                    fail++;
+                    if (!string.IsNullOrEmpty(item.Failure))
+                    {
+                        reasons.Add(item.InChannel.ToString(CultureInfo.InvariantCulture) + "/"
+                            + item.OutChannel.ToString(CultureInfo.InvariantCulture) + " " + item.Failure);
+                    }
+                }
+                else
+                {
+                    pass++;
+                }
+            }
+
+            PassCount = pass;
+            FailCount = fail;
+            PendingCount = Rows.Count - pass - fail;
+
+            string state;
+            if (pass + fail == 0)
+            {
+                state = _running ? "进行中" : "未开始";
+            }
+            else if (fail > 0)
+            {
+                state = _running ? "进行中" : "FAIL";
+            }
+            else if (pass == Rows.Count)
+            {
+                state = "PASS";
+            }
+            else
+            {
+                state = _running ? "进行中" : "部分完成";
+            }
+
+            if (_overallState != state)
+            {
+                _overallState = state;
+                OnPropertyChanged("OverallState");
+            }
+            _failuresSummary = reasons.Count == 0 ? "" : string.Join("；", reasons);
+            OnPropertyChanged("PassCount");
+            OnPropertyChanged("FailCount");
+            OnPropertyChanged("PendingCount");
+            OnPropertyChanged("FailuresSummary");
+        }
+
+        void SetElapsed(string text)
+        {
+            if (_elapsedText == text) return;
+            _elapsedText = text;
+            OnPropertyChanged("ElapsedText");
         }
 
         void Set(ref string field, string value, string name)

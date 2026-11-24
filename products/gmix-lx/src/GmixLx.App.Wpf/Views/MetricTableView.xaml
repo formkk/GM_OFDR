@@ -87,6 +87,7 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
@@ -139,7 +140,63 @@
             </StackPanel>
         </Border>
 
-        <Border Grid.Row="2" Style="{StaticResource CardStyle}" Margin="0">
+        <!-- 顶部汇总：整体判定 + 有效/失败/待采集 + 用时 -->
+        <Border Grid.Row="2" Style="{StaticResource CardStyle}" Margin="0,0,0,8" Padding="10,6">
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                <Border CornerRadius="2" Padding="8,2" BorderThickness="1"
+                        ToolTip="{Binding FailuresSummary}">
+                    <Border.Style>
+                        <Style TargetType="Border">
+                            <Setter Property="Background" Value="{StaticResource InputBackgroundBrush}" />
+                            <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding OverallState}" Value="PASS">
+                                    <Setter Property="Background" Value="{StaticResource PassBackgroundBrush}" />
+                                    <Setter Property="BorderBrush" Value="{StaticResource SuccessBrush}" />
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding OverallState}" Value="FAIL">
+                                    <Setter Property="Background" Value="{StaticResource FailBackgroundBrush}" />
+                                    <Setter Property="BorderBrush" Value="{StaticResource DangerBrush}" />
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding OverallState}" Value="进行中">
+                                    <Setter Property="BorderBrush" Value="{StaticResource AccentBrush}" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Border.Style>
+                    <TextBlock Text="{Binding OverallState}" FontWeight="Bold"
+                               FontSize="{StaticResource FontSizeSmall}">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="Foreground" Value="{StaticResource TextMutedBrush}" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding OverallState}" Value="PASS">
+                                        <Setter Property="Foreground" Value="{StaticResource SuccessBrush}" />
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding OverallState}" Value="FAIL">
+                                        <Setter Property="Foreground" Value="{StaticResource DangerBrush}" />
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding OverallState}" Value="进行中">
+                                        <Setter Property="Foreground" Value="{StaticResource AccentBrush}" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+                </Border>
+
+                <TextBlock Style="{StaticResource MutedTextStyle}" Margin="14,0,0,0"
+                           Text="{Binding PassCount, StringFormat='有效 {0}'}" />
+                <TextBlock Style="{StaticResource MutedTextStyle}" Margin="14,0,0,0"
+                           Text="{Binding FailCount, StringFormat='失败 {0}'}" />
+                <TextBlock Style="{StaticResource MutedTextStyle}" Margin="14,0,0,0"
+                           Text="{Binding PendingCount, StringFormat='待采集 {0}'}" />
+                <TextBlock Style="{StaticResource MutedTextStyle}" Margin="14,0,0,0"
+                           Text="{Binding ElapsedText, StringFormat='用时 {0}'}" />
+            </StackPanel>
+        </Border>
+
+        <Border Grid.Row="3" Style="{StaticResource CardStyle}" Margin="0">
         <DataGrid ItemsSource="{Binding Rows}"
                   ColumnWidth="80"
                   HorizontalAlignment="Stretch"
@@ -213,6 +270,51 @@
                 <DataGridTextColumn Header="链路&#x0A;长度(m)"
                                     Binding="{Binding LinkLengthText}"
                                     CellStyle="{StaticResource MetricCellStyle}" />
+                <DataGridTemplateColumn Header="状态"
+                                        CellStyle="{StaticResource MetricCellStyle}">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <Border CornerRadius="2" Padding="6,1" BorderThickness="1"
+                                    HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <Border.Style>
+                                    <Style TargetType="Border">
+                                        <Setter Property="Background" Value="Transparent" />
+                                        <Setter Property="BorderBrush" Value="Transparent" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding HasData}" Value="True">
+                                                <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}" />
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding IsFailure}" Value="True">
+                                                <Setter Property="Background" Value="{StaticResource FailBackgroundBrush}" />
+                                                <Setter Property="BorderBrush" Value="{StaticResource DangerBrush}" />
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding StatusText}" Value="PASS">
+                                                <Setter Property="Background" Value="{StaticResource PassBackgroundBrush}" />
+                                                <Setter Property="BorderBrush" Value="{StaticResource SuccessBrush}" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Border.Style>
+                                <TextBlock Text="{Binding StatusText}" FontWeight="Bold"
+                                           FontSize="{StaticResource FontSizeSmall}">
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock">
+                                            <Setter Property="Foreground" Value="{StaticResource TextMutedBrush}" />
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding StatusText}" Value="PASS">
+                                                    <Setter Property="Foreground" Value="{StaticResource SuccessBrush}" />
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding StatusText}" Value="FAIL">
+                                                    <Setter Property="Foreground" Value="{StaticResource DangerBrush}" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+                            </Border>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
             </DataGrid.Columns>
         </DataGrid>
         </Border>
