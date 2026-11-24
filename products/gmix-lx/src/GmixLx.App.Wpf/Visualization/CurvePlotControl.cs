@@ -479,7 +479,7 @@ namespace GmixLx.App.Wpf.Visualization
             double y = ToY(level, min, max, plot);
             dc.DrawLine(_referencePen, new Point(plot.Left, y), new Point(plot.Right, y));
 
-            // 参考线标签用独立对比色（紫），与阈值线、峰标签区分。
+            // 参考线标签用独立对比色（金），与阈值灰、峰标签绿区分。
             FormattedText text = FormatCached("参考 " + level.ToString("F1", CultureInfo.InvariantCulture) + " dB",
                 9, _referenceLabelBrush);
             double boxW = text.Width + 10;
@@ -895,7 +895,7 @@ namespace GmixLx.App.Wpf.Visualization
             _primaryTextBrush = FindBrush("TextPrimaryBrush", Color.FromRgb(230, 232, 235));
             _peakBrush = FindBrush("PeakBrush", Color.FromRgb(255, 138, 101));
             _peakLabelBrush = FindBrush("PeakLabelBrush", Color.FromRgb(47, 160, 94));
-            _referenceLabelBrush = FindBrush("ReferenceHighlightBrush", Color.FromRgb(176, 139, 232));
+            _referenceLabelBrush = FindBrush("ReferenceHighlightBrush", Color.FromRgb(215, 185, 76));
             _roiBrush = FindBrush("RoiBackgroundBrush", Color.FromArgb(0x2E, 0x5A, 0xA9, 0xFF));
 
             _gridPen = FindPen("GridLineBrush", Color.FromRgb(47, 50, 54), 1.0);
@@ -905,7 +905,7 @@ namespace GmixLx.App.Wpf.Visualization
             _cursorBPen = DashPen("CursorBBrush", Color.FromRgb(53, 193, 160), DashStyles.Dash);
             _hoverPen = DashPen("HoverBrush", Color.FromRgb(140, 146, 156), DashStyles.Dot);
             _referencePen = DashPen("ReferenceBrush", Color.FromRgb(200, 205, 211), DashStyles.Dash);
-            _referenceLabelPen = FindPen("ReferenceHighlightBrush", Color.FromRgb(176, 139, 232), 1.0);
+            _referenceLabelPen = FindPen("ReferenceHighlightBrush", Color.FromRgb(215, 185, 76), 1.0);
             _thresholdPen = DashPen("ThresholdBrush", Color.FromRgb(90, 96, 104), DashStyles.Dash);
         }
 
