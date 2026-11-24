@@ -45,6 +45,11 @@ namespace GmixLx.App.Wpf.Visualization
             "ViewEndM", typeof(double), typeof(CurvePlotControl),
             new FrameworkPropertyMetadata(0.0, FrameworkPropertyMetadataOptions.AffectsRender));
 
+        /// <summary>复位视图时使用的横轴宽度（米）；0 表示按全量程。</summary>
+        public static readonly DependencyProperty ResetWidthMProperty = DependencyProperty.Register(
+            "ResetWidthM", typeof(double), typeof(CurvePlotControl),
+            new FrameworkPropertyMetadata(0.0));
+
         public static readonly DependencyProperty CursorAMProperty = DependencyProperty.Register(
             "CursorAM", typeof(double), typeof(CurvePlotControl),
             new FrameworkPropertyMetadata(double.NaN, FrameworkPropertyMetadataOptions.AffectsRender));
@@ -163,6 +168,12 @@ namespace GmixLx.App.Wpf.Visualization
             set { SetValue(ViewEndMProperty, value); }
         }
 
+        public double ResetWidthM
+        {
+            get { return (double)GetValue(ResetWidthMProperty); }
+            set { SetValue(ResetWidthMProperty, value); }
+        }
+
         public double CursorAM
         {
             get { return (double)GetValue(CursorAMProperty); }
@@ -219,12 +230,12 @@ namespace GmixLx.App.Wpf.Visualization
 
         public event Action<double, double> CursorsChanged;
 
-        /// <summary>复位缩放：按全量程显示。</summary>
+        /// <summary>复位缩放：默认回到 [0, ResetWidthM]；未设定宽度时按全量程显示。</summary>
         public void ResetView()
         {
             if (Values == null || Values.Length < 2) return;
             SetCurrentValue(ViewStartMProperty, 0.0);
-            SetCurrentValue(ViewEndMProperty, 0.0);
+            SetCurrentValue(ViewEndMProperty, ResetWidthM > 0 ? ResetWidthM : 0.0);
         }
 
         /// <summary>
@@ -321,8 +332,14 @@ namespace GmixLx.App.Wpf.Visualization
             double[] values = Values;
             double scale = XScale;
             Rect plot = PlotRect;
-            if (values == null || values.Length < 2 || scale <= 0 || plot.Width <= 10 || plot.Height <= 10)
+            if (plot.Width <= 10 || plot.Height <= 10)
             {
+                return;
+            }
+
+            if (values == null || values.Length < 2 || scale <= 0)
+            {
+                DrawEmptyAxes(dc, plot);
                 return;
             }
 
@@ -428,6 +445,26 @@ namespace GmixLx.App.Wpf.Visualization
             DrawHover(dc, plot, viewStart, viewEnd, min, max);
 
             dc.DrawRectangle(null, axisPen, plot);
+        }
+
+        /// <summary>尚无数据时按当前视窗画出横轴刻度与边框，让"显示上限"宽度在启动时就可见。</summary>
+        void DrawEmptyAxes(DrawingContext dc, Rect plot)
+        {
+            double start = ViewStartM;
+            double end = ViewEndM;
+            if (end <= start) return;
+
+            for (int k = 0; k <= 6; k++)
+            {
+                double x = plot.Left + plot.Width * k / 6.0;
+                dc.DrawLine(_gridPen, new Point(x, plot.Top), new Point(x, plot.Bottom));
+                double distance = start + (end - start) * k / 6.0;
+                FormattedText label = FormatCached(
+                    distance.ToString("F2", CultureInfo.InvariantCulture) + " m", 10, _textBrush);
+                dc.DrawText(label, new Point(x - label.Width / 2, plot.Bottom + 6));
+            }
+
+            dc.DrawRectangle(null, _axisPen, plot);
         }
 
         /// <summary>悬停十字线 + 跟随指针的坐标提示框。</summary>

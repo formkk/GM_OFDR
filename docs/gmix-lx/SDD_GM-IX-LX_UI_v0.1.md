@@ -205,7 +205,7 @@
 
 WPF 主窗口壳由 `MainWindow` + `Views/DeviceDebugView` + `Views/MetricTableView` 组成，状态栏文本经 `MainViewModel.StatusText` 绑定；两个页面壳在 M-23/M-40 中填充具体内容。WPF App 分层检查（M-25）已确认源码与程序集均不直接引用 `GmixLx.Vendor`。
 
-曲线渲染的 min/max 分块聚合已抽离为 `Visualization/MinMaxPyramid.cs`（纯计算，不依赖 UI），WPF 曲线控件 `Visualization/CurvePlotControl.cs` 复用该算法绘制 16 万点曲线；当前已支持滚轮缩放、左键拖动平移、A/B 游标拖动、悬停十字线与跟随指针的坐标提示、峰顶单行电平标签（`P# + dB`，灰白，不显示距离）、ROI 底纹随 A/B 实时同步（游标无效时回退帧内 ROI）、无文字的阈值虚线，以及可上下拖动的水平参考线（`ReferenceLevelDb`，默认等于阈值，虚线土黄 `#C9A85C`、右侧标签框土黄 `#DBBA6B`）。初始视窗为 `[0, 显示上限]`，A/B 缺省取该视窗中央 80%（缺省 12.00 m → 1.20/10.80）；「显示上限」变化时立即刷新视窗并重算 A/B。曲线区域提供右键菜单：导出图片（按屏幕 DPI 生成 PNG）、复位视图、显示/隐藏峰；导出与截图走同一渲染路径。
+曲线渲染的 min/max 分块聚合已抽离为 `Visualization/MinMaxPyramid.cs`（纯计算，不依赖 UI），WPF 曲线控件 `Visualization/CurvePlotControl.cs` 复用该算法绘制 16 万点曲线；当前已支持滚轮缩放、左键拖动平移、A/B 游标拖动、悬停十字线与跟随指针的坐标提示、峰顶单行电平标签（`P# + dB`，灰白，不显示距离）、ROI 底纹随 A/B 实时同步（游标无效时回退帧内 ROI）、无文字的阈值虚线，以及可上下拖动的水平参考线（`ReferenceLevelDb`，默认等于阈值，虚线土黄 `#C9A85C`、右侧标签框土黄 `#DBBA6B`）。初始视窗为 `[0, 显示上限]`，A/B 缺省取该视窗中央 80%（缺省 12.00 m → 1.20/10.80）；「显示上限」变化时立即刷新视窗并重算 A/B。启动尚未采集时按显示上限画出横轴刻度；单次采集完成、右键复位视图也统一回到 `[0, 显示上限]`（连续采集不打断用户缩放）。曲线区域提供右键菜单：导出图片（按屏幕 DPI 生成 PNG）、复位视图（回到 `[0, 显示上限]`）、显示/隐藏峰；导出与截图走同一渲染路径。
 
 距离域曲线页（M-40）由 `Views/DeviceDebugView.xaml` + `ViewModels/DeviceDebugViewModel.cs` 构成，结构与 WinForms `DeviceDebugPanel` 一一对应：
 

@@ -86,8 +86,8 @@ namespace GmixLx.App.Wpf.ViewModels
             }
         }
 
-        /// <summary>帧就绪，由视图负责把曲线/峰/ROI 推给画布控件（附带显示上限，单位 m）。</summary>
-        public event Action<YinXun2SingleFrame, double> FrameReady;
+        /// <summary>帧就绪，由视图负责把曲线/峰/ROI 推给画布控件（附带显示上限，单位 m；单次采集需复位视窗）。</summary>
+        public event Action<YinXun2SingleFrame, double, bool> FrameReady;
 
         /// <summary>可读错误消息，由视图弹窗展示。</summary>
         public event Action<string> ErrorRaised;
@@ -248,7 +248,7 @@ namespace GmixLx.App.Wpf.ViewModels
             try
             {
                 YinXun2SingleFrame frame = await Task.Run(() => AcquireFrame(request));
-                RenderFrame(frame);
+                RenderFrame(frame, true);
             }
             catch (Exception ex)
             {
@@ -312,7 +312,7 @@ namespace GmixLx.App.Wpf.ViewModels
                         break;
                     }
 
-                    RenderFrame(frame);
+                    RenderFrame(frame, false);
                     try
                     {
                         await Task.Delay(50, token);
@@ -361,7 +361,7 @@ namespace GmixLx.App.Wpf.ViewModels
 
         // ---------------- 渲染 ----------------
 
-        void RenderFrame(YinXun2SingleFrame frame)
+        void RenderFrame(YinXun2SingleFrame frame, bool resetView)
         {
             LastFrame = frame;
 
@@ -410,8 +410,8 @@ namespace GmixLx.App.Wpf.ViewModels
                 });
             }
 
-            Action<YinXun2SingleFrame, double> handler = FrameReady;
-            if (handler != null) handler(frame, ReadMetersOr(DisplayMaxText, 12.0));
+            Action<YinXun2SingleFrame, double, bool> handler = FrameReady;
+            if (handler != null) handler(frame, ReadMetersOr(DisplayMaxText, 12.0), resetView);
         }
 
         static string FormatDb(double value)

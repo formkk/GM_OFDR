@@ -62,7 +62,7 @@ namespace GmixLx.App.Wpf.Views
             _viewModel.SaveFrame();
         }
 
-        void OnFrameReady(YinXun2SingleFrame frame, double displayMaxM)
+        void OnFrameReady(YinXun2SingleFrame frame, double displayMaxM, bool resetView)
         {
             Plot.Values = frame.LevelsDb;
             Plot.XScale = frame.PitchM;
@@ -80,7 +80,8 @@ namespace GmixLx.App.Wpf.Views
             double dataEndM = frame.LevelsDb.Length > 1 ? (frame.LevelsDb.Length - 1) * frame.PitchM : 0.0;
             bool displayChanged = Math.Abs(displayMaxM - _displayMaxM) > 1e-9;
             _displayMaxM = displayMaxM;
-            if (!_viewInitialized || displayChanged)
+            Plot.ResetWidthM = displayMaxM;
+            if (!_viewInitialized || displayChanged || resetView)
             {
                 Plot.ViewStartM = 0.0;
                 Plot.ViewEndM = Math.Min(displayMaxM, dataEndM);
@@ -111,7 +112,7 @@ namespace GmixLx.App.Wpf.Views
             }
         }
 
-        /// <summary>显示上限变化时立即刷新视窗（不等下一帧）；上限非法或尚无数据时不动。</summary>
+        /// <summary>显示上限变化时立即刷新视窗（不等下一帧）；上限非法时不动。</summary>
         void ApplyDisplayMaxToView()
         {
             double width;
@@ -121,11 +122,18 @@ namespace GmixLx.App.Wpf.Views
                 return;
             }
 
+            Plot.ResetWidthM = width;
+            Plot.ViewStartM = 0.0;
+
             double[] values = Plot.Values;
-            if (values == null || values.Length < 2 || Plot.XScale <= 0) return;
+            if (values == null || values.Length < 2 || Plot.XScale <= 0)
+            {
+                // 尚未采集：横轴先按显示上限铺开。
+                Plot.ViewEndM = width;
+                return;
+            }
 
             double dataEndM = (values.Length - 1) * Plot.XScale;
-            Plot.ViewStartM = 0.0;
             Plot.ViewEndM = Math.Min(width, dataEndM);
         }
 
@@ -163,6 +171,9 @@ namespace GmixLx.App.Wpf.Views
             if (window == null) return;
             _closedHooked = true;
             window.Closed += delegate { _viewModel.Dispose(); };
+
+            // 启动即按显示上限铺开横轴，等首帧再画曲线。
+            ApplyDisplayMaxToView();
         }
     }
 }
