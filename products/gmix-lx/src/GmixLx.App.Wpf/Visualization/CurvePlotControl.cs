@@ -378,7 +378,15 @@ namespace GmixLx.App.Wpf.Visualization
                 dc.DrawText(label, new Point(x - label.Width / 2, plot.Bottom + 6));
             }
 
-            DrawRoi(dc, plot, viewStart, viewEnd);
+            // 阴影跟随 A/B：游标有效时以游标为准，保证拖动过程中底纹同步。
+            double roiStart = RoiStartM;
+            double roiEnd = RoiEndM;
+            if (!double.IsNaN(CursorAM) && !double.IsNaN(CursorBM) && CursorBM > CursorAM)
+            {
+                roiStart = CursorAM;
+                roiEnd = CursorBM;
+            }
+            DrawRoi(dc, plot, viewStart, viewEnd, roiStart, roiEnd);
 
             int width = (int)Math.Floor(plot.Width);
             double previousY = double.NaN;
@@ -485,11 +493,12 @@ namespace GmixLx.App.Wpf.Visualization
             dc.DrawText(text, new Point(boxX + 5, boxY + 2));
         }
 
-        void DrawRoi(DrawingContext dc, Rect plot, double viewStart, double viewEnd)
+        void DrawRoi(DrawingContext dc, Rect plot, double viewStart, double viewEnd,
+            double roiStartM, double roiEndM)
         {
-            if (double.IsNaN(RoiStartM) || double.IsNaN(RoiEndM) || RoiEndM <= RoiStartM) return;
-            double left = Math.Max(viewStart, RoiStartM);
-            double right = Math.Min(viewEnd, RoiEndM);
+            if (double.IsNaN(roiStartM) || double.IsNaN(roiEndM) || roiEndM <= roiStartM) return;
+            double left = Math.Max(viewStart, roiStartM);
+            double right = Math.Min(viewEnd, roiEndM);
             if (right <= left) return;
 
             double x0 = DistanceToX(left, viewStart, viewEnd, plot);
