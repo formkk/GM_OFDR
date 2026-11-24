@@ -49,10 +49,12 @@ namespace GmixLx.App.Wpf.ViewModels
 
         const double MaxDistanceM = 68.1334;
 
+        /// <summary>空间平均固定 1 m；设备页不再暴露该输入。</summary>
+        const uint FixedSpatialAverageM = 1;
+
         readonly string _sdkDirectory;
         readonly double _levelOffsetDb;
 
-        string _spatialAverageText = "1";
         string _temporalAverageText = YinXun2Station.DefaultTemporalAverageN.ToString(CultureInfo.InvariantCulture);
         // 缺省 A/B = 显示上限 12.00 m 的中央 80%（两端各留 10%）。
         string _roiStartText = "1.20";
@@ -91,12 +93,6 @@ namespace GmixLx.App.Wpf.ViewModels
         public event Action<string> ErrorRaised;
 
         public ObservableCollection<PeakRow> PeakRows { get; } = new ObservableCollection<PeakRow>();
-
-        public string SpatialAverageText
-        {
-            get { return _spatialAverageText; }
-            set { Set(ref _spatialAverageText, value, "SpatialAverageText"); }
-        }
 
         public string TemporalAverageText
         {
@@ -189,11 +185,9 @@ namespace GmixLx.App.Wpf.ViewModels
                 return false;
             }
 
-            uint spatial;
             uint temporal;
             double start;
             double end;
-            if (!TryReadInt(SpatialAverageText, 1, 20, "空间平均", out spatial, out error)) return false;
             if (!TryReadInt(TemporalAverageText, 1, 100, "采集次数", out temporal, out error)) return false;
             if (!TryReadMeters(RoiStartText, "ROI 起点", out start, out error)) return false;
             if (!TryReadMeters(RoiEndText, "ROI 终点", out end, out error)) return false;
@@ -205,7 +199,7 @@ namespace GmixLx.App.Wpf.ViewModels
 
             request = new AcquireRequest
             {
-                SpatialM = spatial,
+                SpatialM = FixedSpatialAverageM,
                 TemporalN = temporal,
                 RoiStartM = start,
                 RoiEndM = end

@@ -7,10 +7,12 @@
              VerticalContentAlignment="Stretch">
     <UserControl.Resources>
         <Style x:Key="FieldLabelStyle" TargetType="TextBlock" BasedOn="{StaticResource MutedTextStyle}">
+            <Setter Property="FontSize" Value="12.5" />
             <Setter Property="Margin" Value="0,0,0,1" />
         </Style>
 
         <Style x:Key="GroupHeaderStyle" TargetType="TextBlock" BasedOn="{StaticResource MutedTextStyle}">
+            <Setter Property="FontSize" Value="12.5" />
             <Setter Property="FontWeight" Value="Bold" />
             <Setter Property="Margin" Value="0,6,0,2" />
         </Style>
@@ -23,10 +25,10 @@
             <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}" />
             <Setter Property="BorderThickness" Value="1" />
             <Setter Property="FontFamily" Value="{StaticResource MonoFontFamily}" />
-            <Setter Property="FontSize" Value="{StaticResource FontSizeMono}" />
+            <Setter Property="FontSize" Value="13" />
             <Setter Property="TextAlignment" Value="Right" />
             <Setter Property="Padding" Value="3,1" />
-            <Setter Property="Height" Value="22" />
+            <Setter Property="Height" Value="24" />
             <Setter Property="VerticalContentAlignment" Value="Center" />
             <Setter Property="Margin" Value="0,1,0,4" />
         </Style>
@@ -104,7 +106,7 @@
 
                 <Grid Grid.Row="0">
                     <TextBlock x:Name="ParamsTitle" Text="参数" Style="{StaticResource TitleTextStyle}"
-                               VerticalAlignment="Center" />
+                               FontSize="15" VerticalAlignment="Center" />
                     <ToggleButton x:Name="ParamsToggle" Content="◀" Width="24" Height="22"
                                   HorizontalAlignment="Right" VerticalAlignment="Center"
                                   Style="{StaticResource ToolToggleButtonStyle}" Padding="0"
@@ -114,9 +116,6 @@
                 <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Margin="0,4,0,0">
                     <StackPanel x:Name="ParamsContent">
                         <TextBlock Text="采集" Style="{StaticResource GroupHeaderStyle}" Margin="0,0,0,2" />
-                        <TextBlock Text="空间平均 m" Style="{StaticResource FieldLabelStyle}" />
-                        <TextBox Style="{StaticResource ParamInputStyle}"
-                                 Text="{Binding SpatialAverageText, UpdateSourceTrigger=PropertyChanged}" />
                         <TextBlock Text="采集次数" Style="{StaticResource FieldLabelStyle}" />
                         <TextBox Style="{StaticResource ParamInputStyle}"
                                  Text="{Binding TemporalAverageText, UpdateSourceTrigger=PropertyChanged}" />
@@ -137,7 +136,7 @@
                 </ScrollViewer>
 
                 <StackPanel x:Name="ParamsButtons" Grid.Row="2" Margin="0,4,0,0">
-                    <Button Height="26" Margin="0,0,0,4" Padding="8,2"
+                    <Button Height="28" Margin="0,0,0,4" Padding="8,2" FontSize="13"
                             Style="{StaticResource PrimaryButtonStyle}"
                             IsEnabled="{Binding CanRunOnce}"
                             Click="OnSingleClick">
@@ -147,7 +146,7 @@
                             <TextBlock Text="单次采集" Margin="5,0,0,0" VerticalAlignment="Center" />
                         </StackPanel>
                     </Button>
-                    <Button Height="26" Margin="0,0,0,4" Padding="8,2"
+                    <Button Height="28" Margin="0,0,0,4" Padding="8,2" FontSize="13"
                             Style="{StaticResource SecondaryButtonStyle}"
                             Click="OnContinuousClick">
                         <StackPanel Orientation="Horizontal">
@@ -157,7 +156,7 @@
                                        VerticalAlignment="Center" />
                         </StackPanel>
                     </Button>
-                    <Button Height="26" Padding="8,2"
+                    <Button Height="28" Padding="8,2" FontSize="13"
                             Style="{StaticResource SecondaryButtonStyle}"
                             Click="OnSaveClick">
                         <StackPanel Orientation="Horizontal">
