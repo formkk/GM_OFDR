@@ -18,7 +18,7 @@
             <Setter Property="FontFamily" Value="{StaticResource UiFontFamily}" />
             <Setter Property="FontSize" Value="{StaticResource FontSizeBody}" />
             <Setter Property="Foreground" Value="{StaticResource TextMutedBrush}" />
-            <Setter Property="Padding" Value="16,8" />
+            <Setter Property="Padding" Value="16,5" />
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="TabItem">
@@ -77,7 +77,7 @@
                 </StackPanel>
             </Grid>
         </Border>
-        <TabControl Margin="{StaticResource PageMargin}" SelectedIndex="0"
+        <TabControl Margin="12,2,12,10" SelectedIndex="0"
                     Background="{StaticResource PageBackgroundBrush}" BorderThickness="0">
             <TabItem Header="距离域曲线">
                 <views:DeviceDebugView />
