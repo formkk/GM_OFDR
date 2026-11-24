@@ -29,8 +29,8 @@
     <Color x:Key="CursorBColor">#35C1A0</Color>
     <Color x:Key="CursorBandColor">#1E5AA9FF</Color>
     <Color x:Key="ThresholdColor">#5A6068</Color>
-    <Color x:Key="ReferenceColor">#C8CDD3</Color>
-    <Color x:Key="ReferenceHighlightColor">#E8E8E0</Color>
+    <Color x:Key="ReferenceColor">#C9A85C</Color>
+    <Color x:Key="ReferenceHighlightColor">#DBBA6B</Color>
     <Color x:Key="PeakLabelColor">#E6E8EA</Color>
     <Color x:Key="HoverColor">#8C929C</Color>
     <Color x:Key="HoverBackgroundColor">#2C3036</Color>
