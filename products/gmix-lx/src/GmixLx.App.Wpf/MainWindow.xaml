@@ -45,47 +45,6 @@
         </Style>
     </Window.Resources>
     <DockPanel Background="{StaticResource PageBackgroundBrush}">
-        <!-- 顶部应用栏：产品标识 + 设备/端口 + 版本 -->
-        <Border DockPanel.Dock="Top" Height="46"
-                Background="{StaticResource TopBarBrush}"
-                BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1">
-            <Grid Margin="16,0">
-                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                    <TextBlock Text="GM-IX-LX" FontSize="15" FontWeight="Bold" />
-                    <TextBlock Text="映讯 GM-IX OFDR 专用上位机" Style="{StaticResource MutedTextStyle}"
-                               VerticalAlignment="Center" Margin="10,2,0,0" />
-                </StackPanel>
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
-                    <Border Background="{StaticResource CardBackgroundBrush}"
-                            BorderBrush="{StaticResource BorderBrush}" BorderThickness="1"
-                            CornerRadius="2" Padding="8,3" Margin="0,0,6,0">
-                        <TextBlock Style="{StaticResource MutedTextStyle}" Text="映讯 GM-IX" />
-                    </Border>
-                    <Border Background="{StaticResource CardBackgroundBrush}"
-                            BorderBrush="{StaticResource BorderBrush}" BorderThickness="1"
-                            CornerRadius="2" Padding="8,3" Margin="0,0,6,0">
-                        <TextBlock Style="{StaticResource MonoTextStyle}" FontSize="{StaticResource FontSizeSmall}">
-                            <Run Text="1×8 " Foreground="{StaticResource TextMutedBrush}" />
-                            <Run Text="{Binding MetricTable.Com1x8Text, Mode=OneWay}" />
-                        </TextBlock>
-                    </Border>
-                    <Border Background="{StaticResource CardBackgroundBrush}"
-                            BorderBrush="{StaticResource BorderBrush}" BorderThickness="1"
-                            CornerRadius="2" Padding="8,3" Margin="0,0,6,0">
-                        <TextBlock Style="{StaticResource MonoTextStyle}" FontSize="{StaticResource FontSizeSmall}">
-                            <Run Text="8×8 " Foreground="{StaticResource TextMutedBrush}" />
-                            <Run Text="{Binding MetricTable.Com8x8Text, Mode=OneWay}" />
-                        </TextBlock>
-                    </Border>
-                    <Border Background="{StaticResource CardBackgroundBrush}"
-                            BorderBrush="{StaticResource BorderBrush}" BorderThickness="1"
-                            CornerRadius="2" Padding="8,3">
-                        <TextBlock Style="{StaticResource MutedTextStyle}"
-                                   Text="{Binding AppVersion, StringFormat='v{0}'}" />
-                    </Border>
-                </StackPanel>
-            </Grid>
-        </Border>
 
         <Border DockPanel.Dock="Bottom" Background="{StaticResource CardBackgroundBrush}"
                 BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,1,0,0">

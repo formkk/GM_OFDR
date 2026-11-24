@@ -41,11 +41,6 @@
         <GradientStop Color="#202225" Offset="1" />
     </LinearGradientBrush>
 
-    <LinearGradientBrush x:Key="TopBarBrush" StartPoint="0,0" EndPoint="0,1">
-        <GradientStop Color="#24262A" Offset="0" />
-        <GradientStop Color="#1E2023" Offset="1" />
-    </LinearGradientBrush>
-
     <LinearGradientBrush x:Key="ActionGradientBrush" StartPoint="0,0" EndPoint="0,1">
         <GradientStop Color="#45C966" Offset="0" />
         <GradientStop Color="#36A853" Offset="1" />
