@@ -912,13 +912,13 @@ namespace GmixLx.App.Wpf.Visualization
             _textBrush = FindBrush("TextMutedBrush", Color.FromRgb(154, 160, 166));
             _primaryTextBrush = FindBrush("TextPrimaryBrush", Color.FromRgb(230, 232, 235));
             _peakBrush = FindBrush("PeakBrush", Color.FromRgb(255, 138, 101));
-            _peakLabelBrush = FindBrush("PeakLabelBrush", Color.FromRgb(47, 160, 94));
+            _peakLabelBrush = FindBrush("PeakLabelBrush", Color.FromRgb(230, 232, 234));
             _referenceLabelBrush = FindBrush("ReferenceHighlightBrush", Color.FromRgb(232, 232, 224));
             _roiBrush = FindBrush("RoiBackgroundBrush", Color.FromArgb(0x1A, 0x5A, 0xA9, 0xFF));
 
             _gridPen = FindPen("GridLineBrush", Color.FromRgb(47, 50, 54), 1.0);
             _axisPen = FindPen("AxisBrush", Color.FromRgb(110, 115, 120), 1.0);
-            _curvePen = FindPen("CurveBrush", Color.FromRgb(76, 203, 114), 1.0);
+            _curvePen = FindPen("CurveBrush", Color.FromRgb(69, 192, 106), 1.0);
             _cursorAPen = DashPen("CursorABrush", Color.FromRgb(240, 160, 48), DashStyles.Dash);
             _cursorBPen = DashPen("CursorBBrush", Color.FromRgb(53, 193, 160), DashStyles.Dash);
             _hoverPen = DashPen("HoverBrush", Color.FromRgb(140, 146, 156), DashStyles.Dot);
