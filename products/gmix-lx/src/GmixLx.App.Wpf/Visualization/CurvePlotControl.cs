@@ -900,7 +900,7 @@ namespace GmixLx.App.Wpf.Visualization
 
             _gridPen = FindPen("GridLineBrush", Color.FromRgb(47, 50, 54), 1.0);
             _axisPen = FindPen("AxisBrush", Color.FromRgb(110, 115, 120), 1.0);
-            _curvePen = FindPen("CurveBrush", Color.FromRgb(90, 169, 255), 1.0);
+            _curvePen = FindPen("CurveBrush", Color.FromRgb(76, 203, 114), 1.0);
             _cursorAPen = DashPen("CursorABrush", Color.FromRgb(240, 160, 48), DashStyles.Dash);
             _cursorBPen = DashPen("CursorBBrush", Color.FromRgb(53, 193, 160), DashStyles.Dash);
             _hoverPen = DashPen("HoverBrush", Color.FromRgb(140, 146, 156), DashStyles.Dot);

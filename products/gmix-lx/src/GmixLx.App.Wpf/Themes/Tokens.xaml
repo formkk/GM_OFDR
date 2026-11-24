@@ -22,7 +22,7 @@
     <Color x:Key="GroupTintColor">#2C3644</Color>
     <Color x:Key="GridLineColor">#2F3236</Color>
     <Color x:Key="AxisColor">#6E7378</Color>
-    <Color x:Key="CurveColor">#5AA9FF</Color>
+    <Color x:Key="CurveColor">#4CCB72</Color>
     <Color x:Key="PeakColor">#FF8A65</Color>
     <Color x:Key="RoiBackgroundColor">#1A5AA9FF</Color>
     <Color x:Key="CursorAColor">#F0A030</Color>
