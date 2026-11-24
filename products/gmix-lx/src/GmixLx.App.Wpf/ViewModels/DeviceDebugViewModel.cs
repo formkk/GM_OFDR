@@ -119,7 +119,27 @@ namespace GmixLx.App.Wpf.ViewModels
         public string DisplayMaxText
         {
             get { return _displayMaxText; }
-            set { Set(ref _displayMaxText, value, "DisplayMaxText"); }
+            set
+            {
+                if (_displayMaxText == value) return;
+                _displayMaxText = value;
+                OnPropertyChanged("DisplayMaxText");
+                ApplyDefaultRoiFromDisplayMax();
+            }
+        }
+
+        /// <summary>显示上限变化时，A/B 重算为视窗中央 80%（两端各留 10%）；上限非法时保持原值。</summary>
+        void ApplyDefaultRoiFromDisplayMax()
+        {
+            double width;
+            if (!double.TryParse((_displayMaxText ?? "").Trim(), NumberStyles.Float,
+                CultureInfo.InvariantCulture, out width) || width <= 0)
+            {
+                return;
+            }
+
+            RoiStartText = (width * 0.1).ToString("F2", CultureInfo.InvariantCulture);
+            RoiEndText = (width * 0.9).ToString("F2", CultureInfo.InvariantCulture);
         }
 
         public string IlText

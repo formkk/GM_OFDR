@@ -101,7 +101,32 @@ namespace GmixLx.App.Wpf.Views
 
         void OnViewModelPropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-            if (e.PropertyName == "RoiStartText" || e.PropertyName == "RoiEndText") SyncCursors();
+            if (e.PropertyName == "RoiStartText" || e.PropertyName == "RoiEndText")
+            {
+                SyncCursors();
+            }
+            else if (e.PropertyName == "DisplayMaxText")
+            {
+                ApplyDisplayMaxToView();
+            }
+        }
+
+        /// <summary>显示上限变化时立即刷新视窗（不等下一帧）；上限非法或尚无数据时不动。</summary>
+        void ApplyDisplayMaxToView()
+        {
+            double width;
+            if (!double.TryParse((_viewModel.DisplayMaxText ?? "").Trim(), NumberStyles.Float,
+                CultureInfo.InvariantCulture, out width) || width <= 0)
+            {
+                return;
+            }
+
+            double[] values = Plot.Values;
+            if (values == null || values.Length < 2 || Plot.XScale <= 0) return;
+
+            double dataEndM = (values.Length - 1) * Plot.XScale;
+            Plot.ViewStartM = 0.0;
+            Plot.ViewEndM = Math.Min(width, dataEndM);
         }
 
         /// <summary>外部（ROI 输入框）同步游标位置，不触发重采。</summary>
