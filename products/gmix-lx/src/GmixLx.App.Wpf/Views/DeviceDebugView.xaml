@@ -40,6 +40,12 @@
             <Setter Property="BorderThickness" Value="0,0,0,1" />
         </Style>
 
+        <Style x:Key="PeakRightHeaderStyle" TargetType="DataGridColumnHeader"
+               BasedOn="{StaticResource PeakHeaderStyle}">
+            <Setter Property="HorizontalContentAlignment" Value="Right" />
+            <Setter Property="Padding" Value="4,2" />
+        </Style>
+
         <Style x:Key="PeakCellStyle" TargetType="DataGridCell">
             <Setter Property="BorderThickness" Value="0" />
             <Setter Property="Padding" Value="4,0" />
@@ -192,8 +198,10 @@
                         <DataGridTextColumn Header="序号" Binding="{Binding Number}" Width="14*"
                                             ElementStyle="{StaticResource CenteredCellStyle}" />
                         <DataGridTextColumn Header="位置 (m)" Binding="{Binding Position}" Width="38*"
+                                            HeaderStyle="{StaticResource PeakRightHeaderStyle}"
                                             ElementStyle="{StaticResource RightAlignedCellStyle}" />
                         <DataGridTextColumn Header="RL (dB)" Binding="{Binding Level}" Width="32*"
+                                            HeaderStyle="{StaticResource PeakRightHeaderStyle}"
                                             ElementStyle="{StaticResource RightAlignedCellStyle}" />
                         <DataGridTextColumn Header="状态" Binding="{Binding Status}" Width="16*"
                                             ElementStyle="{StaticResource CenteredCellStyle}" />
