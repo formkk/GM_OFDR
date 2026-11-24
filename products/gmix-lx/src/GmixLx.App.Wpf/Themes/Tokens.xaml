@@ -33,6 +33,27 @@
     <Color x:Key="HoverColor">#8C929C</Color>
     <Color x:Key="HoverBackgroundColor">#2C3036</Color>
 
+    <!-- 轻量层次：面板上下渐变、主动作按钮渐变（不做重拟物） -->
+    <LinearGradientBrush x:Key="PanelBackgroundBrush" StartPoint="0,0" EndPoint="0,1">
+        <GradientStop Color="#26282C" Offset="0" />
+        <GradientStop Color="#202225" Offset="1" />
+    </LinearGradientBrush>
+
+    <LinearGradientBrush x:Key="TopBarBrush" StartPoint="0,0" EndPoint="0,1">
+        <GradientStop Color="#24262A" Offset="0" />
+        <GradientStop Color="#1E2023" Offset="1" />
+    </LinearGradientBrush>
+
+    <LinearGradientBrush x:Key="ActionGradientBrush" StartPoint="0,0" EndPoint="0,1">
+        <GradientStop Color="#45C966" Offset="0" />
+        <GradientStop Color="#36A853" Offset="1" />
+    </LinearGradientBrush>
+
+    <LinearGradientBrush x:Key="ActionPressedGradientBrush" StartPoint="0,0" EndPoint="0,1">
+        <GradientStop Color="#39AE54" Offset="0" />
+        <GradientStop Color="#2F9546" Offset="1" />
+    </LinearGradientBrush>
+
     <SolidColorBrush x:Key="PageBackgroundBrush" Color="{StaticResource PageBackgroundColor}" />
     <SolidColorBrush x:Key="CardBackgroundBrush" Color="{StaticResource CardBackgroundColor}" />
     <SolidColorBrush x:Key="InputBackgroundBrush" Color="{StaticResource InputBackgroundColor}" />
@@ -115,7 +136,7 @@
     </Style>
 
     <Style x:Key="CardStyle" TargetType="Border">
-        <Setter Property="Background" Value="{StaticResource CardBackgroundBrush}" />
+        <Setter Property="Background" Value="{StaticResource PanelBackgroundBrush}" />
         <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}" />
         <Setter Property="BorderThickness" Value="{StaticResource CardBorderThickness}" />
         <Setter Property="CornerRadius" Value="{StaticResource CardCornerRadius}" />
@@ -123,7 +144,7 @@
     </Style>
 
     <Style x:Key="PrimaryButtonStyle" TargetType="Button">
-        <Setter Property="Background" Value="{StaticResource ActionBrush}" />
+        <Setter Property="Background" Value="{StaticResource ActionGradientBrush}" />
         <Setter Property="Foreground" Value="White" />
         <Setter Property="BorderThickness" Value="0" />
         <Setter Property="Padding" Value="16,6" />
@@ -142,7 +163,10 @@
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="Bd" Property="Background" Value="{StaticResource ActionPressedBrush}" />
+                            <Setter TargetName="Bd" Property="Background" Value="{StaticResource ActionPressedGradientBrush}" />
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter Property="Opacity" Value="0.88" />
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="False">
                             <Setter Property="Opacity" Value="0.4" />
@@ -176,6 +200,55 @@
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
                             <Setter TargetName="Bd" Property="Background" Value="{StaticResource HoverBackgroundBrush}" />
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="Bd" Property="Background" Value="{StaticResource InputBackgroundBrush}" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Opacity" Value="0.4" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- 图表工具条：小尺寸按钮与可选中按钮 -->
+    <Style x:Key="ToolButtonStyle" TargetType="Button" BasedOn="{StaticResource SecondaryButtonStyle}">
+        <Setter Property="Padding" Value="10,3" />
+        <Setter Property="FontSize" Value="{StaticResource FontSizeSmall}" />
+        <Setter Property="Height" Value="28" />
+    </Style>
+
+    <Style x:Key="ToolToggleButtonStyle" TargetType="ToggleButton">
+        <Setter Property="Background" Value="{StaticResource CardBackgroundBrush}" />
+        <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Padding" Value="10,3" />
+        <Setter Property="FontFamily" Value="{StaticResource UiFontFamily}" />
+        <Setter Property="FontSize" Value="{StaticResource FontSizeSmall}" />
+        <Setter Property="Height" Value="28" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ToggleButton">
+                    <Border x:Name="Bd"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="2"
+                            Padding="{TemplateBinding Padding}">
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Bd" Property="Background" Value="{StaticResource HoverBackgroundBrush}" />
+                        </Trigger>
+                        <Trigger Property="IsChecked" Value="True">
+                            <Setter TargetName="Bd" Property="Background" Value="{StaticResource AccentBrush}" />
+                            <Setter TargetName="Bd" Property="BorderBrush" Value="{StaticResource AccentBrush}" />
+                            <Setter Property="Foreground" Value="White" />
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="False">
                             <Setter Property="Opacity" Value="0.4" />

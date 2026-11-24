@@ -75,6 +75,16 @@ namespace GmixLx.App.Wpf.Visualization
             "ReferenceLevelDb", typeof(double), typeof(CurvePlotControl),
             new FrameworkPropertyMetadata(double.NaN, FrameworkPropertyMetadataOptions.AffectsRender));
 
+        /// <summary>是否显示峰标记与峰顶坐标。</summary>
+        public static readonly DependencyProperty ShowPeaksProperty = DependencyProperty.Register(
+            "ShowPeaks", typeof(bool), typeof(CurvePlotControl),
+            new FrameworkPropertyMetadata(true, FrameworkPropertyMetadataOptions.AffectsRender));
+
+        /// <summary>框选模式：左键拖出矩形选择 ROI；选择完成后自动关闭。</summary>
+        public static readonly DependencyProperty RoiSelectModeProperty = DependencyProperty.Register(
+            "RoiSelectMode", typeof(bool), typeof(CurvePlotControl),
+            new FrameworkPropertyMetadata(false, FrameworkPropertyMetadataOptions.AffectsRender));
+
         static readonly Typeface _typeface = new Typeface(new FontFamily("Consolas"),
             FontStyles.Normal, FontWeights.Normal, FontStretches.Normal);
 
@@ -84,6 +94,7 @@ namespace GmixLx.App.Wpf.Visualization
         static Brush _primaryTextBrush;
         static Brush _peakBrush;
         static Brush _roiBrush;
+        static Brush _accentBrush;
         static Pen _gridPen;
         static Pen _axisPen;
         static Pen _curvePen;
@@ -91,6 +102,7 @@ namespace GmixLx.App.Wpf.Visualization
         static Pen _cursorBPen;
         static Pen _hoverPen;
         static Pen _referencePen;
+        static Pen _selectPen;
         static Pen _thresholdPen;
 
         static readonly Dictionary<string, FormattedText> _textCache = new Dictionary<string, FormattedText>();
@@ -111,6 +123,10 @@ namespace GmixLx.App.Wpf.Visualization
         Rect _referenceLabelRect = Rect.Empty;
         double _levelMin;
         double _levelMax;
+
+        bool _selecting;
+        double _selectStartX;
+        double _selectCurrentX;
 
         public CurvePlotControl()
         {
@@ -199,7 +215,30 @@ namespace GmixLx.App.Wpf.Visualization
             set { SetValue(ReferenceLevelDbProperty, value); }
         }
 
+        public bool ShowPeaks
+        {
+            get { return (bool)GetValue(ShowPeaksProperty); }
+            set { SetValue(ShowPeaksProperty, value); }
+        }
+
+        public bool RoiSelectMode
+        {
+            get { return (bool)GetValue(RoiSelectModeProperty); }
+            set { SetValue(RoiSelectModeProperty, value); }
+        }
+
         public event Action<double, double> CursorsChanged;
+
+        /// <summary>框选 ROI 完成：起点、终点（米，已排序）。</summary>
+        public event Action<double, double> RoiSelected;
+
+        /// <summary>复位缩放：按全量程显示。</summary>
+        public void ResetView()
+        {
+            if (Values == null || Values.Length < 2) return;
+            SetCurrentValue(ViewStartMProperty, 0.0);
+            SetCurrentValue(ViewEndMProperty, 0.0);
+        }
 
         static void OnValuesChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
@@ -305,7 +344,10 @@ namespace GmixLx.App.Wpf.Visualization
                 previousY = yLo;
             }
 
-            DrawPeaks(dc, plot, viewStart, viewEnd, min, max);
+            if (ShowPeaks)
+            {
+                DrawPeaks(dc, plot, viewStart, viewEnd, min, max);
+            }
             DrawThreshold(dc, plot, min, max);
             DrawReference(dc, plot, min, max);
 
@@ -313,6 +355,20 @@ namespace GmixLx.App.Wpf.Visualization
             DrawCursor(dc, plot, CursorBM, cursorBPen, "B", viewStart, viewEnd);
 
             DrawHover(dc, plot, viewStart, viewEnd, min, max);
+
+            if (_selecting)
+            {
+                double left = Math.Min(_selectStartX, _selectCurrentX);
+                double right = Math.Max(_selectStartX, _selectCurrentX);
+                if (right > left)
+                {
+                    var rect = new Rect(left, plot.Top, right - left, plot.Height);
+                    dc.PushOpacity(0.18);
+                    dc.DrawRectangle(_accentBrush, null, rect);
+                    dc.Pop();
+                    dc.DrawRectangle(null, _selectPen, rect);
+                }
+            }
 
             dc.DrawRectangle(null, axisPen, plot);
         }
@@ -514,6 +570,19 @@ namespace GmixLx.App.Wpf.Visualization
             Rect plot = PlotRect;
             Point position = e.GetPosition(this);
 
+            if (RoiSelectMode
+                && position.X >= plot.Left && position.X <= plot.Right
+                && position.Y >= plot.Top && position.Y <= plot.Bottom)
+            {
+                _selecting = true;
+                _selectStartX = position.X;
+                _selectCurrentX = position.X;
+                CaptureMouse();
+                InvalidateVisual();
+                e.Handled = true;
+                return;
+            }
+
             if (!_referenceLabelRect.IsEmpty && _referenceLabelRect.Contains(position))
             {
                 _draggingReference = true;
@@ -557,6 +626,14 @@ namespace GmixLx.App.Wpf.Visualization
             GetView(out totalStart, out totalEnd, out viewStart, out viewEnd);
             Rect plot = PlotRect;
             Point position = e.GetPosition(this);
+
+            if (_selecting && e.LeftButton == MouseButtonState.Pressed)
+            {
+                _selectCurrentX = Math.Max(plot.Left, Math.Min(plot.Right, position.X));
+                InvalidateVisual();
+                e.Handled = true;
+                return;
+            }
 
             if (_draggingReference && e.LeftButton == MouseButtonState.Pressed)
             {
@@ -618,11 +695,58 @@ namespace GmixLx.App.Wpf.Visualization
         protected override void OnMouseLeftButtonUp(MouseButtonEventArgs e)
         {
             base.OnMouseLeftButtonUp(e);
+
+            if (_selecting)
+            {
+                double totalStart;
+                double totalEnd;
+                double viewStart;
+                double viewEnd;
+                GetView(out totalStart, out totalEnd, out viewStart, out viewEnd);
+                Rect plot = PlotRect;
+                double x0 = Math.Min(_selectStartX, _selectCurrentX);
+                double x1 = Math.Max(_selectStartX, _selectCurrentX);
+
+                _selecting = false;
+                SetCurrentValue(RoiSelectModeProperty, false);
+                ReleaseMouseCapture();
+
+                if (x1 - x0 >= 2)
+                {
+                    double a = XToDistance(x0, viewStart, viewEnd, plot);
+                    double b = XToDistance(x1, viewStart, viewEnd, plot);
+                    Action<double, double> handler = RoiSelected;
+                    if (handler != null) handler(a, b);
+                }
+                InvalidateVisual();
+                e.Handled = true;
+                return;
+            }
+
             _panning = false;
             _dragCursor = 0;
             _draggingReference = false;
             ReleaseMouseCapture();
             e.Handled = true;
+        }
+
+        protected override void OnKeyDown(KeyEventArgs e)
+        {
+            base.OnKeyDown(e);
+            if (e.Key != Key.Escape) return;
+
+            if (_selecting)
+            {
+                _selecting = false;
+                ReleaseMouseCapture();
+                InvalidateVisual();
+                e.Handled = true;
+            }
+            else if (RoiSelectMode)
+            {
+                SetCurrentValue(RoiSelectModeProperty, false);
+                e.Handled = true;
+            }
         }
 
         protected override void OnMouseLeave(MouseEventArgs e)
@@ -794,6 +918,7 @@ namespace GmixLx.App.Wpf.Visualization
             _primaryTextBrush = FindBrush("TextPrimaryBrush", Color.FromRgb(230, 232, 235));
             _peakBrush = FindBrush("PeakBrush", Color.FromRgb(255, 138, 101));
             _roiBrush = FindBrush("RoiBackgroundBrush", Color.FromArgb(0x2E, 0x5A, 0xA9, 0xFF));
+            _accentBrush = FindBrush("AccentBrush", Color.FromRgb(66, 108, 169));
 
             _gridPen = FindPen("GridLineBrush", Color.FromRgb(47, 50, 54), 1.0);
             _axisPen = FindPen("AxisBrush", Color.FromRgb(110, 115, 120), 1.0);
@@ -802,6 +927,7 @@ namespace GmixLx.App.Wpf.Visualization
             _cursorBPen = DashPen("CursorBBrush", Color.FromRgb(53, 193, 160), DashStyles.Dash);
             _hoverPen = DashPen("HoverBrush", Color.FromRgb(140, 146, 156), DashStyles.Dot);
             _referencePen = DashPen("ReferenceBrush", Color.FromRgb(200, 205, 211), DashStyles.Dash);
+            _selectPen = FindPen("AccentBrush", Color.FromRgb(66, 108, 169), 1.0);
             _thresholdPen = DashPen("ThresholdBrush", Color.FromRgb(90, 96, 104), DashStyles.Dash);
         }
 

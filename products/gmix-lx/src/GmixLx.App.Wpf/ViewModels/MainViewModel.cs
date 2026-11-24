@@ -15,9 +15,20 @@ namespace GmixLx.App.Wpf.ViewModels
             MetricTable = new MetricTableViewModel(AppPaths.SdkDirectory, AppPaths.CalibrationPath);
             MetricTable.RowActivated += OnRowActivated;
             MetricTable.StatusChanged += OnStatusChanged;
+
+            AppVersion = typeof(MainViewModel).Assembly.GetName().Version.ToString(3);
+            SdkStatusText = AppPaths.SdkDirectory != null && AppPaths.CalibrationPath != null
+                ? "映讯 SDK 就绪"
+                : "映讯 SDK 缺失";
         }
 
         public MetricTableViewModel MetricTable { get; private set; }
+
+        /// <summary>应用版本，显示在顶部应用栏。</summary>
+        public string AppVersion { get; private set; }
+
+        /// <summary>SDK 与参考标定的就绪状态，显示在状态栏右侧。</summary>
+        public string SdkStatusText { get; private set; }
 
         /// <summary>双击某行且该行有曲线数据时触发；由窗口负责打开曲线窗口。</summary>
         public event Action<MetricTableRow> CurveRequested;

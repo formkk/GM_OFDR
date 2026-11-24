@@ -44,11 +44,54 @@
             </Setter>
         </Style>
     </Window.Resources>
-    <DockPanel>
-        <StatusBar DockPanel.Dock="Bottom" Padding="10,0" BorderThickness="0"
-                   Background="{StaticResource CardBackgroundBrush}">
-            <StatusBarItem>
-                <TextBlock Text="{Binding StatusText}">
+    <DockPanel Background="{StaticResource PageBackgroundBrush}">
+        <!-- 顶部应用栏：产品标识 + 设备/端口 + 版本 -->
+        <Border DockPanel.Dock="Top" Height="46"
+                Background="{StaticResource TopBarBrush}"
+                BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1">
+            <Grid Margin="16,0">
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock Text="GM-IX-LX" FontSize="15" FontWeight="Bold" />
+                    <TextBlock Text="映讯 GM-IX OFDR 专用上位机" Style="{StaticResource MutedTextStyle}"
+                               VerticalAlignment="Center" Margin="10,2,0,0" />
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+                    <Border Background="{StaticResource CardBackgroundBrush}"
+                            BorderBrush="{StaticResource BorderBrush}" BorderThickness="1"
+                            CornerRadius="2" Padding="8,3" Margin="0,0,6,0">
+                        <TextBlock Style="{StaticResource MutedTextStyle}" Text="映讯 GM-IX" />
+                    </Border>
+                    <Border Background="{StaticResource CardBackgroundBrush}"
+                            BorderBrush="{StaticResource BorderBrush}" BorderThickness="1"
+                            CornerRadius="2" Padding="8,3" Margin="0,0,6,0">
+                        <TextBlock Style="{StaticResource MonoTextStyle}" FontSize="{StaticResource FontSizeSmall}">
+                            <Run Text="1×8 " Foreground="{StaticResource TextMutedBrush}" />
+                            <Run Text="{Binding MetricTable.Com1x8Text, Mode=OneWay}" />
+                        </TextBlock>
+                    </Border>
+                    <Border Background="{StaticResource CardBackgroundBrush}"
+                            BorderBrush="{StaticResource BorderBrush}" BorderThickness="1"
+                            CornerRadius="2" Padding="8,3" Margin="0,0,6,0">
+                        <TextBlock Style="{StaticResource MonoTextStyle}" FontSize="{StaticResource FontSizeSmall}">
+                            <Run Text="8×8 " Foreground="{StaticResource TextMutedBrush}" />
+                            <Run Text="{Binding MetricTable.Com8x8Text, Mode=OneWay}" />
+                        </TextBlock>
+                    </Border>
+                    <Border Background="{StaticResource CardBackgroundBrush}"
+                            BorderBrush="{StaticResource BorderBrush}" BorderThickness="1"
+                            CornerRadius="2" Padding="8,3">
+                        <TextBlock Style="{StaticResource MutedTextStyle}"
+                                   Text="{Binding AppVersion, StringFormat='v{0}'}" />
+                    </Border>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <Border DockPanel.Dock="Bottom" Background="{StaticResource CardBackgroundBrush}"
+                BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,1,0,0">
+            <Grid Margin="10,3">
+                <TextBlock Text="{Binding StatusText}" HorizontalAlignment="Left"
+                           VerticalAlignment="Center">
                     <TextBlock.Style>
                         <Style TargetType="TextBlock">
                             <Setter Property="FontFamily" Value="{StaticResource UiFontFamily}" />
@@ -68,8 +111,13 @@
                         </Style>
                     </TextBlock.Style>
                 </TextBlock>
-            </StatusBarItem>
-        </StatusBar>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+                    <TextBlock Text="{Binding SdkStatusText}" Style="{StaticResource MutedTextStyle}" />
+                    <TextBlock x:Name="ClockText" Style="{StaticResource MutedTextStyle}"
+                               Margin="16,0,0,0" />
+                </StackPanel>
+            </Grid>
+        </Border>
         <TabControl Margin="{StaticResource PageMargin}" SelectedIndex="0"
                     Background="{StaticResource PageBackgroundBrush}" BorderThickness="0">
             <TabItem Header="距离域曲线">

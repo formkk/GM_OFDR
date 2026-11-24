@@ -7,8 +7,12 @@
              VerticalContentAlignment="Stretch">
     <UserControl.Resources>
         <Style x:Key="FieldLabelStyle" TargetType="TextBlock" BasedOn="{StaticResource MutedTextStyle}">
-            <Setter Property="VerticalAlignment" Value="Center" />
-            <Setter Property="Margin" Value="0,0,8,0" />
+            <Setter Property="Margin" Value="0,0,0,2" />
+        </Style>
+
+        <Style x:Key="GroupHeaderStyle" TargetType="TextBlock" BasedOn="{StaticResource MutedTextStyle}">
+            <Setter Property="FontWeight" Value="Bold" />
+            <Setter Property="Margin" Value="0,10,0,4" />
         </Style>
 
         <Style x:Key="ParamInputStyle" TargetType="TextBox">
@@ -24,7 +28,7 @@
             <Setter Property="Padding" Value="4,2" />
             <Setter Property="Height" Value="26" />
             <Setter Property="VerticalContentAlignment" Value="Center" />
-            <Setter Property="Margin" Value="0,4,8,4" />
+            <Setter Property="Margin" Value="0,2,0,8" />
         </Style>
 
         <Style x:Key="PeakHeaderStyle" TargetType="DataGridColumnHeader">
@@ -83,96 +87,115 @@
     </UserControl.Resources>
 
     <Grid Margin="{StaticResource PagePadding}">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="76" />
-            <RowDefinition Height="*" />
-            <RowDefinition Height="174" />
-        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition x:Name="ParamsColumn" Width="280" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
 
-        <!-- 顶部 ROI IL/RL 卡片 -->
-        <Grid Grid.Row="0" Margin="0,0,0,8">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="*" />
-            </Grid.ColumnDefinitions>
-            <Border Grid.Column="0" Style="{StaticResource CardStyle}" Margin="0,0,8,0">
-                <StackPanel VerticalAlignment="Center" Margin="14,0,0,0">
-                    <TextBlock Text="ROI IL" Style="{StaticResource MutedTextStyle}" />
-                    <TextBlock Text="{Binding IlText}" FontSize="20" FontWeight="Bold" />
-                </StackPanel>
-            </Border>
-            <Border Grid.Column="1" Style="{StaticResource CardStyle}">
-                <StackPanel VerticalAlignment="Center" Margin="14,0,0,0">
-                    <TextBlock Text="ROI RL" Style="{StaticResource MutedTextStyle}" />
-                    <TextBlock Text="{Binding RlText}" FontSize="20" FontWeight="Bold" />
-                </StackPanel>
-            </Border>
-        </Grid>
+        <!-- 左侧可折叠参数面板 -->
+        <Border x:Name="ParamsPanel" Grid.Column="0" Style="{StaticResource CardStyle}"
+                Margin="0,0,8,0" Padding="12,8,12,10">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
 
-        <!-- 距离域曲线 -->
-        <Border Grid.Row="1" Style="{StaticResource CardStyle}" Padding="10,8,10,6">
-            <vis:CurvePlotControl x:Name="Plot" />
+                <Grid Grid.Row="0">
+                    <TextBlock x:Name="ParamsTitle" Text="参数" Style="{StaticResource TitleTextStyle}"
+                               VerticalAlignment="Center" />
+                    <ToggleButton x:Name="ParamsToggle" Content="◀" Width="24" Height="22"
+                                  HorizontalAlignment="Right" VerticalAlignment="Center"
+                                  Style="{StaticResource ToolToggleButtonStyle}" Padding="0"
+                                  Click="OnParamsToggle" />
+                </Grid>
+
+                <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Margin="0,6,0,0">
+                    <StackPanel x:Name="ParamsContent">
+                        <TextBlock Text="采集" Style="{StaticResource GroupHeaderStyle}" Margin="0,0,0,4" />
+                        <TextBlock Text="空间平均 m" Style="{StaticResource FieldLabelStyle}" />
+                        <TextBox Style="{StaticResource ParamInputStyle}"
+                                 Text="{Binding SpatialAverageText, UpdateSourceTrigger=PropertyChanged}" />
+                        <TextBlock Text="采集次数" Style="{StaticResource FieldLabelStyle}" />
+                        <TextBox Style="{StaticResource ParamInputStyle}"
+                                 Text="{Binding TemporalAverageText, UpdateSourceTrigger=PropertyChanged}" />
+
+                        <TextBlock Text="ROI" Style="{StaticResource GroupHeaderStyle}" />
+                        <TextBlock Text="起点 (m)" Style="{StaticResource FieldLabelStyle}" />
+                        <TextBox Style="{StaticResource ParamInputStyle}"
+                                 Text="{Binding RoiStartText, UpdateSourceTrigger=PropertyChanged}" />
+                        <TextBlock Text="终点 (m)" Style="{StaticResource FieldLabelStyle}" />
+                        <TextBox Style="{StaticResource ParamInputStyle}"
+                                 Text="{Binding RoiEndText, UpdateSourceTrigger=PropertyChanged}" />
+
+                        <TextBlock Text="显示" Style="{StaticResource GroupHeaderStyle}" />
+                        <TextBlock Text="显示上限 (m)" Style="{StaticResource FieldLabelStyle}" />
+                        <TextBox Style="{StaticResource ParamInputStyle}"
+                                 Text="{Binding DisplayMaxText, UpdateSourceTrigger=PropertyChanged}" />
+                    </StackPanel>
+                </ScrollViewer>
+
+                <StackPanel x:Name="ParamsButtons" Grid.Row="2" Margin="0,8,0,0">
+                    <Button Content="单次采集" Height="32" Margin="0,0,0,6"
+                            Style="{StaticResource PrimaryButtonStyle}"
+                            IsEnabled="{Binding CanRunOnce}"
+                            Click="OnSingleClick" />
+                    <Button Content="{Binding ContinuousButtonText}" Height="32" Margin="0,0,0,6"
+                            Style="{StaticResource SecondaryButtonStyle}"
+                            Click="OnContinuousClick" />
+                    <Button Content="保存数据" Height="32"
+                            Style="{StaticResource SecondaryButtonStyle}"
+                            Click="OnSaveClick" />
+                </StackPanel>
+            </Grid>
         </Border>
 
-        <!-- 底部：左侧参数、右侧峰表 -->
-        <Grid Grid.Row="2" Margin="0,8,0,0">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="420" />
-                <ColumnDefinition Width="*" />
-            </Grid.ColumnDefinitions>
+        <!-- 右侧：卡片 / 图表工具条 / 曲线 / 峰表 -->
+        <Grid Grid.Column="1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="76" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="160" />
+            </Grid.RowDefinitions>
 
-            <Border Grid.Column="0" Style="{StaticResource CardStyle}" Margin="0,0,8,0" Padding="12,10,12,10">
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="34" />
-                        <RowDefinition Height="34" />
-                        <RowDefinition Height="34" />
-                        <RowDefinition Height="44" />
-                    </Grid.RowDefinitions>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="90" />
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="96" />
-                        <ColumnDefinition Width="*" />
-                    </Grid.ColumnDefinitions>
-
-                    <TextBlock Grid.Row="0" Grid.Column="0" Text="空间平均" Style="{StaticResource FieldLabelStyle}" />
-                    <TextBox Grid.Row="0" Grid.Column="1" Style="{StaticResource ParamInputStyle}"
-                             Text="{Binding SpatialAverageText, UpdateSourceTrigger=PropertyChanged}" />
-                    <TextBlock Grid.Row="0" Grid.Column="2" Text="采集次数" Style="{StaticResource FieldLabelStyle}" />
-                    <TextBox Grid.Row="0" Grid.Column="3" Style="{StaticResource ParamInputStyle}"
-                             Margin="0,4,0,4"
-                             Text="{Binding TemporalAverageText, UpdateSourceTrigger=PropertyChanged}" />
-
-                    <TextBlock Grid.Row="1" Grid.Column="0" Text="ROI 起点" Style="{StaticResource FieldLabelStyle}" />
-                    <TextBox Grid.Row="1" Grid.Column="1" Style="{StaticResource ParamInputStyle}"
-                             Text="{Binding RoiStartText, UpdateSourceTrigger=PropertyChanged}" />
-                    <TextBlock Grid.Row="1" Grid.Column="2" Text="ROI 终点" Style="{StaticResource FieldLabelStyle}" />
-                    <TextBox Grid.Row="1" Grid.Column="3" Style="{StaticResource ParamInputStyle}"
-                             Margin="0,4,0,4"
-                             Text="{Binding RoiEndText, UpdateSourceTrigger=PropertyChanged}" />
-
-                    <TextBlock Grid.Row="2" Grid.Column="0" Text="显示上限" Style="{StaticResource FieldLabelStyle}" />
-                    <TextBox Grid.Row="2" Grid.Column="1" Style="{StaticResource ParamInputStyle}"
-                             Text="{Binding DisplayMaxText, UpdateSourceTrigger=PropertyChanged}" />
-
-                    <StackPanel Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="4"
-                                Orientation="Horizontal" Margin="0,8,0,0">
-                        <Button Content="单次采集" Width="120" Height="32" Margin="0,0,8,0"
-                                Style="{StaticResource PrimaryButtonStyle}"
-                                IsEnabled="{Binding CanRunOnce}"
-                                Click="OnSingleClick" />
-                        <Button Content="{Binding ContinuousButtonText}" Width="120" Height="32" Margin="0,0,8,0"
-                                Style="{StaticResource SecondaryButtonStyle}"
-                                Click="OnContinuousClick" />
-                        <Button Content="保存数据" Width="120" Height="32"
-                                Style="{StaticResource SecondaryButtonStyle}"
-                                Click="OnSaveClick" />
+            <Grid Grid.Row="0" Margin="0,0,0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Border Grid.Column="0" Style="{StaticResource CardStyle}" Margin="0,0,8,0">
+                    <StackPanel VerticalAlignment="Center" Margin="14,0,0,0">
+                        <TextBlock Text="ROI IL" Style="{StaticResource MutedTextStyle}" />
+                        <TextBlock Text="{Binding IlText}" FontSize="20" FontWeight="Bold" />
                     </StackPanel>
-                </Grid>
+                </Border>
+                <Border Grid.Column="1" Style="{StaticResource CardStyle}">
+                    <StackPanel VerticalAlignment="Center" Margin="14,0,0,0">
+                        <TextBlock Text="ROI RL" Style="{StaticResource MutedTextStyle}" />
+                        <TextBlock Text="{Binding RlText}" FontSize="20" FontWeight="Bold" />
+                    </StackPanel>
+                </Border>
+            </Grid>
+
+            <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,8">
+                <ToggleButton Content="框选 ROI" Margin="0,0,6,0"
+                              Style="{StaticResource ToolToggleButtonStyle}"
+                              IsChecked="{Binding ElementName=Plot, Path=RoiSelectMode, Mode=TwoWay}" />
+                <Button Content="复位视图" Margin="0,0,6,0"
+                        Style="{StaticResource ToolButtonStyle}"
+                        Click="OnResetViewClick" />
+                <ToggleButton Content="显示峰" Margin="0,0,6,0"
+                              Style="{StaticResource ToolToggleButtonStyle}"
+                              IsChecked="{Binding ElementName=Plot, Path=ShowPeaks, Mode=TwoWay}" />
+            </StackPanel>
+
+            <Border Grid.Row="2" Style="{StaticResource CardStyle}" Padding="10,8,10,6">
+                <vis:CurvePlotControl x:Name="Plot" />
             </Border>
 
-            <Border Grid.Column="1" Style="{StaticResource CardStyle}" Padding="10,8,10,8">
+            <Border Grid.Row="3" Style="{StaticResource CardStyle}" Margin="0,8,0,0" Padding="10,8,10,8">
                 <DataGrid x:Name="PeakGrid"
                           ItemsSource="{Binding PeakRows}"
                           AutoGenerateColumns="False"
@@ -193,7 +216,8 @@
                           RowHeight="{StaticResource TableRowHeight}"
                           ColumnHeaderHeight="34"
                           ColumnHeaderStyle="{StaticResource PeakHeaderStyle}"
-                          CellStyle="{StaticResource PeakCellStyle}">
+                          CellStyle="{StaticResource PeakCellStyle}"
+                          ScrollViewer.HorizontalScrollBarVisibility="Disabled">
                     <DataGrid.Columns>
                         <DataGridTextColumn Header="序号" Binding="{Binding Number}" Width="14*"
                                             ElementStyle="{StaticResource CenteredCellStyle}" />
